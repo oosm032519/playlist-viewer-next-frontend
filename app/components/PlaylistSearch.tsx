@@ -1,7 +1,10 @@
 'use client'
 
+import {useForm} from 'react-hook-form';
+import {yupResolver} from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import axios from 'axios';
 import {useState} from 'react'
-import axios from 'axios'
 
 interface Playlist {
     id: string;
@@ -10,36 +13,47 @@ interface Playlist {
     images: { url: string }[];
 }
 
+interface SearchFormInputs {
+    query: string;
+}
+
+const schema = yup.object({
+    query: yup.string().required('検索クエリを入力してください').min(2, '最低2文字以上入力してください'),
+}).required();
+
 export default function PlaylistSearch() {
-    const [query, setQuery] = useState('')
-    const [playlists, setPlaylists] = useState<Playlist[]>([])
+    const [playlists, setPlaylists] = useState<Playlist[]>([]);
     
-    const searchPlaylists = async () => {
+    const {register, handleSubmit, formState: {errors}} = useForm<SearchFormInputs>({
+        resolver: yupResolver(schema)
+    });
+    
+    const onSubmit = async (data: SearchFormInputs) => {
         try {
-            const response = await axios.get(`/api/playlists/search?query=${query}`)
-            setPlaylists(response.data)
+            const response = await axios.get(`/api/playlists/search?query=${data.query}`);
+            setPlaylists(response.data);
         } catch (error) {
-            console.error('Error searching playlists:', error)
+            console.error('Error searching playlists:', error);
         }
-    }
+    };
     
     return (
         <div>
-            <div className="mb-4 flex">
+            <form onSubmit={handleSubmit(onSubmit)} className="mb-4 flex">
                 <input
+                    {...register('query')}
                     type="text"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
                     placeholder="Enter playlist name"
                     className="flex-grow p-2 border border-gray-300 rounded-l-md"
                 />
                 <button
-                    onClick={searchPlaylists}
+                    type="submit"
                     className="bg-blue-500 text-white p-2 rounded-r-md hover:bg-blue-600"
                 >
                     Search
                 </button>
-            </div>
+            </form>
+            {errors.query && <p className="text-red-500">{errors.query.message}</p>}
             <table className="w-full border-collapse">
                 <thead>
                 <tr className="bg-gray-100">
