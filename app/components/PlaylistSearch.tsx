@@ -1,3 +1,5 @@
+// C:\Users\IdeaProjects\playlist-viewer-next-frontend\app\components\PlaylistSearch.tsx
+
 "use client";
 
 import {useForm} from "react-hook-form";
@@ -12,6 +14,10 @@ import {Input} from "@/app/components/ui/input";
 import {Form, FormControl, FormField, FormItem, FormMessage} from "@/app/components/ui/form";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/app/components/ui/table";
 import {Card, CardContent, CardHeader, CardTitle} from "@/app/components/ui/card";
+import {
+    RadioGroup,
+    RadioGroupItem,
+} from "@/app/components/ui/radio-group"
 
 interface Playlist {
     id: string;
@@ -22,6 +28,7 @@ interface Playlist {
 
 interface SearchFormInputs {
     query: string;
+    searchType: 'name' | 'id';
 }
 
 const schema = yup
@@ -30,6 +37,10 @@ const schema = yup
             .string()
             .required("検索クエリを入力してください")
             .min(2, "最低2文字以上入力してください"),
+        searchType: yup
+            .string()
+            .oneOf(['name', 'id'])
+            .required("検索タイプを選択してください")
     })
     .required();
 
@@ -38,12 +49,15 @@ export default function PlaylistSearch() {
     
     const form = useForm<SearchFormInputs>({
         resolver: yupResolver(schema),
+        defaultValues: {
+            searchType: 'name'
+        }
     });
     
     const onSubmit = async (data: SearchFormInputs) => {
         try {
             const response = await axios.get(
-                `/api/playlists/search?query=${data.query}`
+                `/api/playlists/search?${data.searchType}=${data.query}`
             );
             setPlaylists(response.data);
         } catch (error) {
@@ -85,15 +99,34 @@ export default function PlaylistSearch() {
                             render={({field}) => (
                                 <FormItem>
                                     <FormControl>
-                                        <div className="flex space-x-2">
-                                            <Input placeholder="Enter playlist name" {...field} />
-                                            <Button type="submit">Search</Button>
-                                        </div>
+                                        <Input placeholder="プレイリスト名またはIDを入力" {...field} />
                                     </FormControl>
                                     <FormMessage/>
                                 </FormItem>
                             )}
                         />
+                        <FormField
+                            control={form.control}
+                            name="searchType"
+                            render={({field}) => (
+                                <FormItem>
+                                    <FormControl>
+                                        <RadioGroup {...field} className="flex flex-row gap-4">
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="name" id="searchByName"/>
+                                                <label htmlFor="searchByName">プレイリスト名で検索</label>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="id" id="searchById"/>
+                                                <label htmlFor="searchById">プレイリストIDで検索</label>
+                                            </div>
+                                        </RadioGroup>
+                                    </FormControl>
+                                    <FormMessage/>
+                                </FormItem>
+                            )}
+                        />
+                        <Button type="submit">Search</Button>
                     </form>
                 </Form>
                 
