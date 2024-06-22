@@ -18,8 +18,6 @@ import {
 import {
     Card,
     CardContent,
-    CardHeader,
-    CardTitle,
 } from "@/app/components/ui/card";
 
 interface SearchFormInputs {
