@@ -46,11 +46,13 @@ export default function PlaylistSearchForm({onSearch}: PlaylistSearchFormProps) 
     
     const onSubmit = async (data: SearchFormInputs) => {
         setIsLoading(true);
+        console.log("PlaylistSearchForm: onSubmit called with query:", data.query); // 追加: サブミット時のクエリをコンソール出力
         try {
             const response = await axios.get(`/api/playlists/search?query=${data.query}`);
+            console.log("PlaylistSearchForm: API response:", response.data); // 追加: APIレスポンスをコンソール出力
             onSearch(response.data);
         } catch (error: any) {
-            console.error("Error searching playlists:", error);
+            console.error("PlaylistSearchForm: Error searching playlists:", error);
         } finally {
             setIsLoading(false);
             form.reset();
