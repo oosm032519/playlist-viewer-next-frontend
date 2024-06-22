@@ -49,12 +49,11 @@ export default function PlaylistSearchForm({onSearch}: PlaylistSearchFormProps) 
         try {
             const response = await axios.get(`/api/playlists/search?query=${data.query}`);
             onSearch(response.data);
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error searching playlists:", error);
-            // エラー処理を強化 (例: エラーステートを管理して表示)
         } finally {
             setIsLoading(false);
-            form.reset(); // フォームをリセット
+            form.reset();
         }
     };
     
