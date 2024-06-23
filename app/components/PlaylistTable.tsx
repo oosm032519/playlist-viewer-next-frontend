@@ -1,4 +1,4 @@
-import {Playlist} from "@/types/playlist";
+import {Playlist} from "@/app/types/playlist";
 import {
     Table,
     TableBody,

@@ -3,7 +3,7 @@
 import {useState} from "react";
 import PlaylistSearchForm from "./components/PlaylistSearchForm";
 import PlaylistTable from "./components/PlaylistTable";
-import {Playlist} from "@/types/playlist";
+import {Playlist} from "@/app/types/playlist";
 import {Alert, AlertDescription, AlertTitle} from "./components/ui/alert";
 
 export default function Home() {
