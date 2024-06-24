@@ -1,36 +1,33 @@
-// PlaylistIdForm.tsx
-
+// app/components/PlaylistIdForm.tsx
 "use client";
 import {useState} from "react";
-import {Card, CardContent, CardHeader, CardTitle} from "./ui/card";
+import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+} from "./ui/card";
 import {Button} from "./ui/button";
 import {Input} from "./ui/input";
 import axios from "axios";
+import PlaylistDetails from "./PlaylistDetails";
+import {Track} from "@/app/types/track";
 
 export default function PlaylistIdForm() {
-    console.log("PlaylistIdForm コンポーネントがレンダリングされました");
-    const [playlistId, setPlaylistId] = useState('');
-    console.log("初期状態: playlistId =", playlistId);
+    const [playlistId, setPlaylistId] = useState("");
+    const [tracks, setTracks] = useState<Track[]>([]);
     
     const handleSubmit = async (event: React.FormEvent) => {
-        console.log("フォームが送信されました");
         event.preventDefault();
-        console.log("送信されたプレイリストID:", playlistId);
+        console.log("Submitted playlist ID:", playlistId);
         
         try {
-            console.log("API リクエストを開始します");
-            // API Routeを使用するように変更
             const response = await axios.get(`/api/playlists/${playlistId}`);
-            console.log("API レスポンスを受信しました:", response.data);
-            
-            // プレイリストの中身をコンソールに出力
-            console.log("プレイリストのトラック:", response.data.tracks);
-            console.log("トラック数:", response.data.tracks.length);
+            console.log("PlaylistIdForm: API response:", response.data);
+            // tracks.items ではなく tracks を参照するように修正
+            setTracks(response.data.tracks.map((item: any) => item.track));
         } catch (error) {
-            console.error("プレイリストIDの送信中にエラーが発生しました:", error);
-            if (axios.isAxiosError(error)) {
-                console.error("エラーの詳細:", error.response?.data);
-            }
+            console.error("Error sending playlist ID:", error);
         }
     };
     
@@ -45,13 +42,11 @@ export default function PlaylistIdForm() {
                         type="text"
                         placeholder="Enter playlist ID"
                         value={playlistId}
-                        onChange={(e) => {
-                            console.log("入力値が変更されました:", e.target.value);
-                            setPlaylistId(e.target.value);
-                        }}
+                        onChange={(e) => setPlaylistId(e.target.value)}
                     />
                     <Button type="submit">Submit</Button>
                 </form>
+                {tracks.length > 0 && <PlaylistDetails tracks={tracks}/>}
             </CardContent>
         </Card>
     );
