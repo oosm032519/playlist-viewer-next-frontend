@@ -5,17 +5,26 @@ import {useState} from "react";
 import {Card, CardContent, CardHeader, CardTitle} from "./ui/card";
 import {Button} from "./ui/button";
 import {Input} from "./ui/input";
+import axios from "axios";
 
 export default function PlaylistIdForm() {
     const [playlistId, setPlaylistId] = useState('');
     
-    const handleSubmit = (event: React.FormEvent) => {
+    const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
-        console.log("Submitted playlist ID:", playlistId); // 入力されたIDをコンソールに出力
+        console.log("Submitted playlist ID:", playlistId);
+        
+        try {
+            // バックエンドのURLを正しく設定
+            const response = await axios.get(`http://localhost:8080/api/playlists/${playlistId}`);
+            console.log(response.data);
+        } catch (error) {
+            console.error("Error sending playlist ID:", error);
+        }
     };
     
     return (
-        <Card className="w-full max-w-4xl mx-auto mt-8"> {/* 既存の検索フォームとスタイルを合わせる */}
+        <Card className="w-full max-w-4xl mx-auto mt-8">
             <CardHeader>
                 <CardTitle>Enter Playlist ID</CardTitle>
             </CardHeader>

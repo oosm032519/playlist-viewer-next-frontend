@@ -1,4 +1,4 @@
-// C:\Users\IdeaProjects\playlist-viewer-next-frontend\app\page.tsx
+// page.tsx
 "use client";
 
 import {useState} from "react";
