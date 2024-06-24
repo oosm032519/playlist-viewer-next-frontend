@@ -1,3 +1,5 @@
+// C:\Users\IdeaProjects\playlist-viewer-next-frontend\app\components\PlaylistIdForm.tsx
+
 // PlaylistIdForm.tsx
 
 "use client";
@@ -18,6 +20,9 @@ export default function PlaylistIdForm() {
             // API Routeを使用するように変更
             const response = await axios.get(`/api/playlists/${playlistId}`);
             console.log("PlaylistIdForm: API response:", response.data);
+            
+            // プレイリストの中身をコンソールに出力
+            console.log("Playlist tracks:", response.data.tracks);
         } catch (error) {
             console.error("Error sending playlist ID:", error);
         }
