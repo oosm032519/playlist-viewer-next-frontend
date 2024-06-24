@@ -19,7 +19,7 @@ interface PlaylistDetailsProps {
 }
 
 const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({tracks}) => {
-    console.log("PlaylistDetails: レンダリングされたトラックデータ:", tracks); // 追加: 受信したトラックデータのログ出力
+    console.log("PlaylistDetails: レンダリングされたトラックデータ:", tracks);
     
     const columns = useMemo<Column<Track>[]>(
         () => [
@@ -37,20 +37,75 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({tracks}) => {
                 accessor: "album",
                 Cell: ({value}) => value.name,
             },
-            // 新しいカラムの追加
             {
-                Header: "Audio Features",
-                accessor: "audioFeatures",
-                // audioFeaturesオブジェクトを表示用にフォーマット
-                Cell: ({value}) => (
-                    <ul>
-                        {Object.entries(value ?? {}).map(([key, value]) => (
-                            <li key={key}>
-                                {key}: {value}
-                            </li>
-                        ))}
-                    </ul>
-                ),
+                Header: "Danceability",
+                accessor: (row: Track) => row.audioFeatures?.danceability,
+                // value を number | undefined 型に指定
+                Cell: ({value}: { value: number | undefined }) => value?.toFixed(3) ?? "-",
+            },
+            {
+                Header: "Energy",
+                accessor: (row: Track) => row.audioFeatures?.energy,
+                Cell: ({value}: { value: number | undefined }) => value?.toFixed(3) ?? "-",
+            },
+            {
+                Header: "Key",
+                accessor: (row: Track) => row.audioFeatures?.key,
+                // value を number | undefined 型に指定
+                Cell: ({value}: { value: number | undefined }) => value !== undefined ? value.toString() : "-",
+            },
+            {
+                Header: "Loudness",
+                accessor: (row: Track) => row.audioFeatures?.loudness,
+                Cell: ({value}: { value: number | undefined }) => value?.toFixed(3) ?? "-",
+            },
+            {
+                Header: "Mode",
+                accessor: (row: Track) => row.audioFeatures?.mode,
+                // value を number | undefined 型に指定
+                Cell: ({value}: { value: number | undefined }) => value !== undefined ? value.toString() : "-",
+            },
+            {
+                Header: "Speechiness",
+                accessor: (row: Track) => row.audioFeatures?.speechiness,
+                Cell: ({value}: { value: number | undefined }) => value?.toFixed(3) ?? "-",
+            },
+            {
+                Header: "Acousticness",
+                accessor: (row: Track) => row.audioFeatures?.acousticness,
+                Cell: ({value}: { value: number | undefined }) => value?.toFixed(3) ?? "-",
+            },
+            {
+                Header: "Instrumentalness",
+                accessor: (row: Track) => row.audioFeatures?.instrumentalness,
+                Cell: ({value}: { value: number | undefined }) => value?.toFixed(3) ?? "-",
+            },
+            {
+                Header: "Liveness",
+                accessor: (row: Track) => row.audioFeatures?.liveness,
+                Cell: ({value}: { value: number | undefined }) => value?.toFixed(3) ?? "-",
+            },
+            {
+                Header: "Valence",
+                accessor: (row: Track) => row.audioFeatures?.valence,
+                Cell: ({value}: { value: number | undefined }) => value?.toFixed(3) ?? "-",
+            },
+            {
+                Header: "Tempo",
+                accessor: (row: Track) => row.audioFeatures?.tempo,
+                Cell: ({value}: { value: number | undefined }) => value?.toFixed(3) ?? "-",
+            },
+            {
+                Header: "Duration (ms)",
+                accessor: (row: Track) => row.audioFeatures?.duration_ms,
+                // value を number | undefined 型に指定
+                Cell: ({value}: { value: number | undefined }) => value !== undefined ? value.toString() : "-",
+            },
+            {
+                Header: "Time Signature",
+                accessor: (row: Track) => row.audioFeatures?.time_signature,
+                // value を number | undefined 型に指定
+                Cell: ({value}: { value: number | undefined }) => value !== undefined ? value.toString() : "-",
             },
         ],
         []
@@ -63,7 +118,8 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({tracks}) => {
         <Table {...getTableProps()} className="mt-8">
             <TableHeader>
                 {headerGroups.map((headerGroup) => {
-                    const {key, ...restHeaderGroupProps} = headerGroup.getHeaderGroupProps();
+                    const {key, ...restHeaderGroupProps} =
+                        headerGroup.getHeaderGroupProps();
                     return (
                         <TableRow key={key} {...restHeaderGroupProps}>
                             {headerGroup.headers.map((column) => {
