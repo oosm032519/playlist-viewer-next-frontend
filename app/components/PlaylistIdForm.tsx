@@ -1,4 +1,5 @@
-// C:\Users\IdeaProjects\playlist-viewer-next-frontend\app\components\PlaylistIdForm.tsx
+// PlaylistIdForm.tsx
+
 "use client";
 import {useState} from "react";
 import {Card, CardContent, CardHeader, CardTitle} from "./ui/card";
