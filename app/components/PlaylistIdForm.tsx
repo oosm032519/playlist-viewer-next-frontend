@@ -24,7 +24,6 @@ export default function PlaylistIdForm() {
         try {
             const response = await axios.get(`/api/playlists/${playlistId}`);
             console.log("PlaylistIdForm: API response:", response.data);
-            // 変更点: Optional Chaining を使用して tracks.items が存在するかチェック
             setTracks(response.data.tracks?.items?.map((item: any) => item.track) || []);
         } catch (error) {
             console.error("Error sending playlist ID:", error);
