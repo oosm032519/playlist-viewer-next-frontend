@@ -12,7 +12,7 @@ export interface Track {
     name: string;
     artists: TrackArtist[];
     album: TrackAlbum;
-    // audioFeatures プロパティを追加
+    durationMs: number;
     audioFeatures?: {
         danceability: number;
         energy: number;
@@ -25,7 +25,6 @@ export interface Track {
         liveness: number;
         valence: number;
         tempo: number;
-        duration_ms: number;
-        time_signature: number;
+        timeSignature: number;
     };
 }

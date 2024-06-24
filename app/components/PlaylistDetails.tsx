@@ -97,13 +97,13 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({tracks}) => {
             },
             {
                 Header: "Duration (ms)",
-                accessor: (row: Track) => row.audioFeatures?.duration_ms,
+                accessor: (row: Track) => row.durationMs,
                 // value を number | undefined 型に指定
                 Cell: ({value}: { value: number | undefined }) => value !== undefined ? value.toString() : "-",
             },
             {
                 Header: "Time Signature",
-                accessor: (row: Track) => row.audioFeatures?.time_signature,
+                accessor: (row: Track) => row.audioFeatures?.timeSignature,
                 // value を number | undefined 型に指定
                 Cell: ({value}: { value: number | undefined }) => value !== undefined ? value.toString() : "-",
             },
