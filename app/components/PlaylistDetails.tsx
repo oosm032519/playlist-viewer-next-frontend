@@ -1,3 +1,4 @@
+// C:\Users\IdeaProjects\playlist-viewer-next-frontend\app\components\PlaylistDetails.tsx
 // app/components/PlaylistDetails.tsx
 "use client";
 
@@ -18,6 +19,8 @@ interface PlaylistDetailsProps {
 }
 
 const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({tracks}) => {
+    console.log("PlaylistDetails: レンダリングされたトラックデータ:", tracks); // 追加: 受信したトラックデータのログ出力
+    
     const columns = useMemo<Column<Track>[]>(
         () => [
             {
@@ -33,6 +36,21 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({tracks}) => {
                 Header: "Album",
                 accessor: "album",
                 Cell: ({value}) => value.name,
+            },
+            // 新しいカラムの追加
+            {
+                Header: "Audio Features",
+                accessor: "audioFeatures",
+                // audioFeaturesオブジェクトを表示用にフォーマット
+                Cell: ({value}) => (
+                    <ul>
+                        {Object.entries(value ?? {}).map(([key, value]) => (
+                            <li key={key}>
+                                {key}: {value}
+                            </li>
+                        ))}
+                    </ul>
+                ),
             },
         ],
         []
