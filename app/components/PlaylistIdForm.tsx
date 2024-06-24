@@ -1,4 +1,3 @@
-// C:\Users\IdeaProjects\playlist-viewer-next-frontend\app\components\PlaylistIdForm.tsx
 // app/components/PlaylistIdForm.tsx
 "use client";
 import {useState} from "react";
@@ -26,10 +25,10 @@ export default function PlaylistIdForm() {
             const response = await axios.get(`/api/playlists/${playlistId}`);
             console.log("PlaylistIdForm: API response:", response.data);
             // バックエンドから受け取ったaudio featureをtracksオブジェクトにマージ
-            setTracks(response.data.tracks?.items?.map((item: any) => ({
+            setTracks(response.data.tracks.items.map((item: any) => ({
                 ...item.track,
-                audioFeatures: item.audioFeatures
-            })) || []);
+                audioFeatures: item.audioFeatures // この行を追加
+            })));
         } catch (error) {
             console.error("Error sending playlist ID:", error);
         }
