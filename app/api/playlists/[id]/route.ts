@@ -4,41 +4,53 @@ export async function GET(
     request: Request,
     {params}: { params: { id: string } }
 ) {
+    console.log('GET関数が呼び出されました');
+    console.log(`リクエストパラメータ: ${JSON.stringify(params)}`);
+    
     const id = params.id;
+    console.log(`プレイリストID: ${id}`);
     
     try {
-        const backendUrl = process.env.BACKEND_URL || 'http://localhonnNst:8080';
+        console.log('バックエンドURLの取得を開始します');
+        const backendUrl = process.env.BACKEND_URL || 'http://localhost:8080';
+        console.log(`バックエンドURL: ${backendUrl}`);
+        
         const fullUrl = `${backendUrl}/api/playlists/${id}`;
+        console.log(`完全なリクエストURL: ${fullUrl}`);
         
-        console.log(`Sending request to: ${fullUrl}`);
-        
+        console.log('バックエンドへのリクエストを開始します');
         const response = await fetch(fullUrl);
+        console.log('バックエンドからのレスポンスを受信しました');
         
-        console.log(`Response status: ${response.status}`);
+        console.log(`レスポンスステータス: ${response.status}`);
         
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            console.log('レスポンスがエラーを示しています');
+            throw new Error(`HTTPエラー! ステータス: ${response.status}`);
         }
         
-        // レスポンスをテキストとして読み取る
+        console.log('レスポンスの本文をテキストとして読み取ります');
         const textData = await response.text();
-        console.log('Raw response:', textData);
+        console.log('生のレスポンス:', textData);
         
-        // JSONとしてパースを試みる
+        console.log('レスポンスをJSONとしてパースを試みます');
         let data;
         try {
             data = JSON.parse(textData);
+            console.log('JSONパースに成功しました');
         } catch (parseError) {
-            console.error('Failed to parse response as JSON:', parseError);
-            // テキストデータをそのまま返す
+            console.error('レスポンスをJSONとしてパースできませんでした:', parseError);
+            console.log('テキストデータをそのまま返します');
             return NextResponse.json({message: textData});
         }
         
-        console.log('Parsed data:', data);
+        console.log('パースされたデータ:', data);
         
+        console.log('正常なレスポンスを返します');
         return NextResponse.json(data);
     } catch (error) {
-        console.error("Error fetching playlist:", error);
-        return NextResponse.json({error: "Failed to fetch playlist"}, {status: 500});
+        console.error("プレイリストの取得中にエラーが発生しました:", error);
+        console.log('エラーレスポンスを返します');
+        return NextResponse.json({error: "プレイリストの取得に失敗しました"}, {status: 500});
     }
 }

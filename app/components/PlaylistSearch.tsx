@@ -4,7 +4,7 @@ import {useForm} from "react-hook-form";
 import {yupResolver} from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import axios from "axios";
-import {useState, useMemo} from "react";
+import {useState, useMemo, useEffect} from "react";
 import {useTable, Column, Row} from "react-table";
 
 import {Button} from "@/app/components/ui/button";
@@ -34,20 +34,27 @@ const schema = yup
     .required();
 
 export default function PlaylistSearch() {
+    console.log("PlaylistSearch コンポーネントがレンダリングされました");
+    
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
     
     const form = useForm<SearchFormInputs>({
         resolver: yupResolver(schema),
     });
     
+    console.log("useForm フックが初期化されました");
+    
     const onSubmit = async (data: SearchFormInputs) => {
+        console.log("フォームが送信されました。検索クエリ:", data.query);
         try {
+            console.log("APIリクエストを送信中...");
             const response = await axios.get(
                 `/api/playlists/search?query=${data.query}`
             );
+            console.log("APIレスポンスを受信しました:", response.data);
             setPlaylists(response.data);
         } catch (error) {
-            console.error("Error searching playlists:", error);
+            console.error("プレイリスト検索中にエラーが発生しました:", error);
         }
     };
     
@@ -68,8 +75,16 @@ export default function PlaylistSearch() {
         []
     );
     
+    console.log("テーブルのカラムが定義されました");
+    
     const {getTableProps, getTableBodyProps, headerGroups, rows, prepareRow} =
         useTable({columns, data: playlists});
+    
+    console.log("react-table フックが初期化されました");
+    
+    useEffect(() => {
+        console.log("プレイリストの状態が更新されました:", playlists);
+    }, [playlists]);
     
     return (
         <Card className="w-full max-w-4xl mx-auto">

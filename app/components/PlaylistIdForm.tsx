@@ -1,5 +1,3 @@
-// C:\Users\IdeaProjects\playlist-viewer-next-frontend\app\components\PlaylistIdForm.tsx
-
 // PlaylistIdForm.tsx
 
 "use client";
@@ -10,21 +8,29 @@ import {Input} from "./ui/input";
 import axios from "axios";
 
 export default function PlaylistIdForm() {
+    console.log("PlaylistIdForm コンポーネントがレンダリングされました");
     const [playlistId, setPlaylistId] = useState('');
+    console.log("初期状態: playlistId =", playlistId);
     
     const handleSubmit = async (event: React.FormEvent) => {
+        console.log("フォームが送信されました");
         event.preventDefault();
-        console.log("Submitted playlist ID:", playlistId);
+        console.log("送信されたプレイリストID:", playlistId);
         
         try {
+            console.log("API リクエストを開始します");
             // API Routeを使用するように変更
             const response = await axios.get(`/api/playlists/${playlistId}`);
-            console.log("PlaylistIdForm: API response:", response.data);
+            console.log("API レスポンスを受信しました:", response.data);
             
             // プレイリストの中身をコンソールに出力
-            console.log("Playlist tracks:", response.data.tracks);
+            console.log("プレイリストのトラック:", response.data.tracks);
+            console.log("トラック数:", response.data.tracks.length);
         } catch (error) {
-            console.error("Error sending playlist ID:", error);
+            console.error("プレイリストIDの送信中にエラーが発生しました:", error);
+            if (axios.isAxiosError(error)) {
+                console.error("エラーの詳細:", error.response?.data);
+            }
         }
     };
     
@@ -39,7 +45,10 @@ export default function PlaylistIdForm() {
                         type="text"
                         placeholder="Enter playlist ID"
                         value={playlistId}
-                        onChange={(e) => setPlaylistId(e.target.value)}
+                        onChange={(e) => {
+                            console.log("入力値が変更されました:", e.target.value);
+                            setPlaylistId(e.target.value);
+                        }}
                     />
                     <Button type="submit">Submit</Button>
                 </form>
