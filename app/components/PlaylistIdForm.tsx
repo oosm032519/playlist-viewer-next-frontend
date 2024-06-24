@@ -15,9 +15,9 @@ export default function PlaylistIdForm() {
         console.log("Submitted playlist ID:", playlistId);
         
         try {
-            // バックエンドのURLを正しく設定
-            const response = await axios.get(`http://localhost:8080/api/playlists/${playlistId}`);
-            console.log(response.data);
+            // API Routeを使用するように変更
+            const response = await axios.get(`/api/playlists/${playlistId}`);
+            console.log("PlaylistIdForm: API response:", response.data);
         } catch (error) {
             console.error("Error sending playlist ID:", error);
         }
