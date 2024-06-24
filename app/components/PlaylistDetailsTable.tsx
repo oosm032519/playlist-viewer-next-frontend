@@ -12,6 +12,7 @@ import {
     TableRow,
 } from "@/app/components/ui/table";
 import {ArrowUpDown} from "lucide-react";
+import Image from "next/image";
 
 interface PlaylistDetailsTableProps {
     tracks: Track[];
@@ -23,6 +24,21 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
     const columns = useMemo<Column<Track>[]>(
         () => [
             {
+                Header: "Album",
+                accessor: "album",
+                Cell: ({value}) => (
+                    <div className="w-16 h-16 relative">
+                        <Image
+                            src={value.images[2].url}
+                            alt={value.name}
+                            layout="fill"
+                            objectFit="cover"
+                        />
+                    </div>
+                ),
+                disableSortBy: true,
+            },
+            {
                 Header: "Title",
                 accessor: "name",
             },
@@ -30,11 +46,6 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
                 Header: "Artist",
                 accessor: "artists",
                 Cell: ({value}) => value[0].name,
-            },
-            {
-                Header: "Album",
-                accessor: "album",
-                Cell: ({value}) => value.name,
             },
             {
                 Header: "Danceability",
@@ -238,58 +249,73 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
         []
     );
     
-    const {getTableProps, getTableBodyProps, headerGroups, rows, prepareRow} =
-        useTable(
-            {
-                columns,
-                data: tracks,
-            },
-            useSortBy
-        );
+    const {
+        getTableProps,
+        getTableBodyProps,
+        headerGroups,
+        rows,
+        prepareRow,
+    } = useTable(
+        {
+            columns,
+            data: tracks,
+        },
+        useSortBy
+    );
     
     return (
-        <Table {...getTableProps()} className="mt-8">
-            <TableHeader>
-                {headerGroups.map((headerGroup: HeaderGroup<Track>) => {
-                    const {key, ...restHeaderGroupProps} =
-                        headerGroup.getHeaderGroupProps();
-                    return (
-                        <TableRow key={key} {...restHeaderGroupProps}>
-                            {headerGroup.headers.map((column) => {
-                                const {key, ...restColumnProps} = column.getHeaderProps(
-                                    (column as any).getSortByToggleProps()
-                                );
-                                return (
-                                    <TableHead key={key} {...restColumnProps}>
-                                        <div className="flex items-center">
-                                            {column.render("Header")}
-                                            <ArrowUpDown className="ml-2 h-4 w-4"/>
-                                        </div>
-                                    </TableHead>
-                                );
-                            })}
-                        </TableRow>
-                    );
-                })}
-            </TableHeader>
-            <TableBody {...getTableBodyProps()}>
-                {rows.map((row: Row<Track>) => {
-                    prepareRow(row);
-                    const {key, ...restRowProps} = row.getRowProps();
-                    return (
-                        <TableRow key={key} {...restRowProps}>
-                            {row.cells.map((cell) => {
-                                const {key, ...restCellProps} = cell.getCellProps();
-                                return (
-                                    <TableCell key={key} {...restCellProps}>
-                                        {cell.render("Cell")}
-                                    </TableCell>
-                                );
-                            })}
-                        </TableRow>
-                    );
-                })}
-            </TableBody>
-        </Table>
+        <div className="overflow-x-auto relative">
+            <Table {...getTableProps()} className="mt-8">
+                <TableHeader>
+                    {headerGroups.map((headerGroup: HeaderGroup<Track>) => {
+                        const {key, ...restHeaderGroupProps} =
+                            headerGroup.getHeaderGroupProps();
+                        return (
+                            <TableRow key={key} {...restHeaderGroupProps}>
+                                {headerGroup.headers.map((column, index) => {
+                                    const {key, ...restColumnProps} = column.getHeaderProps(
+                                        (column as any).getSortByToggleProps()
+                                    );
+                                    return (
+                                        <TableHead
+                                            key={key}
+                                            {...restColumnProps}
+                                            className={index === 0 ? "sticky left-0 z-10 bg-white" : ""}
+                                        >
+                                            <div className="flex items-center">
+                                                {column.render("Header")}
+                                                {index !== 0 && <ArrowUpDown className="ml-2 h-4 w-4"/>}
+                                            </div>
+                                        </TableHead>
+                                    );
+                                })}
+                            </TableRow>
+                        );
+                    })}
+                </TableHeader>
+                <TableBody {...getTableBodyProps()}>
+                    {rows.map((row: Row<Track>) => {
+                        prepareRow(row);
+                        const {key, ...restRowProps} = row.getRowProps();
+                        return (
+                            <TableRow key={key} {...restRowProps}>
+                                {row.cells.map((cell, index) => {
+                                    const {key, ...restCellProps} = cell.getCellProps();
+                                    return (
+                                        <TableCell
+                                            key={key}
+                                            {...restCellProps}
+                                            className={index === 0 ? "sticky left-0 z-10 bg-white" : ""}
+                                        >
+                                            {cell.render("Cell")}
+                                        </TableCell>
+                                    );
+                                })}
+                            </TableRow>
+                        );
+                    })}
+                </TableBody>
+            </Table>
+        </div>
     );
 };

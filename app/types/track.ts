@@ -6,6 +6,7 @@ export interface TrackArtist {
 
 export interface TrackAlbum {
     name: string;
+    images: { url: string }[];
 }
 
 export interface Track {
