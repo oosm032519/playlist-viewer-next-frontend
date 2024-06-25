@@ -3,6 +3,7 @@ export interface PlaylistImage {
 }
 
 export interface Playlist {
+    tracks: any;
     id: string;
     name: string;
     description: string;
