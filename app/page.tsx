@@ -7,6 +7,7 @@ import PlaylistTable from "./components/PlaylistTable";
 import {Playlist} from "@/app/types/playlist";
 import {Alert, AlertDescription, AlertTitle} from "./components/ui/alert";
 import PlaylistIdForm from "./components/PlaylistIdForm";
+import LoginButton from "./components/LoginButton";
 
 export default function Home() {
     console.log("Home コンポーネントがレンダリングされました");
@@ -37,6 +38,7 @@ export default function Home() {
             <h1 className="text-4xl font-bold mb-8 text-spotify-green">
                 Playlist Viewer
             </h1>
+            <LoginButton/>
             <PlaylistSearchForm onSearch={handleSearch}/>
             <PlaylistIdForm/>
             
