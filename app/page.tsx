@@ -25,6 +25,7 @@ export default function Home() {
     useEffect(() => {
         const intervalId = setInterval(async () => {
             try {
+                console.log("セッションチェックを実行します");
                 const response = await axios.get('http://localhost:8080/api/session/check', {
                     withCredentials: true // クッキーなどの資格情報の送信を有効にする
                 });
