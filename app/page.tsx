@@ -10,6 +10,8 @@ import PlaylistIdForm from "./components/PlaylistIdForm";
 import LoginButton from "./components/LoginButton";
 import FollowedPlaylists from "./components/FollowedPlaylists";
 import axios from 'axios'
+import {Track} from "@/app/types/track";
+import {PlaylistDetailsTable} from "./components/PlaylistDetailsTable";
 
 export default function Home() {
     console.log("Home コンポーネントがレンダリングされました");
@@ -17,11 +19,10 @@ export default function Home() {
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [userId, setUserId] = useState<string | null>(null);
+    const [, setUserId] = useState<string | null>(null);
     const [sessionCheckResult, setSessionCheckResult] = useState('');
-    
-    const searchParams = useSearchParams();
-    
+    const [selectedPlaylistTracks, setSelectedPlaylistTracks] = useState<Track[]>([]); // 新しい状態変数を追加
+    useSearchParams()
     useEffect(() => {
         const intervalId = setInterval(async () => {
             try {
@@ -72,6 +73,22 @@ export default function Home() {
         console.log("isLoggedIn の状態を true に更新しました");
     };
     
+    const handlePlaylistClick = async (playlistId: string) => {
+        console.log("Playlist clicked:", playlistId);
+        try {
+            const response = await axios.get(`/api/playlists/${playlistId}`);
+            console.log("Playlist details:", response.data);
+            
+            // 選択されたプレイリストのトラックリストを更新
+            setSelectedPlaylistTracks(response.data.tracks.items.map((item: any) => ({
+                ...item.track,
+                audioFeatures: item.audioFeatures
+            })));
+        } catch (error) {
+            console.error("Error fetching playlist details:", error);
+        }
+    };
+    
     console.log("Home: JSX をレンダリングします");
     
     return (
@@ -94,9 +111,17 @@ export default function Home() {
                 <pre>{sessionCheckResult}</pre>
             </div>
             
-            {playlists.length > 0 && <PlaylistTable playlists={playlists}/>}
+            {playlists.length > 0 &&
+                <PlaylistTable playlists={playlists} onPlaylistClick={handlePlaylistClick}/>}
             
             {isLoggedIn && <FollowedPlaylists/>}
+            
+            {/* 選択されたプレイリストのトラックリストを表示 */}
+            {selectedPlaylistTracks.length > 0 && (
+                <div className="mt-8">
+                    <PlaylistDetailsTable tracks={selectedPlaylistTracks}/>
+                </div>
+            )}
         </main>
     );
 }

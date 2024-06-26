@@ -40,7 +40,7 @@ export default function PlaylistIdForm() {
             // バックエンドから受け取ったaudio featureをtracksオブジェクトにマージ
             setTracks(response.data.tracks.items.map((item: any) => ({
                 ...item.track,
-                audioFeatures: item.audioFeatures // この行を追加
+                audioFeatures: item.audioFeatures
             })));
         } catch (error) {
             console.error("Error sending playlist ID:", error);
