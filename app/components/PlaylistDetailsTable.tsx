@@ -27,14 +27,16 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
                 Header: "Album",
                 accessor: "album",
                 Cell: ({value}) => (
-                    <div className="w-16 h-16 relative">
-                        <Image
-                            src={value.images[2].url}
-                            alt={value.name}
-                            layout="fill"
-                            objectFit="cover"
-                        />
-                    </div>
+                    <a href={value.externalUrls.externalUrls.spotify} target="_blank" rel="noopener noreferrer">
+                        <div className="w-16 h-16 relative">
+                            <Image
+                                src={value.images[2].url}
+                                alt={value.name}
+                                layout="fill"
+                                objectFit="cover"
+                            />
+                        </div>
+                    </a>
                 ),
                 disableSortBy: true,
             },
@@ -45,7 +47,11 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
             {
                 Header: "Artist",
                 accessor: "artists",
-                Cell: ({value}) => value[0].name,
+                Cell: ({value}) => (
+                    <a href={value[0].externalUrls.externalUrls.spotify} target="_blank" rel="noopener noreferrer">
+                        {value[0].name}
+                    </a>
+                ),
             },
             {
                 Header: "Danceability",
@@ -280,7 +286,9 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
                                         <TableHead
                                             key={key}
                                             {...restColumnProps}
-                                            className={index === 0 ? "sticky left-0 z-10 bg-gray-dark" : ""}
+                                            className={
+                                                index === 0 ? "sticky left-0 z-10 bg-gray-dark" : ""
+                                            }
                                         >
                                             <div className="flex items-center">
                                                 {column.render("Header")}
@@ -305,7 +313,9 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
                                         <TableCell
                                             key={key}
                                             {...restCellProps}
-                                            className={index === 0 ? "sticky left-0 z-10 bg-gray-dark" : ""}
+                                            className={
+                                                index === 0 ? "sticky left-0 z-10 bg-gray-dark" : ""
+                                            }
                                         >
                                             {cell.render("Cell")}
                                         </TableCell>
