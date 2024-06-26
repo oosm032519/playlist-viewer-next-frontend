@@ -1,7 +1,6 @@
 "use client";
 
 import React, {useState, useEffect} from 'react';
-import axios from 'axios';
 import {Playlist} from '@/app/types/playlist';
 import {Alert, AlertDescription, AlertTitle} from "./ui/alert";
 
@@ -17,11 +16,16 @@ const FollowedPlaylists: React.FC = () => {
         const fetchFollowedPlaylists = async () => {
             console.log("FollowedPlaylists: フォロー中のプレイリストの取得を開始します");
             try {
-                const response = await axios.get('http://localhost:8080/api/playlists/followed', {
-                    withCredentials: true
+                const response = await fetch('/api/playlists/followed', {
+                    credentials: 'include'
                 });
-                console.log("FollowedPlaylists: API レスポンス:", response.data);
-                setPlaylists(response.data);
+                
+                if (!response.ok) {
+                    throw new Error('API request failed');
+                }
+                const data = await response.json();
+                console.log("FollowedPlaylists: API レスポンス:", data);
+                setPlaylists(data);
                 setLoading(false);
                 console.log("FollowedPlaylists: プレイリストの状態を更新し、ローディングを false に設定しました");
             } catch (err) {
@@ -34,6 +38,7 @@ const FollowedPlaylists: React.FC = () => {
         fetchFollowedPlaylists();
     }, []);
     
+    // 以下のコードは変更なし
     console.log("FollowedPlaylists: 現在の状態", {playlists, loading, error});
     
     if (loading) {
