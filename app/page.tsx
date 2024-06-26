@@ -9,6 +9,7 @@ import {Alert, AlertDescription, AlertTitle} from "./components/ui/alert";
 import PlaylistIdForm from "./components/PlaylistIdForm";
 import LoginButton from "./components/LoginButton";
 import FollowedPlaylists from "./components/FollowedPlaylists";
+import axios from 'axios'
 
 export default function Home() {
     console.log("Home コンポーネントがレンダリングされました");
@@ -17,8 +18,25 @@ export default function Home() {
     const [error, setError] = useState<string | null>(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userId, setUserId] = useState<string | null>(null);
+    const [sessionCheckResult, setSessionCheckResult] = useState('');
     
     const searchParams = useSearchParams();
+    
+    useEffect(() => {
+        const intervalId = setInterval(async () => {
+            try {
+                const response = await axios.get('http://localhost:8080/api/session/check', {
+                    withCredentials: true // クッキーなどの資格情報の送信を有効にする
+                });
+                setSessionCheckResult(JSON.stringify(response.data, null, 2));
+            } catch (error) {
+                console.error('セッションチェックエラー:', error);
+                setSessionCheckResult('Error checking session');
+            }
+        }, 10000); // 10秒ごとに実行
+        
+        return () => clearInterval(intervalId); // クリーンアップ
+    }, []);
     
     useEffect(() => {
         console.log("Home: useEffect が実行されました");
@@ -71,6 +89,10 @@ export default function Home() {
                     <AlertDescription>{error}</AlertDescription>
                 </Alert>
             )}
+            
+            <div className="mt-8">
+                <pre>{sessionCheckResult}</pre>
+            </div>
             
             {playlists.length > 0 && <PlaylistTable playlists={playlists}/>}
             
