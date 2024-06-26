@@ -1,4 +1,4 @@
-// PlaylistSearchForm.tsx
+// app/components/PlaylistSearchForm.tsx
 
 "use client";
 
@@ -21,6 +21,7 @@ import {
     Card,
     CardContent,
 } from "@/app/components/ui/card";
+import LoadingSpinner from "./LoadingSpinner"; // 導入
 
 interface SearchFormInputs {
     query: string;
@@ -42,7 +43,7 @@ interface PlaylistSearchFormProps {
 export default function PlaylistSearchForm({onSearch}: PlaylistSearchFormProps) {
     console.log("PlaylistSearchForm: コンポーネントがレンダリングされました"); // 追加: コンポーネントのレンダリング時のログ
     
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(false); // ローディング状態
     
     const form = useForm<SearchFormInputs>({
         resolver: yupResolver(schema),
@@ -75,43 +76,46 @@ export default function PlaylistSearchForm({onSearch}: PlaylistSearchFormProps) 
     };
     
     return (
-        <Card>
-            <CardContent>
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                        <FormField
-                            control={form.control}
-                            name="query"
-                            render={({field}) => (
-                                <FormItem>
-                                    <FormControl>
-                                        <div className="flex space-x-2">
-                                            <Input
-                                                placeholder="Enter playlist name"
-                                                {...field}
-                                                value={field.value || ''}
-                                                disabled={isLoading}
-                                                onChange={(e) => {
-                                                    field.onChange(e);
-                                                    console.log("PlaylistSearchForm: 入力値が変更されました:", e.target.value); // 追加: 入力値変更のログ
-                                                }}
-                                            />
-                                            <Button
-                                                type="submit"
-                                                disabled={isLoading}
-                                                onClick={() => console.log("PlaylistSearchForm: 検索ボタンがクリックされました")} // 追加: ボタンクリック時のログ
-                                            >
-                                                {isLoading ? "Searching..." : "Search"}
-                                            </Button>
-                                        </div>
-                                    </FormControl>
-                                    <FormMessage/>
-                                </FormItem>
-                            )}
-                        />
-                    </form>
-                </Form>
-            </CardContent>
-        </Card>
+        <>
+            <Card>
+                <CardContent>
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                            <FormField
+                                control={form.control}
+                                name="query"
+                                render={({field}) => (
+                                    <FormItem>
+                                        <FormControl>
+                                            <div className="flex space-x-2">
+                                                <Input
+                                                    placeholder="Enter playlist name"
+                                                    {...field}
+                                                    value={field.value || ''}
+                                                    disabled={isLoading}
+                                                    onChange={(e) => {
+                                                        field.onChange(e);
+                                                        console.log("PlaylistSearchForm: 入力値が変更されました:", e.target.value); // 追加: 入力値変更のログ
+                                                    }}
+                                                />
+                                                <Button
+                                                    type="submit"
+                                                    disabled={isLoading}
+                                                    onClick={() => console.log("PlaylistSearchForm: 検索ボタンがクリックされました")} // 追加: ボタンクリック時のログ
+                                                >
+                                                    {isLoading ? "Searching..." : "Search"}
+                                                </Button>
+                                            </div>
+                                        </FormControl>
+                                        <FormMessage/>
+                                    </FormItem>
+                                )}
+                            />
+                        </form>
+                    </Form>
+                </CardContent>
+            </Card>
+            <LoadingSpinner loading={isLoading}/> {/* ローディングアニメーションの表示 */}
+        </>
     );
 }

@@ -1,14 +1,16 @@
+// app/components/FollowedPlaylists.tsx
 "use client";
 
 import React, {useState, useEffect} from 'react';
 import {Playlist} from '@/app/types/playlist';
 import {Alert, AlertDescription, AlertTitle} from "./ui/alert";
+import LoadingSpinner from "./LoadingSpinner"; // 導入
 
 const FollowedPlaylists: React.FC = () => {
     console.log("FollowedPlaylists コンポーネントがレンダリングされました");
     
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true); // ローディング状態
     const [error, setError] = useState<string | null>(null);
     
     useEffect(() => {
@@ -43,7 +45,7 @@ const FollowedPlaylists: React.FC = () => {
     
     if (loading) {
         console.log("FollowedPlaylists: ローディング中");
-        return <div>読み込み中...</div>;
+        return <LoadingSpinner loading={loading}/>; // ローディングアニメーションを表示
     }
     if (error) {
         console.log("FollowedPlaylists: エラー状態");
