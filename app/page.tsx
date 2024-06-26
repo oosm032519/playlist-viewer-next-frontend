@@ -40,21 +40,20 @@ export default function Home() {
     }, []);
     
     useEffect(() => {
-        console.log("Home: useEffect が実行されました");
-        const loginSuccess = searchParams.get('loginSuccess');
-        const userIdParam = searchParams.get('userId');
+        const checkSession = async () => {
+            try {
+                const response = await axios.get('http://localhost:8080/api/session/check', {withCredentials: true});
+                if (response.data.status === 'success') {
+                    setIsLoggedIn(true);
+                    setUserId(response.data.userId);
+                }
+            } catch (error) {
+                console.error('セッションチェックエラー:', error);
+            }
+        };
         
-        if (loginSuccess === 'true' && userIdParam) {
-            setIsLoggedIn(true);
-            setUserId(userIdParam);
-            console.log("ログイン成功。ユーザーID:", userIdParam);
-        }
-        
-        console.log("現在の playlists の状態:", playlists);
-        console.log("現在の error の状態:", error);
-        console.log("現在の isLoggedIn の状態:", isLoggedIn);
-        console.log("現在の userId の状態:", userId);
-    }, [searchParams, playlists, error]);
+        checkSession();
+    }, []);
     
     const handleSearch = (playlists: Playlist[]) => {
         console.log("handleSearch 関数が呼び出されました");

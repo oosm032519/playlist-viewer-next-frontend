@@ -14,21 +14,20 @@ const LoginButton: React.FC<LoginButtonProps> = ({onLoginSuccess}) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     
     useEffect(() => {
-        checkLoginStatus();
-    }, []);
-    
-    const checkLoginStatus = async () => {
-        try {
-            const response = await axios.get('http://localhost:8080/api/session/check');
-            console.log("Session check response:", response.data);
-            if (response.data.status === 'success') {
-                setIsLoggedIn(true);
-                onLoginSuccess();
+        const checkLoginStatus = async () => {
+            try {
+                const response = await axios.get('http://localhost:8080/api/session/check', {withCredentials: true});
+                console.log("Session check response:", response.data);
+                if (response.data.status === 'success') {
+                    setIsLoggedIn(true);
+                    onLoginSuccess();
+                }
+            } catch (error) {
+                console.error('セッションチェックエラー:', error);
             }
-        } catch (error) {
-            console.error('セッションチェックエラー:', error);
-        }
-    };
+        };
+        checkLoginStatus();
+    }, [onLoginSuccess]);
     
     const handleLogin = () => {
         window.location.href = 'http://localhost:8080/oauth2/authorization/spotify';
@@ -36,7 +35,7 @@ const LoginButton: React.FC<LoginButtonProps> = ({onLoginSuccess}) => {
     
     const handleLogout = async () => {
         try {
-            await axios.post('http://localhost:8080/logout');
+            await axios.post('http://localhost:8080/logout', {withCredentials: true});
             setIsLoggedIn(false);
             window.location.reload();
         } catch (error) {
