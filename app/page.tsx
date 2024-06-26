@@ -21,23 +21,25 @@ export default function Home() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [, setUserId] = useState<string | null>(null);
     const [sessionCheckResult, setSessionCheckResult] = useState('');
-    const [selectedPlaylistTracks, setSelectedPlaylistTracks] = useState<Track[]>([]); // 新しい状態変数を追加
+    const [selectedPlaylistTracks, setSelectedPlaylistTracks] = useState<Track[]>([]);
+    const [showPlaylistDetails, setShowPlaylistDetails] = useState(false); // プレイリスト詳細の表示状態
+    
     useSearchParams()
     useEffect(() => {
         const intervalId = setInterval(async () => {
             try {
                 console.log("セッションチェックを実行します");
                 const response = await axios.get('http://localhost:8080/api/session/check', {
-                    withCredentials: true // クッキーなどの資格情報の送信を有効にする
+                    withCredentials: true
                 });
                 setSessionCheckResult(JSON.stringify(response.data, null, 2));
             } catch (error) {
                 console.error('セッションチェックエラー:', error);
                 setSessionCheckResult('Error checking session');
             }
-        }, 10000); // 10秒ごとに実行
+        }, 10000);
         
-        return () => clearInterval(intervalId); // クリーンアップ
+        return () => clearInterval(intervalId);
     }, []);
     
     useEffect(() => {
@@ -62,9 +64,9 @@ export default function Home() {
         
         setPlaylists(playlists);
         console.log("playlists の状態を更新しました");
-        
         setError(null);
         console.log("error の状態をクリアしました");
+        setShowPlaylistDetails(false); // プレイリスト検索時は詳細を非表示にする
     };
     
     const handleLoginSuccess = () => {
@@ -79,11 +81,11 @@ export default function Home() {
             const response = await axios.get(`/api/playlists/${playlistId}`);
             console.log("Playlist details:", response.data);
             
-            // 選択されたプレイリストのトラックリストを更新
             setSelectedPlaylistTracks(response.data.tracks.items.map((item: any) => ({
                 ...item.track,
                 audioFeatures: item.audioFeatures
             })));
+            setShowPlaylistDetails(true); // プレイリスト詳細を表示する
         } catch (error) {
             console.error("Error fetching playlist details:", error);
         }
@@ -111,17 +113,16 @@ export default function Home() {
                 <pre>{sessionCheckResult}</pre>
             </div>
             
-            {playlists.length > 0 &&
+            {/* プレイリスト詳細の表示状態によって表示を切り替える */}
+            {!showPlaylistDetails && playlists.length > 0 &&
                 <PlaylistTable playlists={playlists} onPlaylistClick={handlePlaylistClick}/>}
             
-            {isLoggedIn && <FollowedPlaylists/>}
-            
-            {/* 選択されたプレイリストのトラックリストを表示 */}
-            {selectedPlaylistTracks.length > 0 && (
-                <div className="mt-8">
+            {showPlaylistDetails && selectedPlaylistTracks.length > 0 &&
+                <div className="overflow-x-auto, w-full">
                     <PlaylistDetailsTable tracks={selectedPlaylistTracks}/>
-                </div>
-            )}
-        </main>
-    );
-}
+                </div>}
+            
+            {isLoggedIn && <FollowedPlaylists/>}
+                </main>
+                );
+            }
