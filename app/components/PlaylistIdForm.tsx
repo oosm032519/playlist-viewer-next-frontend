@@ -17,12 +17,25 @@ export default function PlaylistIdForm() {
     const [playlistId, setPlaylistId] = useState("");
     const [tracks, setTracks] = useState<Track[]>([]);
     
+    const extractPlaylistIdFromUrl = (url: string): string | null => {
+        const regex = /\/playlist\/([^?]+)/;
+        const match = url.match(regex);
+        return match ? match[1] : null;
+    }
+    
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
-        console.log("Submitted playlist ID:", playlistId);
+        
+        const extractedId = extractPlaylistIdFromUrl(playlistId);
+        console.log("Extracted Playlist ID:", extractedId);
+        
+        if (!extractedId) {
+            console.error("Invalid Playlist URL:", playlistId);
+            return;
+        }
         
         try {
-            const response = await axios.get(`/api/playlists/${playlistId}`);
+            const response = await axios.get(`/api/playlists/${extractedId}`);
             console.log("PlaylistIdForm: API response:", response.data);
             // バックエンドから受け取ったaudio featureをtracksオブジェクトにマージ
             setTracks(response.data.tracks.items.map((item: any) => ({
@@ -37,13 +50,13 @@ export default function PlaylistIdForm() {
     return (
         <Card className="w-full max-w-4xl mx-auto mt-8">
             <CardHeader>
-                <CardTitle>Enter Playlist ID</CardTitle>
+                <CardTitle>Enter Playlist URL</CardTitle>
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit} className="flex space-x-2">
                     <Input
                         type="text"
-                        placeholder="Enter playlist ID"
+                        placeholder="Enter playlist URL"
                         value={playlistId}
                         onChange={(e) => setPlaylistId(e.target.value)}
                     />
