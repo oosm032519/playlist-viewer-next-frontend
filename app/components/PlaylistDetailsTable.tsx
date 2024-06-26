@@ -264,7 +264,7 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
     );
     
     return (
-        <div className="overflow-x-auto relative">
+        <div className="overflow-x-auto w-full relative">
             <Table {...getTableProps()} className="mt-8">
                 <TableHeader>
                     {headerGroups.map((headerGroup: HeaderGroup<Track>) => {
@@ -280,7 +280,7 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
                                         <TableHead
                                             key={key}
                                             {...restColumnProps}
-                                            className={index === 0 ? "sticky left-0 z-10 bg-white" : ""}
+                                            className={index === 0 ? "sticky left-0 z-10 bg-gray-dark" : ""}
                                         >
                                             <div className="flex items-center">
                                                 {column.render("Header")}
@@ -305,7 +305,7 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
                                         <TableCell
                                             key={key}
                                             {...restCellProps}
-                                            className={index === 0 ? "sticky left-0 z-10 bg-white" : ""}
+                                            className={index === 0 ? "sticky left-0 z-10 bg-gray-dark" : ""}
                                         >
                                             {cell.render("Cell")}
                                         </TableCell>

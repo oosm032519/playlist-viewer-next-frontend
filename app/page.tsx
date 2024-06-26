@@ -118,11 +118,9 @@ export default function Home() {
                 <PlaylistTable playlists={playlists} onPlaylistClick={handlePlaylistClick}/>}
             
             {showPlaylistDetails && selectedPlaylistTracks.length > 0 &&
-                <div className="overflow-x-auto, w-full">
-                    <PlaylistDetailsTable tracks={selectedPlaylistTracks}/>
-                </div>}
+                <PlaylistDetailsTable tracks={selectedPlaylistTracks}/>}
             
             {isLoggedIn && <FollowedPlaylists/>}
-                </main>
-                );
-            }
+        </main>
+    );
+}
