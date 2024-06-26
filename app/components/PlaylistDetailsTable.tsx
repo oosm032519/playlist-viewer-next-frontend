@@ -32,11 +32,13 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
                             <Image
                                 src={value.images[2].url}
                                 alt={value.name}
-                                layout="fill"
-                                objectFit="cover"
+                                fill
+                                sizes="64px"
+                                style={{objectFit: "cover"}}
                             />
                         </div>
                     </a>
+                
                 ),
                 disableSortBy: true,
             },
