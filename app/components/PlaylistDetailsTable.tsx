@@ -271,10 +271,13 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
         useSortBy
     );
     
+    const handleRowClick = (row: Row<Track>) => {
+        console.log("Audio Features:", row.original.audioFeatures);
+    };
+    
     return (
-        <div className="overflow-x-auto w-full relative">
-            <Table {...getTableProps()} className="mt-8">
-                <TableHeader>
+        <Table {...getTableProps()}>
+            <TableHeader>
                     {headerGroups.map((headerGroup: HeaderGroup<Track>) => {
                         const {key, ...restHeaderGroupProps} =
                             headerGroup.getHeaderGroupProps();
@@ -308,17 +311,16 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
                         prepareRow(row);
                         const {key, ...restRowProps} = row.getRowProps();
                         return (
-                            <TableRow key={key} {...restRowProps}>
+                            <TableRow
+                                key={key}
+                                {...restRowProps}
+                                onClick={() => handleRowClick(row)}
+                                style={{cursor: 'pointer'}}
+                            >
                                 {row.cells.map((cell, index) => {
                                     const {key, ...restCellProps} = cell.getCellProps();
                                     return (
-                                        <TableCell
-                                            key={key}
-                                            {...restCellProps}
-                                            className={
-                                                index === 0 ? "sticky left-0 z-10 bg-gray-dark" : ""
-                                            }
-                                        >
+                                        <TableCell key={key} {...restCellProps}>
                                             {cell.render("Cell")}
                                         </TableCell>
                                     );
@@ -328,6 +330,5 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
                     })}
                 </TableBody>
             </Table>
-        </div>
-    );
+            );
 };
