@@ -25,22 +25,22 @@ export default function Home() {
     const [showPlaylistDetails, setShowPlaylistDetails] = useState(false); // プレイリスト詳細の表示状態
     
     useSearchParams()
-    useEffect(() => {
-        const intervalId = setInterval(async () => {
-            try {
-                console.log("セッションチェックを実行します");
-                const response = await axios.get('http://localhost:8080/api/session/check', {
-                    withCredentials: true
-                });
-                setSessionCheckResult(JSON.stringify(response.data, null, 2));
-            } catch (error) {
-                console.error('セッションチェックエラー:', error);
-                setSessionCheckResult('Error checking session');
-            }
-        }, 10000);
-        
-        return () => clearInterval(intervalId);
-    }, []);
+    // useEffect(() => {
+    //     const intervalId = setInterval(async () => {
+    //         try {
+    //             console.log("セッションチェックを実行します");
+    //             const response = await axios.get('http://localhost:8080/api/session/check', {
+    //                 withCredentials: true
+    //             });
+    //             setSessionCheckResult(JSON.stringify(response.data, null, 2));
+    //         } catch (error) {
+    //             console.error('セッションチェックエラー:', error);
+    //             setSessionCheckResult('Error checking session');
+    //         }
+    //     }, 10000);
+    //
+    //     return () => clearInterval(intervalId);
+    // }, []);
     
     useEffect(() => {
         const checkSession = async () => {
