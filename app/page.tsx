@@ -11,7 +11,6 @@ import LoginButton from "./components/LoginButton";
 import FollowedPlaylists from "./components/FollowedPlaylists";
 import axios from 'axios'
 import {Track} from "@/app/types/track";
-import {PlaylistDetailsTable} from "./components/PlaylistDetailsTable";
 import PlaylistDetails from '@/app/components/PlaylistDetails'
 
 export default function Home() {
@@ -21,7 +20,7 @@ export default function Home() {
     const [error, setError] = useState<string | null>(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [, setUserId] = useState<string | null>(null);
-    const [sessionCheckResult, setSessionCheckResult] = useState('');
+    const [sessionCheckResult] = useState('');
     const [selectedPlaylistTracks, setSelectedPlaylistTracks] = useState<Track[]>([]);
     const [showPlaylistDetails, setShowPlaylistDetails] = useState(false); // プレイリスト詳細の表示状態
     const [genreCounts, setGenreCounts] = useState<{ [genre: string]: number }>({});
