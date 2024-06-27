@@ -12,6 +12,7 @@ import FollowedPlaylists from "./components/FollowedPlaylists";
 import axios from 'axios'
 import {Track} from "@/app/types/track";
 import {PlaylistDetailsTable} from "./components/PlaylistDetailsTable";
+import PlaylistDetails from '@/app/components/PlaylistDetails'
 
 export default function Home() {
     console.log("Home コンポーネントがレンダリングされました");
@@ -23,6 +24,7 @@ export default function Home() {
     const [sessionCheckResult, setSessionCheckResult] = useState('');
     const [selectedPlaylistTracks, setSelectedPlaylistTracks] = useState<Track[]>([]);
     const [showPlaylistDetails, setShowPlaylistDetails] = useState(false); // プレイリスト詳細の表示状態
+    const [genreCounts, setGenreCounts] = useState<{ [genre: string]: number }>({});
     
     useSearchParams()
     // useEffect(() => {
@@ -86,6 +88,7 @@ export default function Home() {
                 audioFeatures: item.audioFeatures
             })));
             setShowPlaylistDetails(true); // プレイリスト詳細を表示する
+            setGenreCounts(response.data.genreCounts); // genreCounts を状態変数に設定
         } catch (error) {
             console.error("Error fetching playlist details:", error);
         }
@@ -117,8 +120,9 @@ export default function Home() {
             {!showPlaylistDetails && playlists.length > 0 &&
                 <PlaylistTable playlists={playlists} onPlaylistClick={handlePlaylistClick}/>}
             
-            {showPlaylistDetails && selectedPlaylistTracks.length > 0 &&
-                <PlaylistDetailsTable tracks={selectedPlaylistTracks}/>}
+            {showPlaylistDetails && selectedPlaylistTracks.length > 0 && (
+                <PlaylistDetails tracks={selectedPlaylistTracks} genreCounts={genreCounts}/>
+            )}
             
             {isLoggedIn && <FollowedPlaylists/>}
         </main>

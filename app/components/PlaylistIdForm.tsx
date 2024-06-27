@@ -11,7 +11,8 @@ import {Input} from "./ui/input";
 import axios from "axios";
 import PlaylistDetails from "./PlaylistDetails";
 import {Track} from "@/app/types/track";
-import LoadingSpinner from "./LoadingSpinner"; // 導入
+import LoadingSpinner from "./LoadingSpinner";
+import GenreChart from "./GenreChart"
 
 export default function PlaylistIdForm() {
     const [playlistId, setPlaylistId] = useState("");
@@ -44,6 +45,7 @@ export default function PlaylistIdForm() {
                 ...item.track,
                 audioFeatures: item.audioFeatures
             })));
+            setGenreCounts(response.data.genreCounts); // genreCounts を状態変数に設定
         } catch (error) {
             console.error("Error sending playlist ID:", error);
         } finally {
@@ -72,6 +74,13 @@ export default function PlaylistIdForm() {
                         </Button>
                     </form>
                     {tracks.length > 0 && <PlaylistDetails tracks={tracks}/>}
+                    {/* ジャンル円グラフの表示 */}
+                    {Object.keys(genreCounts).length > 0 && (
+                        <div className="mt-8">
+                            <h3 className="text-lg font-semibold mb-4">Genre Distribution:</h3>
+                            <GenreChart genreCounts={genreCounts}/>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
             <LoadingSpinner loading={isLoading}/> {/* ローディングアニメーションの表示 */}
