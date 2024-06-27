@@ -1,6 +1,6 @@
 "use client";
 
-import React, {useMemo} from "react";
+import React, {useMemo, useState} from "react";
 import {useTable, useSortBy, Column, Row, HeaderGroup} from "react-table";
 import {Track} from "@/app/types/track";
 import {
@@ -13,6 +13,7 @@ import {
 } from "@/app/components/ui/table";
 import {ArrowUpDown} from "lucide-react";
 import Image from "next/image";
+import AudioFeaturesChart from "./AudioFeaturesChart";
 
 interface PlaylistDetailsTableProps {
     tracks: Track[];
@@ -21,24 +22,20 @@ interface PlaylistDetailsTableProps {
 export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
                                                                               tracks,
                                                                           }) => {
+    const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
+    
     const columns = useMemo<Column<Track>[]>(
         () => [
             {
                 Header: "Album",
                 accessor: "album",
                 Cell: ({value}) => (
-                    <a href={value.externalUrls.externalUrls.spotify} target="_blank" rel="noopener noreferrer">
-                        <div className="w-16 h-16 relative">
-                            <Image
-                                src={value.images[2].url}
-                                alt={value.name}
-                                fill
-                                sizes="64px"
-                                style={{objectFit: "cover"}}
-                            />
-                        </div>
-                    </a>
-                
+                    <Image
+                        src={value.images[0].url}
+                        alt={value.name}
+                        width={50}
+                        height={50}
+                    />
                 ),
                 disableSortBy: true,
             },
@@ -49,11 +46,7 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
             {
                 Header: "Artist",
                 accessor: "artists",
-                Cell: ({value}) => (
-                    <a href={value[0].externalUrls.externalUrls.spotify} target="_blank" rel="noopener noreferrer">
-                        {value[0].name}
-                    </a>
-                ),
+                Cell: ({value}) => <span>{value[0].name}</span>,
             },
             {
                 Header: "Danceability",
@@ -272,63 +265,65 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
     );
     
     const handleRowClick = (row: Row<Track>) => {
-        console.log("Audio Features:", row.original.audioFeatures);
+        setSelectedTrack(row.original);
     };
     
     return (
-        <Table {...getTableProps()}>
-            <TableHeader>
-                    {headerGroups.map((headerGroup: HeaderGroup<Track>) => {
-                        const {key, ...restHeaderGroupProps} =
-                            headerGroup.getHeaderGroupProps();
-                        return (
-                            <TableRow key={key} {...restHeaderGroupProps}>
-                                {headerGroup.headers.map((column, index) => {
-                                    const {key, ...restColumnProps} = column.getHeaderProps(
-                                        (column as any).getSortByToggleProps()
-                                    );
-                                    return (
-                                        <TableHead
-                                            key={key}
-                                            {...restColumnProps}
-                                            className={
-                                                index === 0 ? "sticky left-0 z-10 bg-gray-dark" : ""
-                                            }
-                                        >
-                                            <div className="flex items-center">
+        <div className="flex flex-col">
+            <div className="w-full overflow-x-auto">
+                <Table {...getTableProps()}>
+                    <TableHeader>
+                        {headerGroups.map((headerGroup: HeaderGroup<Track>) => {
+                            const {key, ...restHeaderGroupProps} =
+                                headerGroup.getHeaderGroupProps();
+                            return (
+                                <TableRow key={key} {...restHeaderGroupProps}>
+                                    {headerGroup.headers.map((column, index) => {
+                                        const {key, ...restColumnProps} = column.getHeaderProps(
+                                            (column as any).getSortByToggleProps()
+                                        );
+                                        return (
+                                            <TableHead key={key} {...restColumnProps}>
                                                 {column.render("Header")}
                                                 {index !== 0 && <ArrowUpDown className="ml-2 h-4 w-4"/>}
-                                            </div>
-                                        </TableHead>
-                                    );
-                                })}
-                            </TableRow>
-                        );
-                    })}
-                </TableHeader>
-                <TableBody {...getTableBodyProps()}>
-                    {rows.map((row: Row<Track>) => {
-                        prepareRow(row);
-                        const {key, ...restRowProps} = row.getRowProps();
-                        return (
-                            <TableRow
-                                key={key}
-                                {...restRowProps}
-                                onClick={() => handleRowClick(row)}
-                                style={{cursor: 'pointer'}}
-                            >
-                                {row.cells.map((cell, index) => {
-                                    const {key, ...restCellProps} = cell.getCellProps();
-                                    return (
-                                        <TableCell key={key} {...restCellProps}>
-                                            {cell.render("Cell")}
-                                        </TableCell>
-                                    );
-                                })}
-                            </TableRow>
-                        );
-                    })}
-                </TableBody>
-            </Table>
-            );
+                                            </TableHead>
+                                        );
+                                    })}
+                                </TableRow>
+                            );
+                        })}
+                    </TableHeader>
+                    <TableBody {...getTableBodyProps()}>
+                        {rows.map((row: Row<Track>) => {
+                            prepareRow(row);
+                            const {key, ...restRowProps} = row.getRowProps();
+                            return (
+                                <TableRow
+                                    key={key}
+                                    {...restRowProps}
+                                    onClick={() => handleRowClick(row)}
+                                    style={{cursor: 'pointer'}}
+                                >
+                                    {row.cells.map((cell, index) => {
+                                        const {key, ...restCellProps} = cell.getCellProps();
+                                        return (
+                                            <TableCell key={key} {...restCellProps}>
+                                                {cell.render("Cell")}
+                                            </TableCell>
+                                        );
+                                    })}
+                                </TableRow>
+                            );
+                        })}
+                    </TableBody>
+                </Table>
+            </div>
+            {selectedTrack && (
+                <div className="mt-8 w-full max-w-2xl mx-auto">
+                    <h3 className="text-lg font-semibold mb-4">Audio Features: {selectedTrack.name}</h3>
+                    <AudioFeaturesChart track={selectedTrack}/>
+                </div>
+            )}
+        </div>
+    );
 };
