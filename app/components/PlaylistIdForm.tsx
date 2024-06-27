@@ -1,4 +1,3 @@
-// app/components/PlaylistIdForm.tsx
 "use client";
 import {useState} from "react";
 import {
@@ -18,6 +17,7 @@ export default function PlaylistIdForm() {
     const [playlistId, setPlaylistId] = useState("");
     const [tracks, setTracks] = useState<Track[]>([]);
     const [isLoading, setIsLoading] = useState(false); // ローディング状態
+    const [genreCounts, setGenreCounts] = useState<{ [genre: string]: number }>({}); // ジャンルごとの出現回数
     
     const extractPlaylistIdFromUrl = (url: string): string | null => {
         const regex = /\/playlist\/([^?]+)/;
@@ -75,6 +75,18 @@ export default function PlaylistIdForm() {
                 </CardContent>
             </Card>
             <LoadingSpinner loading={isLoading}/> {/* ローディングアニメーションの表示 */}
+            {Object.keys(genreCounts).length > 0 && (
+                <div className="mt-8">
+                    <h3 className="text-lg font-semibold mb-4">Genre Counts:</h3>
+                    <ul>
+                        {Object.entries(genreCounts).map(([genre, count]) => (
+                            <li key={genre}>
+                                {genre}: {count}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
         </>
     );
 }
