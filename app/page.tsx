@@ -1,7 +1,6 @@
 "use client";
 
 import {useState, useEffect} from "react";
-import {useSearchParams} from 'next/navigation';
 import PlaylistSearchForm from "./components/PlaylistSearchForm";
 import PlaylistTable from "./components/PlaylistTable";
 import {Playlist} from "@/app/types/playlist";
@@ -12,6 +11,7 @@ import FollowedPlaylists from "./components/FollowedPlaylists";
 import axios from 'axios'
 import {Track} from "@/app/types/track";
 import PlaylistDetails from '@/app/components/PlaylistDetails'
+import {Card, CardHeader, CardTitle, CardContent} from "./components/ui/card";
 
 export default function Home() {
     console.log("Home コンポーネントがレンダリングされました");
@@ -24,24 +24,6 @@ export default function Home() {
     const [selectedPlaylistTracks, setSelectedPlaylistTracks] = useState<Track[]>([]);
     const [showPlaylistDetails, setShowPlaylistDetails] = useState(false); // プレイリスト詳細の表示状態
     const [genreCounts, setGenreCounts] = useState<{ [genre: string]: number }>({});
-    
-    useSearchParams()
-    // useEffect(() => {
-    //     const intervalId = setInterval(async () => {
-    //         try {
-    //             console.log("セッションチェックを実行します");
-    //             const response = await axios.get('http://localhost:8080/api/session/check', {
-    //                 withCredentials: true
-    //             });
-    //             setSessionCheckResult(JSON.stringify(response.data, null, 2));
-    //         } catch (error) {
-    //             console.error('セッションチェックエラー:', error);
-    //             setSessionCheckResult('Error checking session');
-    //         }
-    //     }, 10000);
-    //
-    //     return () => clearInterval(intervalId);
-    // }, []);
     
     useEffect(() => {
         const checkSession = async () => {
@@ -96,34 +78,42 @@ export default function Home() {
     console.log("Home: JSX をレンダリングします");
     
     return (
-        <main className="flex flex-col items-center justify-center">
-            <h1 className="text-4xl font-bold mb-8 text-spotify-green">
-                Playlist Viewer
-            </h1>
-            <LoginButton onLoginSuccess={handleLoginSuccess}/>
-            <PlaylistSearchForm onSearch={handleSearch}/>
-            <PlaylistIdForm/>
-            
-            {error && (
-                <Alert variant="destructive">
-                    <AlertTitle>Error</AlertTitle>
-                    <AlertDescription>{error}</AlertDescription>
-                </Alert>
-            )}
-            
-            <div className="mt-8">
-                <pre>{sessionCheckResult}</pre>
-            </div>
-            
-            {/* プレイリスト詳細の表示状態によって表示を切り替える */}
-            {!showPlaylistDetails && playlists.length > 0 &&
-                <PlaylistTable playlists={playlists} onPlaylistClick={handlePlaylistClick}/>}
-            
-            {showPlaylistDetails && selectedPlaylistTracks.length > 0 && (
-                <PlaylistDetails tracks={selectedPlaylistTracks} genreCounts={genreCounts}/>
-            )}
-            
-            {isLoggedIn && <FollowedPlaylists/>}
+        <main className="flex flex-col items-center justify-center p-8">
+            <Card className="w-full max-w-4xl">
+                <CardHeader>
+                    <CardTitle className="text-4xl font-bold text-center text-spotify-green">
+                        Playlist Viewer
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-6">
+                        <LoginButton onLoginSuccess={handleLoginSuccess}/>
+                        <PlaylistSearchForm onSearch={handleSearch}/>
+                        <PlaylistIdForm/>
+                        
+                        {error && (
+                            <Alert variant="destructive">
+                                <AlertTitle>Error</AlertTitle>
+                                <AlertDescription>{error}</AlertDescription>
+                            </Alert>
+                        )}
+                        
+                        <div className="mt-4">
+                            <pre>{sessionCheckResult}</pre>
+                        </div>
+                        
+                        {!showPlaylistDetails && playlists.length > 0 && (
+                            <PlaylistTable playlists={playlists} onPlaylistClick={handlePlaylistClick}/>
+                        )}
+                        
+                        {showPlaylistDetails && selectedPlaylistTracks.length > 0 && (
+                            <PlaylistDetails tracks={selectedPlaylistTracks} genreCounts={genreCounts}/>
+                        )}
+                        
+                        {isLoggedIn && <FollowedPlaylists/>}
+                    </div>
+                </CardContent>
+            </Card>
         </main>
     );
 }
