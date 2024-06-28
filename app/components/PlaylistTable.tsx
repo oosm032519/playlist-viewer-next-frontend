@@ -1,4 +1,3 @@
-// C:\Users\IdeaProjects\playlist-viewer-next-frontend\app\components\PlaylistTable.tsx
 import {Playlist} from "@/app/types/playlist";
 import {
     Table,
@@ -11,22 +10,22 @@ import {
 
 interface PlaylistTableProps {
     playlists: Playlist[];
-    onPlaylistClick: (playlistId: string) => void; // 新しい props を追加
+    onPlaylistClick: (playlistId: string) => void;
 }
 
-export default function PlaylistTable({playlists, onPlaylistClick}: PlaylistTableProps) { // props を更新
+export default function PlaylistTable({playlists, onPlaylistClick}: PlaylistTableProps) {
     return (
         <Table>
             <TableHeader>
                 <TableRow>
                     <TableHead>Image</TableHead>
                     <TableHead>Name</TableHead>
+                    <TableHead>Tracks</TableHead> {/* 新しい列ヘッダーを追加 */}
                 </TableRow>
             </TableHeader>
             <TableBody>
                 {playlists.map((playlist) => (
                     <TableRow key={playlist.id} onClick={() => onPlaylistClick(playlist.id)}>
-                        {/* クリックイベントを追加 */}
                         <TableCell>
                             <img
                                 src={playlist.images[0]?.url}
@@ -37,6 +36,7 @@ export default function PlaylistTable({playlists, onPlaylistClick}: PlaylistTabl
                             />
                         </TableCell>
                         <TableCell>{playlist.name}</TableCell>
+                        <TableCell>{playlist.tracks.total}</TableCell> {/* トラック数を表示する新しいセルを追加 */}
                     </TableRow>
                 ))}
             </TableBody>
