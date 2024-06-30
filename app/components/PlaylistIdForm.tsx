@@ -1,4 +1,4 @@
-// C:\Users\IdeaProjects\playlist-viewer-next-frontend\app\components\PlaylistIdForm.tsx
+// app/components/PlaylistIdForm.tsx
 "use client";
 import {useState} from "react";
 import {
@@ -76,7 +76,8 @@ export default function PlaylistIdForm() {
                         </Button>
                     </form>
                     {tracks.length > 0 &&
-                        <PlaylistDetails tracks={tracks} genreCounts={genreCounts} recommendations={recommendations}/>}
+                        <PlaylistDetails tracks={tracks} genreCounts={genreCounts}
+                                         recommendations={recommendations}/>} {/* おすすめ楽曲を渡す */}
                 </CardContent>
             </Card>
             <LoadingSpinner loading={isLoading}/> {/* ローディングアニメーションの表示 */}

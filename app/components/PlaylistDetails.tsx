@@ -1,4 +1,4 @@
-// C:\Users\IdeaProjects\playlist-viewer-next-frontend\app\components\PlaylistDetails.tsx
+// app/components/PlaylistDetails.tsx
 "use client";
 
 import React from "react";
@@ -13,7 +13,7 @@ interface PlaylistDetailsProps {
     recommendations: Track[]; // 追加: おすすめ楽曲のprops
 }
 
-const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({tracks, genreCounts = {}, recommendations = []}) => {
+const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({tracks, genreCounts = {}, recommendations}) => { // recommendations を受け取る
     return (
         <>
             <PlaylistDetailsTable tracks={tracks}/>
@@ -29,7 +29,7 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({tracks, genreCounts = 
             {/* おすすめ楽曲を表示 */}
             <div className="mt-8">
                 <h3 className="text-lg font-semibold mb-4">Recommendations:</h3>
-                <RecommendationsTable tracks={recommendations}/> {/* おすすめ楽曲のテーブル */}
+                <RecommendationsTable tracks={recommendations}/>
             </div>
         </>
     );

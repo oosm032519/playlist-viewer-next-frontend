@@ -1,3 +1,4 @@
+// app/page.tsx
 "use client";
 
 import {useState, useEffect} from "react";
@@ -24,6 +25,8 @@ export default function Home() {
     const [selectedPlaylistTracks, setSelectedPlaylistTracks] = useState<Track[]>([]);
     const [showPlaylistDetails, setShowPlaylistDetails] = useState(false); // プレイリスト詳細の表示状態
     const [genreCounts, setGenreCounts] = useState<{ [genre: string]: number }>({});
+    const [recommendations, setRecommendations] = useState<Track[]>([]); // 追加: おすすめ楽曲の状態変数
+    
     
     useEffect(() => {
         const checkSession = async () => {
@@ -70,6 +73,7 @@ export default function Home() {
             })));
             setShowPlaylistDetails(true); // プレイリスト詳細を表示する
             setGenreCounts(response.data.genreCounts); // genreCounts を状態変数に設定
+            setRecommendations(response.data.recommendations); // recommendations を状態変数に設定
         } catch (error) {
             console.error("Error fetching playlist details:", error);
         }
@@ -107,7 +111,8 @@ export default function Home() {
                         )}
                         
                         {showPlaylistDetails && selectedPlaylistTracks.length > 0 && (
-                            <PlaylistDetails tracks={selectedPlaylistTracks} genreCounts={genreCounts}/>
+                            <PlaylistDetails tracks={selectedPlaylistTracks} genreCounts={genreCounts}
+                                             recommendations={recommendations}/> // recommendations を渡す
                         )}
                         
                         {isLoggedIn && <FollowedPlaylists/>}
