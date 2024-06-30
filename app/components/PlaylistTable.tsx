@@ -10,7 +10,7 @@ import {
 
 interface PlaylistTableProps {
     playlists: Playlist[];
-    onPlaylistClick: (playlistId: string) => void;
+    onPlaylistClick: (playlistId: string, playlistName: string) => void; // プレイリスト名も渡す
 }
 
 export default function PlaylistTable({playlists, onPlaylistClick}: PlaylistTableProps) {
@@ -25,8 +25,8 @@ export default function PlaylistTable({playlists, onPlaylistClick}: PlaylistTabl
             </TableHeader>
             <TableBody>
                 {playlists.map((playlist) => (
-                    <TableRow key={playlist.id} onClick={() => onPlaylistClick(playlist.id)}>
-                        <TableCell>
+                    <TableRow key={playlist.id} onClick={() => onPlaylistClick(playlist.id, playlist.name)}>
+                    <TableCell>
                             <img
                                 src={playlist.images[0]?.url}
                                 alt={playlist.name}

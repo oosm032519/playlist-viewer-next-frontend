@@ -26,7 +26,8 @@ export default function Home() {
     const [showPlaylistDetails, setShowPlaylistDetails] = useState(false); // プレイリスト詳細の表示状態
     const [genreCounts, setGenreCounts] = useState<{ [genre: string]: number }>({});
     const [recommendations, setRecommendations] = useState<Track[]>([]); // 追加: おすすめ楽曲の状態変数
-    
+    const [, setSelectedPlaylistId] = useState<string | null>(null); // 選択されたプレイリストID
+    const [selectedPlaylistName, setSelectedPlaylistName] = useState<string | null>(null); // 選択されたプレイリスト名
     
     useEffect(() => {
         const checkSession = async () => {
@@ -61,8 +62,10 @@ export default function Home() {
         console.log("isLoggedIn の状態を true に更新しました");
     };
     
-    const handlePlaylistClick = async (playlistId: string) => {
+    const handlePlaylistClick = async (playlistId: string, playlistName: string) => { // プレイリスト名を受け取る
         console.log("Playlist clicked:", playlistId);
+        setSelectedPlaylistId(playlistId); // 選択されたプレイリストIDを状態に保存
+        setSelectedPlaylistName(playlistName); // 選択されたプレイリスト名を状態に保存
         try {
             const response = await axios.get(`/api/playlists/${playlistId}`);
             console.log("Playlist details:", response.data);
@@ -111,8 +114,12 @@ export default function Home() {
                         )}
                         
                         {showPlaylistDetails && selectedPlaylistTracks.length > 0 && (
-                            <PlaylistDetails tracks={selectedPlaylistTracks} genreCounts={genreCounts}
-                                             recommendations={recommendations}/> // recommendations を渡す
+                            <PlaylistDetails
+                                tracks={selectedPlaylistTracks}
+                                genreCounts={genreCounts}
+                                recommendations={recommendations}
+                                playlistName={selectedPlaylistName} // プレイリスト名を渡す
+                            />
                         )}
                         
                         {isLoggedIn && <FollowedPlaylists/>}
