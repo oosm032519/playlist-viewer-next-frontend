@@ -1,5 +1,5 @@
 import React from 'react';
-import {PieChart, Pie, Cell, ResponsiveContainer, Tooltip} from 'recharts';
+import {PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend} from 'recharts'; // Legend をインポート
 import {TooltipProps} from 'recharts';
 import {NameType, ValueType} from 'recharts/types/component/DefaultTooltipContent';
 
@@ -35,13 +35,35 @@ const CustomTooltip: React.FC<TooltipProps<ValueType, NameType>> = ({active, pay
 
 const GenreChart: React.FC<GenreChartProps> = ({genreCounts}) => {
     const total = Object.values(genreCounts).reduce((sum, count) => sum + count, 0);
-    const data: GenreChartData[] = Object.entries(genreCounts).map(([name, value]) => ({
-        name,
-        value,
-        total
-    }));
     
-    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+    // ジャンルを出現頻度でソート
+    const sortedGenres = Object.entries(genreCounts).sort((a, b) => b[1] - a[1]);
+    
+    // 上位5ジャンルとその他を抽出
+    const topGenres = sortedGenres.slice(0, 9);
+    const otherGenres = sortedGenres.slice(9);
+    
+    // その他のジャンルの合計値を計算
+    const otherCount = otherGenres.reduce((sum, genre) => sum + genre[1], 0);
+    
+    // 円グラフのデータを作成
+    const data: GenreChartData[] = [
+        ...topGenres.map(([name, value]) => ({name, value, total})),
+        {name: "その他", value: otherCount, total}
+    ];
+    
+    const COLORS = [
+        '#FF8C9E', // より濃いピンク
+        '#7FD8A6', // より濃いグリーン
+        '#7FBFFF', // より濃いブルー
+        '#FFE066', // より濃いイエロー
+        '#FFAF7A', // より濃いオレンジ
+        '#C490D1', // より濃いパープル
+        '#66E0E0', // より濃いターコイズ
+        '#FF9EFF', // より濃いラベンダー
+        '#B8D86B', // より濃いライムグリーン
+        '#FF6B6B'  // より濃いローズ
+    ];
     
     return (
         <ResponsiveContainer width="100%" height={300}>
@@ -61,6 +83,7 @@ const GenreChart: React.FC<GenreChartProps> = ({genreCounts}) => {
                     ))}
                 </Pie>
                 <Tooltip content={<CustomTooltip/>}/>
+                <Legend/> {/* 凡例を追加 */}
             </PieChart>
         </ResponsiveContainer>
     );
