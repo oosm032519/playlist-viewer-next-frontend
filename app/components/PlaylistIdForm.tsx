@@ -1,3 +1,4 @@
+// C:\Users\IdeaProjects\playlist-viewer-next-frontend\app\components\PlaylistIdForm.tsx
 "use client";
 import {useState} from "react";
 import {
@@ -17,6 +18,7 @@ import GenreChart from "./GenreChart"
 export default function PlaylistIdForm() {
     const [playlistId, setPlaylistId] = useState("");
     const [tracks, setTracks] = useState<Track[]>([]);
+    const [recommendations, setRecommendations] = useState<Track[]>([]); // 追加: おすすめ楽曲の状態変数
     const [isLoading, setIsLoading] = useState(false); // ローディング状態
     const [genreCounts, setGenreCounts] = useState<{ [genre: string]: number }>({}); // ジャンルごとの出現回数
     
@@ -46,6 +48,7 @@ export default function PlaylistIdForm() {
                 audioFeatures: item.audioFeatures
             })));
             setGenreCounts(response.data.genreCounts); // genreCounts を状態変数に設定
+            setRecommendations(response.data.recommendations); // おすすめ楽曲を状態変数に設定
         } catch (error) {
             console.error("Error sending playlist ID:", error);
         } finally {
@@ -73,7 +76,8 @@ export default function PlaylistIdForm() {
                             Submit
                         </Button>
                     </form>
-                    {tracks.length > 0 && <PlaylistDetails tracks={tracks} genreCounts={{}}/>}
+                    {tracks.length > 0 &&
+                        <PlaylistDetails tracks={tracks} genreCounts={genreCounts} recommendations={recommendations}/>}
                     {/* ジャンル円グラフの表示 */}
                     {Object.keys(genreCounts).length > 0 && (
                         <div className="mt-8">

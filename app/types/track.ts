@@ -12,6 +12,7 @@ export interface TrackAlbum {
 }
 
 export interface Track {
+    id: Key | null | undefined;
     name: string;
     artists: TrackArtist[];
     album: TrackAlbum;
