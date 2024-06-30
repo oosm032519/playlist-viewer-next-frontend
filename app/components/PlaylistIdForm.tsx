@@ -13,7 +13,6 @@ import axios from "axios";
 import PlaylistDetails from "./PlaylistDetails";
 import {Track} from "@/app/types/track";
 import LoadingSpinner from "./LoadingSpinner";
-import GenreChart from "./GenreChart"
 
 export default function PlaylistIdForm() {
     const [playlistId, setPlaylistId] = useState("");
@@ -78,13 +77,6 @@ export default function PlaylistIdForm() {
                     </form>
                     {tracks.length > 0 &&
                         <PlaylistDetails tracks={tracks} genreCounts={genreCounts} recommendations={recommendations}/>}
-                    {/* ジャンル円グラフの表示 */}
-                    {Object.keys(genreCounts).length > 0 && (
-                        <div className="mt-8">
-                            <h3 className="text-lg font-semibold mb-4">Genre Distribution:</h3>
-                            <GenreChart genreCounts={genreCounts}/>
-                        </div>
-                    )}
                 </CardContent>
             </Card>
             <LoadingSpinner loading={isLoading}/> {/* ローディングアニメーションの表示 */}
