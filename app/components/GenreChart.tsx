@@ -1,5 +1,5 @@
 import React from 'react';
-import {PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, Text} from 'recharts'; // Legend をインポート
+import {PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, Text} from 'recharts';
 import {TooltipProps} from 'recharts';
 import {NameType, ValueType} from 'recharts/types/component/DefaultTooltipContent';
 
@@ -11,7 +11,7 @@ interface GenreChartData {
 
 interface GenreChartProps {
     genreCounts: { [genre: string]: number };
-    playlistName: string | null; // プレイリスト名を追加
+    playlistName: string | null;
 }
 
 const CustomTooltip: React.FC<TooltipProps<ValueType, NameType>> = ({active, payload}) => {
@@ -40,7 +40,7 @@ const GenreChart: React.FC<GenreChartProps> = ({genreCounts, playlistName}) => {
     // ジャンルを出現頻度でソート
     const sortedGenres = Object.entries(genreCounts).sort((a, b) => b[1] - a[1]);
     
-    // 上位5ジャンルとその他を抽出
+    // 上位ジャンルとその他を抽出
     const topGenres = sortedGenres.slice(0, 9);
     const otherGenres = sortedGenres.slice(9);
     
