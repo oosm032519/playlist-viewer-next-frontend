@@ -30,7 +30,7 @@ export default function PlaylistTable({playlists, onPlaylistClick}: PlaylistTabl
                             <img
                                 src={playlist.images[0]?.url}
                                 alt={playlist.name}
-                                className="w-12 h-12 rounded-full"
+                                className="w-12 h-12 object-cover rounded-full"
                                 width={48}
                                 height={48}
                             />

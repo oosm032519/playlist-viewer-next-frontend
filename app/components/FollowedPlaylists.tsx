@@ -67,7 +67,7 @@ const FollowedPlaylists: React.FC = () => {
                     <li key={playlist.id} className="bg-gray-100 p-4 rounded-lg shadow">
                         {playlist.images && playlist.images.length > 0 && (
                             <img src={playlist.images[0].url} alt={playlist.name}
-                                 className="w-full h-40 object-cover mb-2 rounded"/>
+                                 className="w-full h-40 object-cover mb-2 rounded-full"/>
                         )}
                         <h3 className="font-semibold">{playlist.name}</h3>
                         <p className="text-sm text-gray-600">トラック数: {playlist.tracks.total}</p>

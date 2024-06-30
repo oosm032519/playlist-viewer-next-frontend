@@ -64,7 +64,7 @@ export default function PlaylistSearch() {
                 Header: "Image",
                 accessor: "images",
                 Cell: ({value}: { value: { url: string }[] }) => (
-                    <img src={value[0]?.url} alt="Playlist" className="w-12 h-12 rounded-full"/>
+                    <img src={value[0]?.url} alt="Playlist" className="w-12 h-12 object-cover rounded-full"/>
                 ),
             },
             {

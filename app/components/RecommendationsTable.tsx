@@ -37,6 +37,7 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({track
                                     alt={track.album.name}
                                     width={50}
                                     height={50}
+                                    className="object-cover rounded-full"
                                 />
                             </TableCell>
                             <TableCell>{track.name}</TableCell>
