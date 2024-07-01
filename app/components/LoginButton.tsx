@@ -13,19 +13,22 @@ interface LoginButtonProps {
 const LoginButton: React.FC<LoginButtonProps> = ({onLoginSuccess}) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     
-    useEffect(() => {
-        const checkLoginStatus = async () => {
-            try {
-                const response = await axios.get('http://localhost:8080/api/session/check', {withCredentials: true});
-                console.log("Session check response:", response.data);
-                if (response.data.status === 'success') {
-                    setIsLoggedIn(true);
-                    onLoginSuccess();
-                }
-            } catch (error) {
-                console.error('セッションチェックエラー:', error);
+    // セッション状態をチェックする関数を定義
+    const checkLoginStatus = async () => {
+        try {
+            const response = await axios.get('http://localhost:8080/api/session/check', {withCredentials: true});
+            console.log("Session check response:", response.data);
+            if (response.data.status === 'success') {
+                setIsLoggedIn(true);
+                onLoginSuccess();
             }
-        };
+        } catch (error) {
+            console.error('セッションチェックエラー:', error);
+        }
+    };
+    
+    useEffect(() => {
+        // コンポーネントのマウント時にセッション状態をチェック
         checkLoginStatus();
     }, [onLoginSuccess]);
     
@@ -33,6 +36,7 @@ const LoginButton: React.FC<LoginButtonProps> = ({onLoginSuccess}) => {
         window.location.href = 'http://localhost:8080/oauth2/authorization/spotify';
     };
     
+    // ログアウト処理を行う関数を定義
     const handleLogout = async () => {
         try {
             await axios.post('http://localhost:8080/logout', {withCredentials: true});
