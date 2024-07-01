@@ -82,7 +82,7 @@ export default function PlaylistIdForm() {
                                 {playlistName}
                             </h2>}
                             <PlaylistDetails tracks={tracks} genreCounts={genreCounts}
-                                             recommendations={recommendations}/>
+                                             recommendations={recommendations} playlistName={playlistName}/>
                         </>
                     )}
                 </CardContent>
