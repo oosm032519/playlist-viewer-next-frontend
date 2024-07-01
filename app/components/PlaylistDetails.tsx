@@ -10,17 +10,13 @@ import {RecommendationsTable} from "@/app/components/RecommendationsTable";
 interface PlaylistDetailsProps {
     tracks: Track[];
     genreCounts: { [genre: string]: number };
-    recommendations: Track[]; // 追加: おすすめ楽曲のprops
-    playlistName: string | null; // プレイリスト名
+    recommendations: Track[];
+    playlistName: string | null;
 }
 
 const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({tracks, genreCounts = {}, recommendations, playlistName}) => {
     return (
         <>
-            {playlistName && (
-                <h2 className="text-2xl font-bold text-center mt-4">{playlistName}</h2>
-            )}
-            
             <PlaylistDetailsTable tracks={tracks}/>
             
             {/* genreCounts が undefined や null でない場合に GenreChart を表示 */}
