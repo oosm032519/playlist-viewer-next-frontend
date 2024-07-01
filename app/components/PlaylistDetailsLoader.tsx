@@ -12,23 +12,29 @@ interface PlaylistDetailsLoaderProps {
 }
 
 const PlaylistDetailsLoader: React.FC<PlaylistDetailsLoaderProps> = ({playlistId}) => {
-    const [tracks, setTracks] = useState<Track[]>([]);
-    const [genreCounts, setGenreCounts] = useState<{ [genre: string]: number }>({});
-    const [recommendations, setRecommendations] = useState<Track[]>([]);
-    const [playlistName, setPlaylistName] = useState<string | null>(null);
+    const [playlistData, setPlaylistData] = useState<{
+        tracks: Track[];
+        genreCounts: { [genre: string]: number };
+        recommendations: Track[];
+        playlistName: string | null;
+    } | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     
     useEffect(() => {
         const fetchPlaylistDetails = async () => {
+            setIsLoading(true);
             try {
                 const response = await axios.get(`/api/playlists/${playlistId}`);
-                setTracks(response.data.tracks.items.map((item: any) => ({
+                const tracks = response.data.tracks.items.map((item: any) => ({
                     ...item.track,
                     audioFeatures: item.audioFeatures
-                })));
-                setGenreCounts(response.data.genreCounts);
-                setRecommendations(response.data.recommendations);
-                setPlaylistName(response.data.playlistName);
+                }));
+                setPlaylistData({
+                    tracks: tracks,
+                    genreCounts: response.data.genreCounts,
+                    recommendations: response.data.recommendations,
+                    playlistName: response.data.playlistName,
+                });
             } catch (error) {
                 console.error("Error fetching playlist details:", error);
             } finally {
@@ -43,12 +49,16 @@ const PlaylistDetailsLoader: React.FC<PlaylistDetailsLoaderProps> = ({playlistId
         return <LoadingSpinner loading={isLoading}/>;
     }
     
+    if (!playlistData) {
+        return <div>プレイリストが見つかりませんでした。</div>;
+    }
+    
     return (
         <PlaylistDetails
-            tracks={tracks}
-            genreCounts={genreCounts}
-            recommendations={recommendations}
-            playlistName={playlistName}
+            tracks={playlistData.tracks}
+            genreCounts={playlistData.genreCounts}
+            recommendations={playlistData.recommendations}
+            playlistName={playlistData.playlistName}
         />
     );
 };
