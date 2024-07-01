@@ -2,15 +2,38 @@
 "use client";
 
 import {useState, useEffect} from "react";
+import {
+    Card,
+    CardHeader,
+    CardTitle,
+    CardContent,
+} from "./components/ui/card";
+import {
+    Alert,
+    AlertDescription,
+    AlertTitle,
+} from "./components/ui/alert";
 import PlaylistSearchForm from "./components/PlaylistSearchForm";
-import PlaylistTable from "./components/PlaylistTable";
-import {Playlist} from "@/app/types/playlist";
-import {Alert, AlertDescription, AlertTitle} from "./components/ui/alert";
 import PlaylistIdForm from "./components/PlaylistIdForm";
 import LoginButton from "./components/LoginButton";
 import FollowedPlaylists from "./components/FollowedPlaylists";
-import {Card, CardHeader, CardTitle, CardContent} from "./components/ui/card";
+import PlaylistTable from "./components/PlaylistTable";
 import PlaylistDetailsLoader from "./components/PlaylistDetailsLoader";
+import {Playlist} from "@/app/types/playlist";
+
+// セッションチェック処理を関数として抽出
+const checkSession = async () => {
+    try {
+        const response = await fetch('http://localhost:8080/api/session/check', {
+            credentials: 'include'
+        });
+        const data = await response.json();
+        return data.status === 'success';
+    } catch (error) {
+        console.error('セッションチェックエラー:', error);
+        return false;
+    }
+};
 
 export default function Home() {
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
@@ -19,21 +42,11 @@ export default function Home() {
     const [selectedPlaylistId, setSelectedPlaylistId] = useState<string | null>(null);
     
     useEffect(() => {
-        const checkSession = async () => {
-            try {
-                const response = await fetch('http://localhost:8080/api/session/check', {
-                    credentials: 'include'
-                });
-                const data = await response.json();
-                if (data.status === 'success') {
-                    setIsLoggedIn(true);
-                }
-            } catch (error) {
-                console.error('セッションチェックエラー:', error);
-            }
+        // 関数として抽出したセッションチェック処理を実行
+        const initializeSession = async () => {
+            setIsLoggedIn(await checkSession());
         };
-        
-        checkSession();
+        initializeSession();
     }, []);
     
     const handleSearch = (playlists: Playlist[]) => {
@@ -71,7 +84,8 @@ export default function Home() {
                             </Alert>
                         )}
                         
-                        {!selectedPlaylistId && playlists.length > 0 && (
+                        {/* 条件式を整理 */}
+                        {playlists.length > 0 && !selectedPlaylistId && (
                             <PlaylistTable playlists={playlists} onPlaylistClick={handlePlaylistClick}/>
                         )}
                         

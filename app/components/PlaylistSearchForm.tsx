@@ -1,5 +1,3 @@
-// app/components/PlaylistSearchForm.tsx
-
 "use client";
 
 import {useState} from "react";
@@ -22,7 +20,7 @@ import {
     CardContent,
 } from "@/app/components/ui/card";
 import LoadingSpinner from "./LoadingSpinner";
-import {Playlist} from "@/app/types/playlist"; // Playlist型をインポート
+import {Playlist} from "@/app/types/playlist";
 
 interface SearchFormInputs {
     query: string;
@@ -38,23 +36,23 @@ const schema = yup
     .required();
 
 interface PlaylistSearchFormProps {
-    onSearch(playlists: Playlist[]): void; // 型定義をPlaylist[]に変更
+    onSearch(playlists: Playlist[]): void;
 }
 
 export default function PlaylistSearchForm({onSearch}: PlaylistSearchFormProps) {
     const [isLoading, setIsLoading] = useState(false);
     const form = useForm<SearchFormInputs>({
         resolver: yupResolver(schema),
+        defaultValues: {query: ""}, // 初期値を設定
     });
     
-    // API リクエストを送信する処理を関数として抽出
     const searchPlaylists = async (query: string) => {
         try {
-            const response = await axios.get<Playlist[]>(`/api/playlists/search?query=${query}`); // 型引数を指定
+            const response = await axios.get<Playlist[]>(`/api/playlists/search?query=${query}`);
             return response.data;
         } catch (error: any) {
             console.error("プレイリスト検索中にエラーが発生しました:", error);
-            throw error; // エラーを再スローして呼び出し元に伝える
+            throw error;
         }
     };
     
@@ -64,10 +62,10 @@ export default function PlaylistSearchForm({onSearch}: PlaylistSearchFormProps) 
             const playlists = await searchPlaylists(data.query);
             onSearch(playlists);
         } catch (error) {
-            // エラー処理はsearchPlaylists関数に集約
+            // エラー処理
         } finally {
             setIsLoading(false);
-            form.reset();
+            // form.reset() を削除
         }
     };
     
