@@ -10,36 +10,39 @@ import {
 
 interface PlaylistTableProps {
     playlists: Playlist[];
-    onPlaylistClick: (playlistId: string, playlistName: string) => void; // プレイリスト名も渡す
+    onPlaylistClick: (playlistId: string) => void; // プロパティとして追加
 }
 
 export default function PlaylistTable({playlists, onPlaylistClick}: PlaylistTableProps) {
+    
     return (
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead>Image</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Tracks</TableHead> {/* 新しい列ヘッダーを追加 */}
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {playlists.map((playlist) => (
-                    <TableRow key={playlist.id} onClick={() => onPlaylistClick(playlist.id, playlist.name)}>
-                    <TableCell>
-                            <img
-                                src={playlist.images[0]?.url}
-                                alt={playlist.name}
-                                className="w-12 h-12 object-cover rounded-full"
-                                width={48}
-                                height={48}
-                            />
-                        </TableCell>
-                        <TableCell>{playlist.name}</TableCell>
-                        <TableCell>{playlist.tracks.total}</TableCell> {/* トラック数を表示する新しいセルを追加 */}
+        <div>
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>Image</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Tracks</TableHead>
                     </TableRow>
-                ))}
-            </TableBody>
-        </Table>
+                </TableHeader>
+                <TableBody>
+                    {playlists.map((playlist) => (
+                        <TableRow key={playlist.id} onClick={() => onPlaylistClick(playlist.id)}>
+                        <TableCell>
+                                <img
+                                    src={playlist.images[0]?.url}
+                                    alt={playlist.name}
+                                    className="w-12 h-12 object-cover rounded-full"
+                                    width={48}
+                                    height={48}
+                                />
+                            </TableCell>
+                            <TableCell>{playlist.name}</TableCell>
+                            <TableCell>{playlist.tracks.total}</TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </div>
     );
 }
