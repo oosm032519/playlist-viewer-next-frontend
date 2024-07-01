@@ -22,8 +22,8 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({track
     const [isPlaying, setIsPlaying] = useState<boolean>(false);
     const [currentTrackId, setCurrentTrackId] = useState<string | null>(null);
     
-    const handlePlay = (url: string, trackId: string) => {
-        if (audioRef.current) {
+    const handlePlay = (url: string | undefined, trackId: string) => {
+        if (url && audioRef.current) { // urlがundefinedでないことを確認
             if (currentTrackId === trackId && isPlaying) {
                 audioRef.current.pause();
                 setIsPlaying(false);
