@@ -104,8 +104,8 @@ export default function Home() {
                             <PlaylistTable playlists={playlists} onPlaylistClick={handlePlaylistClick}/>
                         )}
                         
-                        {selectedPlaylistId && (
-                            <PlaylistDetailsLoader playlistId={selectedPlaylistId} userId={userId}/> // userId を渡す
+                        {selectedPlaylistId && userId && (
+                            <PlaylistDetailsLoader playlistId={selectedPlaylistId} userId={userId}/>
                         )}
                         
                         {isLoggedIn && <FollowedPlaylists onPlaylistClick={handlePlaylistClick}/>}
