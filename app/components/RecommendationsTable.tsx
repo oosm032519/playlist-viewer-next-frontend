@@ -12,6 +12,7 @@ import {
     TableRow,
 } from "@/app/components/ui/table";
 import Image from "next/image";
+import {Button} from "@/app/components/ui/button";
 
 interface RecommendationsTableProps {
     tracks: Track[];
@@ -26,6 +27,7 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({track
                         <TableHead>Album</TableHead>
                         <TableHead>Title</TableHead>
                         <TableHead>Artist</TableHead>
+                        <TableHead>Actions</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -42,6 +44,16 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({track
                             </TableCell>
                             <TableCell>{track.name}</TableCell>
                             <TableCell>{track.artists[0].name}</TableCell>
+                            <TableCell>
+                                {/* preview_urlが存在する場合のみボタンを表示 */}
+                                {track.previewUrl && (
+                                    <Button asChild>
+                                        <a href={track.previewUrl} target="_blank" rel="noopener noreferrer">
+                                            試聴する
+                                        </a>
+                                    </Button>
+                                )}
+                            </TableCell>
                         </TableRow>
                     ))}
                 </TableBody>

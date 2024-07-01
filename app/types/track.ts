@@ -12,6 +12,8 @@ export interface TrackAlbum {
 }
 
 export interface Track {
+    previewUrl: string | undefined;
+    preview_url: string | undefined;
     id: Key | null | undefined;
     name: string;
     artists: TrackArtist[];
