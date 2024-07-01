@@ -1,7 +1,6 @@
-// C:\Users\IdeaProjects\playlist-viewer-next-frontend\app\components\RecommendationsTable.tsx
 "use client";
 
-import React from "react";
+import React, {useRef, useState} from "react";
 import {Track} from "@/app/types/track";
 import {
     Table,
@@ -19,6 +18,24 @@ interface RecommendationsTableProps {
 }
 
 export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({tracks}) => {
+    const audioRef = useRef<HTMLAudioElement>(null);
+    const [isPlaying, setIsPlaying] = useState<boolean>(false);
+    const [currentTrackId, setCurrentTrackId] = useState<string | null>(null);
+    
+    const handlePlay = (url: string, trackId: string) => {
+        if (audioRef.current) {
+            if (currentTrackId === trackId && isPlaying) {
+                audioRef.current.pause();
+                setIsPlaying(false);
+            } else {
+                audioRef.current.src = url;
+                audioRef.current.play();
+                setIsPlaying(true);
+                setCurrentTrackId(trackId);
+            }
+        }
+    };
+    
     return (
         <div className="w-full overflow-x-auto">
             <Table>
@@ -47,10 +64,8 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({track
                             <TableCell>
                                 {/* preview_urlが存在する場合のみボタンを表示 */}
                                 {track.previewUrl && (
-                                    <Button asChild>
-                                        <a href={track.previewUrl} target="_blank" rel="noopener noreferrer">
-                                            試聴する
-                                        </a>
+                                    <Button onClick={() => handlePlay(track.previewUrl, track.id)}>
+                                        {isPlaying && currentTrackId === track.id ? "停止" : "試聴する"}
                                     </Button>
                                 )}
                             </TableCell>
@@ -58,6 +73,7 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({track
                     ))}
                 </TableBody>
             </Table>
+            <audio ref={audioRef}/>
         </div>
     );
 };
