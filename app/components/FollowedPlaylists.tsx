@@ -7,51 +7,49 @@ import {Alert, AlertDescription, AlertTitle} from "./ui/alert";
 import LoadingSpinner from "./LoadingSpinner";
 
 interface FollowedPlaylistsProps {
-    onPlaylistClick: (playlistId: string) => void; // プロパティとして追加
+    onPlaylistClick: (playlistId: string) => void;
 }
 
+// プレイリストデータを取得する処理をfetchFollowedPlaylists関数として抽出
+const fetchFollowedPlaylists = async () => {
+    try {
+        const response = await fetch('/api/playlists/followed', {
+            credentials: 'include'
+        });
+        
+        if (!response.ok) {
+            throw new Error('API request failed');
+        }
+        return await response.json();
+    } catch (err) {
+        console.error("FollowedPlaylists: エラーが発生しました", err);
+        throw new Error('フォロー中のプレイリストの取得中にエラーが発生しました。');
+    }
+};
+
 const FollowedPlaylists: React.FC<FollowedPlaylistsProps> = ({onPlaylistClick}) => {
-    console.log("FollowedPlaylists コンポーネントがレンダリングされました");
-    
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     
     useEffect(() => {
-        console.log("FollowedPlaylists: useEffect が実行されました");
-        const fetchFollowedPlaylists = async () => {
-            console.log("FollowedPlaylists: フォロー中のプレイリストの取得を開始します");
-            try {
-                const response = await fetch('/api/playlists/followed', {
-                    credentials: 'include'
-                });
-                
-                if (!response.ok) {
-                    throw new Error('API request failed');
-                }
-                const data = await response.json();
-                console.log("FollowedPlaylists: API レスポンス:", data);
+        // fetchFollowedPlaylists関数を呼び出し、結果を処理
+        fetchFollowedPlaylists()
+            .then(data => {
                 setPlaylists(data);
+            })
+            .catch(error => {
+                setError(error.message);
+            })
+            .finally(() => {
                 setLoading(false);
-                console.log("FollowedPlaylists: プレイリストの状態を更新し、ローディングを false に設定しました");
-            } catch (err) {
-                console.error("FollowedPlaylists: エラーが発生しました", err);
-                setError('フォロー中のプレイリストの取得中にエラーが発生しました。');
-                setLoading(false);
-            }
-        };
-        
-        fetchFollowedPlaylists();
+            });
     }, []);
     
-    console.log("FollowedPlaylists: 現在の状態", {playlists, loading, error});
-    
     if (loading) {
-        console.log("FollowedPlaylists: ローディング中");
         return <LoadingSpinner loading={loading}/>;
     }
     if (error) {
-        console.log("FollowedPlaylists: エラー状態");
         return (
             <Alert variant="destructive">
                 <AlertTitle>Error</AlertTitle>
@@ -59,8 +57,6 @@ const FollowedPlaylists: React.FC<FollowedPlaylistsProps> = ({onPlaylistClick}) 
             </Alert>
         );
     }
-    
-    console.log("FollowedPlaylists: プレイリスト一覧をレンダリングします");
     
     return (
         <div className="mt-8">
