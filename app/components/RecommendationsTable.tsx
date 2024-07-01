@@ -22,13 +22,20 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({track
     const [isPlaying, setIsPlaying] = useState<boolean>(false);
     const [currentTrackId, setCurrentTrackId] = useState<string | null>(null);
     
-    const handlePlay = (url: string | undefined, trackId: string) => {
-        if (url && audioRef.current) { // urlがundefinedでないことを確認
+    /**
+     * 指定されたトラックの再生/停止を制御します。
+     * @param trackId トラックID
+     */
+    const handlePlayTrack = (trackId: string) => {
+        const track = tracks.find(t => t.id === trackId);
+        if (track && audioRef.current) {
             if (currentTrackId === trackId && isPlaying) {
+                // 同じトラックを再生中で、再生中の場合は停止する
                 audioRef.current.pause();
                 setIsPlaying(false);
             } else {
-                audioRef.current.src = url;
+                // 別のトラックを再生する場合は、現在のトラックを設定して再生する
+                audioRef.current.src = track.previewUrl || ''; // previewUrlがない場合は空文字列を設定
                 audioRef.current.play();
                 setIsPlaying(true);
                 setCurrentTrackId(trackId);
@@ -64,7 +71,7 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({track
                             <TableCell>
                                 {/* preview_urlが存在する場合のみボタンを表示 */}
                                 {track.previewUrl && (
-                                    <Button onClick={() => handlePlay(track.previewUrl, track.id)}>
+                                    <Button onClick={() => handlePlayTrack(track.id)}>
                                         {isPlaying && currentTrackId === track.id ? "停止" : "試聴する"}
                                     </Button>
                                 )}
