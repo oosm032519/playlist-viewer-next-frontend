@@ -17,8 +17,10 @@ const PlaylistDetailsLoader: React.FC<PlaylistDetailsLoaderProps> = ({playlistId
         genreCounts: { [genre: string]: number };
         recommendations: Track[];
         playlistName: string | null;
+        ownerId: string | null;
     } | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [userId, setUserId] = useState<string | null>(null);
     
     useEffect(() => {
         const fetchPlaylistDetails = async () => {
@@ -34,6 +36,7 @@ const PlaylistDetailsLoader: React.FC<PlaylistDetailsLoaderProps> = ({playlistId
                     genreCounts: response.data.genreCounts,
                     recommendations: response.data.recommendations,
                     playlistName: response.data.playlistName,
+                    ownerId: response.data.ownerId,
                 });
             } catch (error) {
                 console.error("Error fetching playlist details:", error);
@@ -42,7 +45,19 @@ const PlaylistDetailsLoader: React.FC<PlaylistDetailsLoaderProps> = ({playlistId
             }
         };
         
+        const fetchUserId = async () => {
+            try {
+                const response = await axios.get('http://localhost:8080/api/session/check', {withCredentials: true});
+                if (response.data.status === 'success') {
+                    setUserId(response.data.userId);
+                }
+            } catch (error) {
+                console.error('セッションチェックエラー:', error);
+            }
+        };
+        
         fetchPlaylistDetails();
+        fetchUserId();
     }, [playlistId]);
     
     if (isLoading) {
@@ -59,6 +74,8 @@ const PlaylistDetailsLoader: React.FC<PlaylistDetailsLoaderProps> = ({playlistId
             genreCounts={playlistData.genreCounts}
             recommendations={playlistData.recommendations}
             playlistName={playlistData.playlistName}
+            ownerId={playlistData.ownerId}
+            userId={userId} // userId を PlaylistDetails に渡す
         />
     );
 };
