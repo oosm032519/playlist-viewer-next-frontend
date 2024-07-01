@@ -12,19 +12,18 @@ import {Input} from "./ui/input";
 import LoadingSpinner from "./LoadingSpinner";
 
 interface PlaylistIdFormProps {
-    onPlaylistSelect: (playlistId: string) => void; // プロパティとして追加
+    onPlaylistSelect: (playlistId: string) => void;
+}
+
+const extractPlaylistIdFromUrl = (url: string): string | null => {
+    const regex = /\/playlist\/([^?]+)/;
+    const match = url.match(regex);
+    return match ? match[1] : null;
 }
 
 export default ({onPlaylistSelect}: PlaylistIdFormProps) => {
     const [playlistId, setPlaylistId] = useState("");
-    const [extractedPlaylistId, setExtractedPlaylistId] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
-    
-    const extractPlaylistIdFromUrl = (url: string): string | null => {
-        const regex = /\/playlist\/([^?]+)/;
-        const match = url.match(regex);
-        return match ? match[1] : null;
-    }
     
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
@@ -39,10 +38,8 @@ export default ({onPlaylistSelect}: PlaylistIdFormProps) => {
         
         setIsLoading(true);
         
-        // API リクエスト後に extractedPlaylistId を更新
         try {
-            setExtractedPlaylistId(extractedId);
-            onPlaylistSelect(extractedId); // Home コンポーネントの関数を呼び出す
+            onPlaylistSelect(extractedId);
         } catch (error) {
             console.error("Error sending playlist ID:", error);
         } finally {
