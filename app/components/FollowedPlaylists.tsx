@@ -4,14 +4,22 @@
 import React, {useState, useEffect} from 'react';
 import {Playlist} from '@/app/types/playlist';
 import {Alert, AlertDescription, AlertTitle} from "./ui/alert";
-import LoadingSpinner from "./LoadingSpinner"; // 導入
+import LoadingSpinner from "./LoadingSpinner";
+import axios from 'axios';
+import {Track} from "@/app/types/track";
+import PlaylistDetails from "@/app/components/PlaylistDetails";
 
 const FollowedPlaylists: React.FC = () => {
     console.log("FollowedPlaylists コンポーネントがレンダリングされました");
     
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
-    const [loading, setLoading] = useState(true); // ローディング状態
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [selectedPlaylistTracks, setSelectedPlaylistTracks] = useState<Track[]>([]);
+    const [showPlaylistDetails, setShowPlaylistDetails] = useState(false);
+    const [genreCounts, setGenreCounts] = useState<{ [genre: string]: number }>({});
+    const [recommendations, setRecommendations] = useState<Track[]>([]);
+    const [selectedPlaylistName, setSelectedPlaylistName] = useState<string | null>(null);
     
     useEffect(() => {
         console.log("FollowedPlaylists: useEffect が実行されました");
@@ -40,12 +48,30 @@ const FollowedPlaylists: React.FC = () => {
         fetchFollowedPlaylists();
     }, []);
     
-    // 以下のコードは変更なし
+    const handlePlaylistClick = async (playlistId: string, playlistName: string) => {
+        console.log("Playlist clicked:", playlistId);
+        setSelectedPlaylistName(playlistName);
+        try {
+            const response = await axios.get(`/api/playlists/${playlistId}`);
+            console.log("Playlist details:", response.data);
+            
+            setSelectedPlaylistTracks(response.data.tracks.items.map((item: any) => ({
+                ...item.track,
+                audioFeatures: item.audioFeatures
+            })));
+            setShowPlaylistDetails(true);
+            setGenreCounts(response.data.genreCounts);
+            setRecommendations(response.data.recommendations);
+        } catch (error) {
+            console.error("Error fetching playlist details:", error);
+        }
+    };
+    
     console.log("FollowedPlaylists: 現在の状態", {playlists, loading, error});
     
     if (loading) {
         console.log("FollowedPlaylists: ローディング中");
-        return <LoadingSpinner loading={loading}/>; // ローディングアニメーションを表示
+        return <LoadingSpinner loading={loading}/>;
     }
     if (error) {
         console.log("FollowedPlaylists: エラー状態");
@@ -64,7 +90,8 @@ const FollowedPlaylists: React.FC = () => {
             <h2 className="text-2xl font-bold mb-4">フォロー中のプレイリスト</h2>
             <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {playlists.map((playlist) => (
-                    <li key={playlist.id} className="bg-gray-100 p-4 rounded-lg shadow">
+                    <li key={playlist.id} className="bg-gray-100 p-4 rounded-lg shadow cursor-pointer"
+                        onClick={() => handlePlaylistClick(playlist.id, playlist.name)}>
                         {playlist.images && playlist.images.length > 0 && (
                             <img src={playlist.images[0].url} alt={playlist.name}
                                  className="w-full h-40 object-cover mb-2 rounded-full"/>
@@ -74,6 +101,17 @@ const FollowedPlaylists: React.FC = () => {
                     </li>
                 ))}
             </ul>
+            
+            {showPlaylistDetails && (
+                <div className="mt-8">
+                    <PlaylistDetails
+                        tracks={selectedPlaylistTracks}
+                        genreCounts={genreCounts}
+                        recommendations={recommendations}
+                        playlistName={selectedPlaylistName}
+                    />
+                </div>
+            )}
         </div>
     );
 };

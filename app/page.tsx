@@ -23,11 +23,11 @@ export default function Home() {
     const [, setUserId] = useState<string | null>(null);
     const [sessionCheckResult] = useState('');
     const [selectedPlaylistTracks, setSelectedPlaylistTracks] = useState<Track[]>([]);
-    const [showPlaylistDetails, setShowPlaylistDetails] = useState(false); // プレイリスト詳細の表示状態
+    const [showPlaylistDetails, setShowPlaylistDetails] = useState(false);
     const [genreCounts, setGenreCounts] = useState<{ [genre: string]: number }>({});
-    const [recommendations, setRecommendations] = useState<Track[]>([]); // 追加: おすすめ楽曲の状態変数
-    const [, setSelectedPlaylistId] = useState<string | null>(null); // 選択されたプレイリストID
-    const [selectedPlaylistName, setSelectedPlaylistName] = useState<string | null>(null); // 選択されたプレイリスト名
+    const [recommendations, setRecommendations] = useState<Track[]>([]);
+    const [, setSelectedPlaylistId] = useState<string | null>(null);
+    const [selectedPlaylistName, setSelectedPlaylistName] = useState<string | null>(null);
     
     useEffect(() => {
         const checkSession = async () => {
@@ -53,7 +53,7 @@ export default function Home() {
         console.log("playlists の状態を更新しました");
         setError(null);
         console.log("error の状態をクリアしました");
-        setShowPlaylistDetails(false); // プレイリスト検索時は詳細を非表示にする
+        setShowPlaylistDetails(false);
     };
     
     const handleLoginSuccess = () => {
@@ -62,10 +62,10 @@ export default function Home() {
         console.log("isLoggedIn の状態を true に更新しました");
     };
     
-    const handlePlaylistClick = async (playlistId: string, playlistName: string) => { // プレイリスト名を受け取る
+    const handlePlaylistClick = async (playlistId: string, playlistName: string) => {
         console.log("Playlist clicked:", playlistId);
-        setSelectedPlaylistId(playlistId); // 選択されたプレイリストIDを状態に保存
-        setSelectedPlaylistName(playlistName); // 選択されたプレイリスト名を状態に保存
+        setSelectedPlaylistId(playlistId);
+        setSelectedPlaylistName(playlistName);
         try {
             const response = await axios.get(`/api/playlists/${playlistId}`);
             console.log("Playlist details:", response.data);
@@ -74,9 +74,9 @@ export default function Home() {
                 ...item.track,
                 audioFeatures: item.audioFeatures
             })));
-            setShowPlaylistDetails(true); // プレイリスト詳細を表示する
-            setGenreCounts(response.data.genreCounts); // genreCounts を状態変数に設定
-            setRecommendations(response.data.recommendations); // recommendations を状態変数に設定
+            setShowPlaylistDetails(true);
+            setGenreCounts(response.data.genreCounts);
+            setRecommendations(response.data.recommendations);
         } catch (error) {
             console.error("Error fetching playlist details:", error);
         }
@@ -118,7 +118,7 @@ export default function Home() {
                                 tracks={selectedPlaylistTracks}
                                 genreCounts={genreCounts}
                                 recommendations={recommendations}
-                                playlistName={selectedPlaylistName} // プレイリスト名を渡す
+                                playlistName={selectedPlaylistName}
                             />
                         )}
                         
