@@ -98,8 +98,12 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
             {
                 Header: "Mode",
                 accessor: (row: Track) => row.audioFeatures?.mode,
-                Cell: ({value}: { value: number | undefined }) =>
-                    value !== undefined ? (value === 1 ? "MAJOR" : "MINOR") : "-",
+                sortType: (a: { original: { audioFeatures: { mode: string; }; }; }, b: { original: { audioFeatures: { mode: string; }; }; }) => {
+                    const modeA = a.original.audioFeatures?.mode ?? ""; // デフォルト値として空文字列を使用
+                    const modeB = b.original.audioFeatures?.mode ?? "";
+                    return modeA.localeCompare(modeB); // 文字列比較を使用
+                },
+                Cell: ({value}: { value: string | undefined }) => value ?? "-", // セルの表示を簡略化
             },
             {
                 Header: "Speechiness",
