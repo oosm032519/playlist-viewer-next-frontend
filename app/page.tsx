@@ -78,7 +78,7 @@ export default function Home() {
                     <div className="space-y-6">
                         <LoginButton onLoginSuccess={handleLoginSuccess}/>
                         <PlaylistSearchForm onSearch={handleSearch}/>
-                        <PlaylistIdForm/>
+                        <PlaylistIdForm onPlaylistSelect={handlePlaylistClick}/>
                         
                         {error && (
                             <Alert variant="destructive">

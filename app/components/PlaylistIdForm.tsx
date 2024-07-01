@@ -11,7 +11,11 @@ import {Button} from "./ui/button";
 import {Input} from "./ui/input";
 import LoadingSpinner from "./LoadingSpinner";
 
-export default function PlaylistIdForm() {
+interface PlaylistIdFormProps {
+    onPlaylistSelect: (playlistId: string) => void; // プロパティとして追加
+}
+
+export default ({onPlaylistSelect}: PlaylistIdFormProps) => {
     const [playlistId, setPlaylistId] = useState("");
     const [extractedPlaylistId, setExtractedPlaylistId] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -24,6 +28,7 @@ export default function PlaylistIdForm() {
     
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
+        
         const extractedId = extractPlaylistIdFromUrl(playlistId);
         console.log("Extracted Playlist ID:", extractedId);
         
@@ -31,9 +36,18 @@ export default function PlaylistIdForm() {
             console.error("Invalid Playlist URL:", playlistId);
             return;
         }
+        
         setIsLoading(true);
-        setExtractedPlaylistId(extractedId);
-        setIsLoading(false);
+        
+        // API リクエスト後に extractedPlaylistId を更新
+        try {
+            setExtractedPlaylistId(extractedId);
+            onPlaylistSelect(extractedId); // Home コンポーネントの関数を呼び出す
+        } catch (error) {
+            console.error("Error sending playlist ID:", error);
+        } finally {
+            setIsLoading(false);
+        }
     };
     
     return (
