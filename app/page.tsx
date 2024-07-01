@@ -40,14 +40,29 @@ export default function Home() {
     const [error, setError] = useState<string | null>(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [selectedPlaylistId, setSelectedPlaylistId] = useState<string | null>(null);
+    const [userId, setUserId] = useState<string | null>(null); // userId を状態として保持
     
     useEffect(() => {
-        // 関数として抽出したセッションチェック処理を実行
         const initializeSession = async () => {
             setIsLoggedIn(await checkSession());
+            
+            // セッションチェックが成功したらuserIdを取得
+            if (isLoggedIn) {
+                try {
+                    const response = await fetch("http://localhost:8080/api/session/check", {
+                        credentials: "include",
+                    });
+                    const data = await response.json();
+                    if (data.userId) {
+                        setUserId(data.userId); // userId を状態に設定
+                    }
+                } catch (error) {
+                    console.error("ユーザーIDの取得中にエラーが発生しました:", error);
+                }
+            }
         };
         initializeSession();
-    }, []);
+    }, [isLoggedIn]);
     
     const handleSearch = (playlists: Playlist[]) => {
         setPlaylists(playlists);
@@ -90,7 +105,7 @@ export default function Home() {
                         )}
                         
                         {selectedPlaylistId && (
-                            <PlaylistDetailsLoader playlistId={selectedPlaylistId}/>
+                            <PlaylistDetailsLoader playlistId={selectedPlaylistId} userId={userId}/> // userId を渡す
                         )}
                         
                         {isLoggedIn && <FollowedPlaylists onPlaylistClick={handlePlaylistClick}/>}

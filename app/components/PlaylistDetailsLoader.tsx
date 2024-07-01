@@ -2,25 +2,28 @@
 "use client";
 
 import {useState, useEffect} from "react";
-import axios from 'axios';
+import axios from "axios";
 import {Track} from "@/app/types/track";
 import PlaylistDetails from "@/app/components/PlaylistDetails";
 import LoadingSpinner from "./LoadingSpinner";
 
 interface PlaylistDetailsLoaderProps {
     playlistId: string;
+    userId: string; // userId を props として受け取る
 }
 
-const PlaylistDetailsLoader: React.FC<PlaylistDetailsLoaderProps> = ({playlistId}) => {
+const PlaylistDetailsLoader: React.FC<PlaylistDetailsLoaderProps> = ({
+                                                                         playlistId,
+                                                                         userId, // userId を props から受け取る
+                                                                     }) => {
     const [playlistData, setPlaylistData] = useState<{
         tracks: Track[];
         genreCounts: { [genre: string]: number };
         recommendations: Track[];
         playlistName: string | null;
-        ownerId: string | null;
+        ownerId: string; // ownerId を追加
     } | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [userId, setUserId] = useState<string | null>(null);
     
     useEffect(() => {
         const fetchPlaylistDetails = async () => {
@@ -29,14 +32,14 @@ const PlaylistDetailsLoader: React.FC<PlaylistDetailsLoaderProps> = ({playlistId
                 const response = await axios.get(`/api/playlists/${playlistId}`);
                 const tracks = response.data.tracks.items.map((item: any) => ({
                     ...item.track,
-                    audioFeatures: item.audioFeatures
+                    audioFeatures: item.audioFeatures,
                 }));
                 setPlaylistData({
                     tracks: tracks,
                     genreCounts: response.data.genreCounts,
                     recommendations: response.data.recommendations,
                     playlistName: response.data.playlistName,
-                    ownerId: response.data.ownerId,
+                    ownerId: response.data.ownerId, // ownerId を設定
                 });
             } catch (error) {
                 console.error("Error fetching playlist details:", error);
@@ -45,19 +48,7 @@ const PlaylistDetailsLoader: React.FC<PlaylistDetailsLoaderProps> = ({playlistId
             }
         };
         
-        const fetchUserId = async () => {
-            try {
-                const response = await axios.get('http://localhost:8080/api/session/check', {withCredentials: true});
-                if (response.data.status === 'success') {
-                    setUserId(response.data.userId);
-                }
-            } catch (error) {
-                console.error('セッションチェックエラー:', error);
-            }
-        };
-        
         fetchPlaylistDetails();
-        fetchUserId();
     }, [playlistId]);
     
     if (isLoading) {
@@ -74,8 +65,9 @@ const PlaylistDetailsLoader: React.FC<PlaylistDetailsLoaderProps> = ({playlistId
             genreCounts={playlistData.genreCounts}
             recommendations={playlistData.recommendations}
             playlistName={playlistData.playlistName}
-            ownerId={playlistData.ownerId}
+            ownerId={playlistData.ownerId} // ownerId を PlaylistDetails に渡す
             userId={userId} // userId を PlaylistDetails に渡す
+            playlistId={playlistId} // playlistId を PlaylistDetails に渡す
         />
     );
 };

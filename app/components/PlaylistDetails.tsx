@@ -12,8 +12,9 @@ interface PlaylistDetailsProps {
     genreCounts: { [genre: string]: number };
     recommendations: Track[];
     playlistName: string | null;
-    ownerId: string | null;
-    userId: string | null; // userId を受け取るようにプロパティを追加
+    ownerId: string; // ownerId を props として受け取る
+    userId: string; // userId を props として受け取る
+    playlistId: string; // プレイリストIDを追加
 }
 
 /**
@@ -40,27 +41,30 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                                                              genreCounts = {},
                                                              recommendations,
                                                              playlistName,
-                                                             ownerId,
-                                                             userId // userId を受け取る
+                                                             ownerId, // ownerId を props から受け取る
+                                                             userId, // userId を props から受け取る
+                                                             playlistId, // プレイリストIDを受け取る
                                                          }) => {
     return (
         <>
             <PlaylistDetailsTable tracks={tracks}/>
             
             {/* ジャンル分布チャートの表示 */}
-            <GenreDistributionChart genreCounts={genreCounts} playlistName={playlistName}/>
+            <GenreDistributionChart
+                genreCounts={genreCounts}
+                playlistName={playlistName}
+            />
             
             {/* おすすめ楽曲を表示 */}
             <div className="mt-8">
                 <h3 className="text-lg font-semibold mb-4">Recommendations:</h3>
-                <RecommendationsTable tracks={recommendations}/>
+                <RecommendationsTable
+                    tracks={recommendations}
+                    ownerId={ownerId} // ownerId を RecommendationsTable に渡す
+                    userId={userId} // userId を RecommendationsTable に渡す
+                    playlistId={playlistId} // playlistId を RecommendationsTable に渡す
+                />
             </div>
-            
-            {/* 所有者のIDを表示 */}
-            {ownerId && <p>作成者のID: {ownerId}</p>}
-            
-            {/* ログインユーザーと所有者が一致する場合のみテキストを表示 */}
-            {ownerId && ownerId === userId && <p>ID一致 ID: {ownerId}</p>}
         </>
     );
 };
