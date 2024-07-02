@@ -58,18 +58,23 @@ const prepareChartData = (
         (a, b) => b[1] - a[1]
     );
     
-    // 上位ジャンルとその他を抽出
-    const topGenres = sortedGenres.slice(0, 9);
-    const otherGenres = sortedGenres.slice(9);
-    
-    // その他のジャンルの合計値を計算
-    const otherCount = otherGenres.reduce((sum, genre) => sum + genre[1], 0);
-    
-    // 円グラフのデータを作成
-    return [
-        ...topGenres.map(([name, value]) => ({name, value, total})),
-        {name: 'その他', value: otherCount, total},
-    ];
+    // 9つ以上のジャンルがある場合のみ、上位9ジャンルとその他を抽出
+    if (sortedGenres.length > 9) {
+        const topGenres = sortedGenres.slice(0, 9);
+        const otherGenres = sortedGenres.slice(9);
+        
+        // その他のジャンルの合計値を計算
+        const otherCount = otherGenres.reduce((sum, genre) => sum + genre[1], 0);
+        
+        // 円グラフのデータを作成
+        return [
+            ...topGenres.map(([name, value]) => ({name, value, total})),
+            {name: 'その他', value: otherCount, total},
+        ];
+    } else {
+        // 9つ未満の場合は全てのジャンルを返す
+        return sortedGenres.map(([name, value]) => ({name, value, total}));
+    }
 };
 
 const GenreChart: React.FC<GenreChartProps> = ({
@@ -131,3 +136,4 @@ const GenreChart: React.FC<GenreChartProps> = ({
 };
 
 export default GenreChart;
+export {prepareChartData};
