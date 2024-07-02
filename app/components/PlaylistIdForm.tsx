@@ -16,10 +16,10 @@ interface PlaylistIdFormProps {
 }
 
 const extractPlaylistIdFromUrl = (url: string): string | null => {
-    const regex = /\/playlist\/([^?]+)/;
+    const regex = /\/playlist\/([^?#]+)/;
     const match = url.match(regex);
     return match ? match[1] : null;
-}
+};
 
 export default ({onPlaylistSelect}: PlaylistIdFormProps) => {
     const [playlistId, setPlaylistId] = useState("");
