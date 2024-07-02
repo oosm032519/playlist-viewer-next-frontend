@@ -1,6 +1,7 @@
 // app/components/PlaylistIdForm.tsx
 "use client";
 import {useState} from "react";
+import {useMutation} from "@tanstack/react-query";
 import {
     Card,
     CardContent,
@@ -23,7 +24,13 @@ const extractPlaylistIdFromUrl = (url: string): string | null => {
 
 export default ({onPlaylistSelect}: PlaylistIdFormProps) => {
     const [playlistId, setPlaylistId] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
+    
+    const mutation = useMutation({
+        mutationFn: (extractedId: string) => onPlaylistSelect(extractedId),
+        onError: (error) => {
+            console.error("Error sending playlist ID:", error);
+        },
+    });
     
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
@@ -36,15 +43,7 @@ export default ({onPlaylistSelect}: PlaylistIdFormProps) => {
             return;
         }
         
-        setIsLoading(true);
-        
-        try {
-            await onPlaylistSelect(extractedId); // awaitを使用
-        } catch (error) {
-            console.error("Error sending playlist ID:", error);
-        } finally {
-            setIsLoading(false);
-        }
+        mutation.mutate(extractedId);
     };
     
     return (
@@ -60,15 +59,15 @@ export default ({onPlaylistSelect}: PlaylistIdFormProps) => {
                             placeholder="Enter playlist URL"
                             value={playlistId}
                             onChange={(e) => setPlaylistId(e.target.value)}
-                            disabled={isLoading}
+                            disabled={mutation.isPending}
                         />
-                        <Button type="submit" disabled={isLoading}>
-                            Submit
+                        <Button type="submit" disabled={mutation.isPending}>
+                            {mutation.isPending ? 'Submitting...' : 'Submit'}
                         </Button>
                     </form>
                 </CardContent>
             </Card>
-            <LoadingSpinner loading={isLoading}/>
+            <LoadingSpinner loading={mutation.isPending}/>
         </>
     );
 }
