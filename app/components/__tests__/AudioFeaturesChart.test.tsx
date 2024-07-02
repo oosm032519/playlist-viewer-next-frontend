@@ -2,8 +2,11 @@ import React from 'react';
 import {render, screen} from '@testing-library/react';
 import AudioFeaturesChart from '../AudioFeaturesChart';
 import {Track} from '@/app/types/track';
+import {axe, toHaveNoViolations} from 'jest-axe';
 
-// モックデータを修正
+expect.extend(toHaveNoViolations);
+
+// モックデータ
 const mockTrack: Track = {
     id: '1',
     name: 'Test Track',
@@ -33,7 +36,7 @@ const mockTrack: Track = {
     durationMs: 0
 };
 
-// Rechartsコンポーネントをモック（変更なし）
+// Rechartsコンポーネントをモック
 jest.mock('recharts', () => ({
     ResponsiveContainer: ({children}: { children: React.ReactNode }) => <div
         data-testid="responsive-container">{children}</div>,
@@ -41,7 +44,7 @@ jest.mock('recharts', () => ({
     PolarGrid: () => <div data-testid="polar-grid"/>,
     PolarAngleAxis: () => <div data-testid="polar-angle-axis"/>,
     PolarRadiusAxis: () => <div data-testid="polar-radius-axis"/>,
-    Radar: () => <div data-testid="radar"/>,
+    Radar: ({dataKey}: { dataKey: string }) => <div data-testid="radar" data-datakey={dataKey}/>,
 }));
 
 describe('AudioFeaturesChart', () => {
@@ -60,7 +63,40 @@ describe('AudioFeaturesChart', () => {
         const trackWithoutAudioFeatures: Track = {...mockTrack, audioFeatures: undefined};
         render(<AudioFeaturesChart track={trackWithoutAudioFeatures}/>);
         
-        // チャートは空のデータでレンダリングされるはずですが、エラーは発生しないはずです
         expect(screen.getByTestId('responsive-container')).toBeInTheDocument();
+        expect(screen.getByTestId('radar-chart')).toBeInTheDocument();
+    });
+    
+    it('passes correct data to the Radar component', () => {
+        render(<AudioFeaturesChart track={mockTrack}/>);
+        
+        const radarElement = screen.getByTestId('radar');
+        expect(radarElement).toHaveAttribute('data-datakey', 'value');
+    });
+    
+    it('handles partial audioFeatures data', () => {
+        const partialAudioFeatures: Partial<Track['audioFeatures']> = {
+            danceability: 0.8,
+            energy: 0.6,
+        };
+        const trackWithPartialAudioFeatures: Track = {
+            ...mockTrack,
+            audioFeatures: partialAudioFeatures as Track['audioFeatures']
+        };
+        render(<AudioFeaturesChart track={trackWithPartialAudioFeatures}/>);
+        
+        expect(screen.getByTestId('responsive-container')).toBeInTheDocument();
+        expect(screen.getByTestId('radar')).toBeInTheDocument();
+    });
+    
+    it('matches snapshot', () => {
+        const {container} = render(<AudioFeaturesChart track={mockTrack}/>);
+        expect(container).toMatchSnapshot();
+    });
+    
+    it('is accessible', async () => {
+        const {container} = render(<AudioFeaturesChart track={mockTrack}/>);
+        const results = await axe(container);
+        expect(results).toHaveNoViolations();
     });
 });
