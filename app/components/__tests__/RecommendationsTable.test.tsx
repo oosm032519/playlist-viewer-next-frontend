@@ -5,6 +5,10 @@ import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import {RecommendationsTable} from '../RecommendationsTable';
 import '@testing-library/jest-dom';
 import {Track} from '@/app/types/track';
+import {axe, toHaveNoViolations} from 'jest-axe';
+
+// jest-axeのマッチャーを追加
+expect.extend(toHaveNoViolations);
 
 // モックデータ
 const mockTracks: Track[] = [
@@ -12,29 +16,46 @@ const mockTracks: Track[] = [
         id: '1',
         name: 'Test Track 1',
         album: {
-            name: 'Test Album 1', images: [{url: 'https://example.com/image1.jpg'}],
-            externalUrls: undefined
+            name: 'Test Album 1',
+            images: [{url: 'https://example.com/image1.jpg'}],
+            externalUrls: {spotify: 'https://open.spotify.com/album/1'}
         },
         artists: [{
             name: 'Test Artist 1',
-            externalUrls: undefined
+            externalUrls: {spotify: 'https://open.spotify.com/artist/1'}
         }],
         previewUrl: 'https://example.com/preview1.mp3',
-        durationMs: 180000, // 3分 = 180,000ミリ秒
+        durationMs: 180000,
     },
     {
         id: '2',
         name: 'Test Track 2',
         album: {
-            name: 'Test Album 2', images: [{url: 'https://example.com/image2.jpg'}],
-            externalUrls: undefined
+            name: 'Test Album 2',
+            images: [{url: 'https://example.com/image2.jpg'}],
+            externalUrls: {spotify: 'https://open.spotify.com/album/2'}
         },
         artists: [{
             name: 'Test Artist 2',
-            externalUrls: undefined
+            externalUrls: {spotify: 'https://open.spotify.com/artist/2'}
         }],
         previewUrl: undefined,
-        durationMs: 240000, // 4分 = 240,000ミリ秒
+        durationMs: 240000,
+    },
+    {
+        id: '3',
+        name: 'Test Track 3',
+        album: {
+            name: 'Test Album 3',
+            images: [{url: 'https://example.com/image3.jpg'}],
+            externalUrls: {spotify: 'https://open.spotify.com/album/3'}
+        },
+        artists: [
+            {name: 'Test Artist 3', externalUrls: {spotify: 'https://open.spotify.com/artist/3'}},
+            {name: 'Test Artist 4', externalUrls: {spotify: 'https://open.spotify.com/artist/4'}}
+        ],
+        previewUrl: 'https://example.com/preview3.mp3',
+        durationMs: 300000,
     },
 ];
 
@@ -46,13 +67,30 @@ global.fetch = jest.fn(() =>
     })
 ) as jest.Mock;
 
+// Audioのモック
+class AudioMock {
+    src: string = '';
+    play = jest.fn();
+    pause = jest.fn();
+}
+
+(global as any).Audio = AudioMock;
+
 describe('RecommendationsTable', () => {
-    // 各テストの前にフェッチのモックをリセット
+    // 各テストの前にモックをリセット
     beforeEach(() => {
         (global.fetch as jest.Mock).mockClear();
     });
     
-    // テーブルが正しくレンダリングされることをテスト
+    // アクセシビリティテスト
+    it('should not have any accessibility violations', async () => {
+        const {container} = render(<RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="user1"
+                                                         playlistId="playlist1"/>);
+        const results = await axe(container);
+        expect(results).toHaveNoViolations();
+    });
+    
+    // テーブルのレンダリングテスト
     it('renders the table with correct headers', () => {
         render(<RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="user1" playlistId="playlist1"/>);
         
@@ -63,31 +101,31 @@ describe('RecommendationsTable', () => {
         expect(screen.getByText('Actions')).toBeInTheDocument();
     });
     
-    // トラックデータが正しく表示されることをテスト
+    // トラックデータの表示テスト
     it('displays track data correctly', () => {
         render(<RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="user1" playlistId="playlist1"/>);
         
-        expect(screen.getByText('Test Track 1')).toBeInTheDocument();
-        expect(screen.getByText('Test Artist 1')).toBeInTheDocument();
-        expect(screen.getByText('Test Track 2')).toBeInTheDocument();
-        expect(screen.getByText('Test Artist 2')).toBeInTheDocument();
+        mockTracks.forEach(track => {
+            expect(screen.getByText(track.name)).toBeInTheDocument();
+            expect(screen.getByText(track.artists[0].name)).toBeInTheDocument();
+        });
     });
     
-    // プレビューボタンが正しく表示されることをテスト
+    // プレビューボタンの表示テスト
     it('shows preview button only for tracks with previewUrl', () => {
         render(<RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="user1" playlistId="playlist1"/>);
         
         const previewButtons = screen.getAllByText('試聴する');
-        expect(previewButtons).toHaveLength(1);
+        expect(previewButtons).toHaveLength(2); // Track 1 と Track 3 のみ
     });
     
-    // オーナーの場合のみ追加・削除ボタンが表示されることをテスト
+    // オーナーの場合の追加・削除ボタン表示テスト
     it('shows add and remove buttons only for the owner', () => {
         const {rerender} = render(<RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="owner1"
                                                         playlistId="playlist1"/>);
         
-        expect(screen.getAllByText('追加')).toHaveLength(2);
-        expect(screen.getAllByText('削除')).toHaveLength(2);
+        expect(screen.getAllByText('追加')).toHaveLength(mockTracks.length);
+        expect(screen.getAllByText('削除')).toHaveLength(mockTracks.length);
         
         rerender(<RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="user2" playlistId="playlist1"/>);
         
@@ -95,24 +133,24 @@ describe('RecommendationsTable', () => {
         expect(screen.queryByText('削除')).not.toBeInTheDocument();
     });
     
-    // 試聴ボタンのクリックをテスト
+    // 試聴ボタンのクリックテスト
     it('handles play button click correctly', () => {
         render(<RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="user1" playlistId="playlist1"/>);
         
-        const playButton = screen.getByText('試聴する');
-        fireEvent.click(playButton);
-        expect(playButton).toHaveTextContent('停止');
+        const playButtons = screen.getAllByText('試聴する');
+        fireEvent.click(playButtons[0]);
+        expect(playButtons[0]).toHaveTextContent('停止');
         
-        fireEvent.click(playButton);
-        expect(playButton).toHaveTextContent('試聴する');
+        fireEvent.click(playButtons[0]);
+        expect(playButtons[0]).toHaveTextContent('試聴する');
     });
     
-    // 追加ボタンのクリックをテスト
+    // 追加ボタンのクリックテスト
     it('handles add track button click correctly', async () => {
         render(<RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="owner1" playlistId="playlist1"/>);
         
-        const addButton = screen.getAllByText('追加')[0];
-        fireEvent.click(addButton);
+        const addButtons = screen.getAllByText('追加');
+        fireEvent.click(addButtons[0]);
         
         await waitFor(() => {
             expect(global.fetch).toHaveBeenCalledWith('/api/playlists/playlist1/tracks', {
@@ -123,12 +161,12 @@ describe('RecommendationsTable', () => {
         });
     });
     
-    // 削除ボタンのクリックをテスト
+    // 削除ボタンのクリックテスト
     it('handles remove track button click correctly', async () => {
         render(<RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="owner1" playlistId="playlist1"/>);
         
-        const removeButton = screen.getAllByText('削除')[0];
-        fireEvent.click(removeButton);
+        const removeButtons = screen.getAllByText('削除');
+        fireEvent.click(removeButtons[0]);
         
         await waitFor(() => {
             expect(global.fetch).toHaveBeenCalledWith('/api/playlists/playlist1/tracks', {
@@ -137,5 +175,33 @@ describe('RecommendationsTable', () => {
                 body: JSON.stringify({trackId: '1'}),
             });
         });
+    });
+    
+    // 複数アーティストの表示テスト
+    it('displays only the first artist for tracks with multiple artists', () => {
+        render(<RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="user1" playlistId="playlist1"/>);
+        
+        // Track 3 は複数のアーティストを持っていますが、最初のアーティストのみが表示されるはずです
+        expect(screen.getByText('Test Artist 3')).toBeInTheDocument();
+        expect(screen.queryByText('Test Artist 4')).not.toBeInTheDocument();
+    });
+    
+    // エラーハンドリングのテスト
+    it('handles API errors correctly', async () => {
+        (global.fetch as jest.Mock).mockImplementationOnce(() => Promise.reject(new Error('API Error')));
+        
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {
+        });
+        
+        render(<RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="owner1" playlistId="playlist1"/>);
+        
+        const addButton = screen.getAllByText('追加')[0];
+        fireEvent.click(addButton);
+        
+        await waitFor(() => {
+            expect(consoleErrorSpy).toHaveBeenCalledWith('エラーが発生しました:', expect.any(Error));
+        });
+        
+        consoleErrorSpy.mockRestore();
     });
 });
