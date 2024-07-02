@@ -33,17 +33,27 @@ const FollowedPlaylists: React.FC<FollowedPlaylistsProps> = ({onPlaylistClick}) 
     const [error, setError] = useState<string | null>(null);
     
     useEffect(() => {
-        // fetchFollowedPlaylists関数を呼び出し、結果を処理
+        let isMounted = true;
         fetchFollowedPlaylists()
             .then(data => {
-                setPlaylists(data);
+                if (isMounted) {
+                    setPlaylists(data);
+                }
             })
             .catch(error => {
-                setError(error.message);
+                if (isMounted) {
+                    setError(error.message);
+                }
             })
             .finally(() => {
-                setLoading(false);
+                if (isMounted) {
+                    setLoading(false);
+                }
             });
+        
+        return () => {
+            isMounted = false;
+        };
     }, []);
     
     if (loading) {
