@@ -1,3 +1,5 @@
+// app/api/playlists/followed/route.ts
+
 import {NextRequest, NextResponse} from 'next/server';
 import axios from 'axios';
 
