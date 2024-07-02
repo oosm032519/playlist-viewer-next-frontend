@@ -1,14 +1,15 @@
 // PlaylistDetailsTable.test.tsx
 
 import React from 'react';
-import {render, screen, fireEvent, within} from '@testing-library/react';
+import {render, screen, fireEvent, within, act} from '@testing-library/react';
 import {PlaylistDetailsTable} from '../PlaylistDetailsTable';
 import {Track} from '@/app/types/track';
 import '@testing-library/jest-dom';
+import {axe, toHaveNoViolations} from 'jest-axe';
+
+expect.extend(toHaveNoViolations);
 
 // モックデータの準備
-// @ts-ignore
-// @ts-ignore
 const mockTracks: Track[] = [
     {
         id: '1',
@@ -152,11 +153,14 @@ const mockTracks: Track[] = [
     },
 ];
 
+// 空のトラックリストのモックデータ
+const emptyTracks: Track[] = [];
+
 // next/imageのモック
 jest.mock('next/image', () => ({
     __esModule: true,
     default: (props: any) => {
-        return <img {...props} />;
+        return <img {...props} alt={props.alt || ''}/>;
     },
 }));
 
@@ -183,6 +187,20 @@ describe('PlaylistDetailsTable', () => {
         });
     });
     
+    it('renders the table with correct headers', () => {
+        render(<PlaylistDetailsTable tracks={mockTracks}/>);
+        
+        const headers = [
+            'Album', 'Title', 'Artist', 'Danceability', 'Energy', 'Key', 'Loudness',
+            'Mode', 'Speechiness', 'Acousticness', 'Instrumentalness', 'Liveness',
+            'Valence', 'Tempo', 'Duration (ms)', 'Time Signature'
+        ];
+        
+        headers.forEach(header => {
+            expect(screen.getByText(header)).toBeInTheDocument();
+        });
+    });
+    
     it('renders the correct number of rows', () => {
         render(<PlaylistDetailsTable tracks={mockTracks}/>);
         const rows = screen.getAllByRole('row');
@@ -195,7 +213,9 @@ describe('PlaylistDetailsTable', () => {
         
         const firstRow = screen.getAllByRole('row')[1]; // 0はヘッダー行
         
-        expect(within(firstRow).getByRole('img')).toHaveAttribute('src', 'https://example.com/queen_anato.jpg');
+        const albumImage = within(firstRow).getByRole('img');
+        expect(albumImage).toHaveAttribute('src', 'https://example.com/queen_anato.jpg');
+        expect(albumImage).toHaveAttribute('alt', 'A Night at the Opera');
         expect(within(firstRow).getByText('Bohemian Rhapsody')).toBeInTheDocument();
         expect(within(firstRow).getByText('Queen')).toBeInTheDocument();
         expect(within(firstRow).getByText('0.414')).toBeInTheDocument(); // Danceability
@@ -243,5 +263,81 @@ describe('PlaylistDetailsTable', () => {
         const lastRow = screen.getAllByRole('row')[mockTracks.length];
         expect(within(lastRow).getByText('Take Five')).toBeInTheDocument();
         expect(within(lastRow).getByText('5')).toBeInTheDocument(); // Time Signature
+    });
+    
+    // 新しいテスト
+    it('renders empty state when no tracks are provided', () => {
+        render(<PlaylistDetailsTable tracks={emptyTracks}/>);
+        expect(screen.getByText('No tracks available')).toBeInTheDocument();
+    });
+    
+    it('handles sorting for all columns', () => {
+        render(<PlaylistDetailsTable tracks={mockTracks}/>);
+        const headers = screen.getAllByRole('columnheader');
+        
+        headers.forEach((header) => {
+            if (header.textContent !== 'Album') { // Album列はソート不可
+                fireEvent.click(header);
+                // ソートが適用されたことを確認（詳細な検証は省略）
+                expect(header).toHaveAttribute('aria-sort');
+            }
+        });
+    });
+    
+    it('maintains selected track when sorting', () => {
+        render(<PlaylistDetailsTable tracks={mockTracks}/>);
+        
+        // 最初の行を選択
+        const firstRow = screen.getAllByRole('row')[1];
+        fireEvent.click(firstRow);
+        expect(screen.getByText('Audio Features: Bohemian Rhapsody')).toBeInTheDocument();
+        
+        // ソートを実行
+        const danceabilityHeader = screen.getByText('Danceability');
+        fireEvent.click(danceabilityHeader);
+        
+        // 選択状態が維持されていることを確認
+        expect(screen.getByText('Audio Features: Bohemian Rhapsody')).toBeInTheDocument();
+    });
+    
+    it('handles tracks with missing audio features', () => {
+        const tracksWithMissingFeatures = [
+            {
+                ...mockTracks[0],
+                audioFeatures: undefined
+            },
+            ...mockTracks.slice(1)
+        ];
+        
+        render(<PlaylistDetailsTable tracks={tracksWithMissingFeatures}/>);
+        
+        const firstRow = screen.getAllByRole('row')[1];
+        expect(within(firstRow).getAllByText('-').length).toBeGreaterThan(0);
+    });
+    
+    it('is accessible', async () => {
+        const {container} = render(<PlaylistDetailsTable tracks={mockTracks}/>);
+        const results = await axe(container);
+        expect(results).toHaveNoViolations();
+    });
+    
+    it('handles rapid sorting interactions', async () => {
+        render(<PlaylistDetailsTable tracks={mockTracks}/>);
+        const danceabilityHeader = screen.getByText('Danceability');
+        
+        await act(async () => {
+            for (let i = 0; i < 10; i++) {
+                fireEvent.click(danceabilityHeader);
+            }
+        });
+        
+        // テーブルが正しく描画されていることを確認
+        expect(screen.getAllByRole('row').length).toBe(mockTracks.length + 1); // ヘッダー行 + データ行
+    });
+    
+    it('is accessible', async () => {
+        const {container} = render(<PlaylistDetailsTable tracks={mockTracks}/>);
+        const results = await axe(container);
+        expect(results).toHaveNoViolations();
     });
 });
