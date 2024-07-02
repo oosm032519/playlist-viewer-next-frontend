@@ -14,12 +14,15 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({loading}) => {
             style={{display: loading ? "flex" : "none"}}
             role="progressbar"
             aria-valuenow={loading ? 100 : 0}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label="Loading progress"
         >
             <ClipLoader
                 color="#1DB954"
                 loading={loading}
                 size={100}
-                aria-label="Loading Spinner"
+                aria-hidden="true"
             />
         </div>
     );
