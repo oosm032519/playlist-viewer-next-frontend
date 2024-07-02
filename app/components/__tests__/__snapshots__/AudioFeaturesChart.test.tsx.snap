@@ -1,0 +1,27 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AudioFeaturesChart matches snapshot 1`] = `
+<div>
+  <div
+    data-testid="responsive-container"
+  >
+    <div
+      data-testid="radar-chart"
+    >
+      <div
+        data-testid="polar-grid"
+      />
+      <div
+        data-testid="polar-angle-axis"
+      />
+      <div
+        data-testid="polar-radius-axis"
+      />
+      <div
+        data-datakey="value"
+        data-testid="radar"
+      />
+    </div>
+  </div>
+</div>
+`;
