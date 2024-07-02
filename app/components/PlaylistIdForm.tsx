@@ -12,7 +12,7 @@ import {Input} from "./ui/input";
 import LoadingSpinner from "./LoadingSpinner";
 
 interface PlaylistIdFormProps {
-    onPlaylistSelect: (playlistId: string) => void;
+    onPlaylistSelect: (playlistId: string) => Promise<void>;
 }
 
 const extractPlaylistIdFromUrl = (url: string): string | null => {
@@ -39,7 +39,7 @@ export default ({onPlaylistSelect}: PlaylistIdFormProps) => {
         setIsLoading(true);
         
         try {
-            onPlaylistSelect(extractedId);
+            await onPlaylistSelect(extractedId); // awaitを使用
         } catch (error) {
             console.error("Error sending playlist ID:", error);
         } finally {
