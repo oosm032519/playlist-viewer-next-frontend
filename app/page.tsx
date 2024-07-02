@@ -74,7 +74,7 @@ export default function Home() {
         setIsLoggedIn(true);
     };
     
-    const handlePlaylistClick = (playlistId: string) => {
+    const handlePlaylistClick = async (playlistId: string): Promise<void> => {
         setSelectedPlaylistId(playlistId);
     };
     
