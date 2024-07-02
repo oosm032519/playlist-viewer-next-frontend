@@ -1,8 +1,8 @@
 // app/components/FollowedPlaylists.test.tsx
-
 import React from 'react';
-import {render, screen, waitFor, act, within} from '@testing-library/react';
+import {render, screen, waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import FollowedPlaylists from './FollowedPlaylists';
 import {Playlist} from '@/app/types/playlist';
 import {axe, toHaveNoViolations} from 'jest-axe';
@@ -35,46 +35,63 @@ const mockPlaylists: Playlist[] = [
 ];
 
 // fetchのモック
-global.fetch = jest.fn(() =>
-    Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({items: mockPlaylists}),
-    } as Response)
-);
+const mockFetch = jest.fn();
+global.fetch = mockFetch;
 
 // onPlaylistClickのモック関数
 const mockOnPlaylistClick = jest.fn();
 
+// テスト用のQueryClientを作成
+const createTestQueryClient = () => new QueryClient({
+    defaultOptions: {
+        queries: {
+            retry: false,
+        },
+    },
+});
+
+// テスト用のラッパーコンポーネント
+const renderWithClient = (ui: React.ReactElement) => {
+    const testQueryClient = createTestQueryClient();
+    const {rerender, ...result} = render(
+        <QueryClientProvider client={testQueryClient}>{ui}</QueryClientProvider>
+    );
+    return {
+        ...result,
+        rerender: (rerenderUi: React.ReactElement) =>
+            rerender(<QueryClientProvider client={testQueryClient}>{rerenderUi}</QueryClientProvider>),
+    };
+};
+
 describe('FollowedPlaylists', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        mockFetch.mockResolvedValue({
+            ok: true,
+            json: () => Promise.resolve(mockPlaylists),
+        } as Response);
     });
     
     it('renders loading spinner initially', async () => {
-        // fetchのモックを遅延させる
-        (global.fetch as jest.Mock).mockImplementationOnce(() =>
+        mockFetch.mockImplementationOnce(() =>
             new Promise(resolve => setTimeout(() => resolve({
                 ok: true,
-                json: () => Promise.resolve({items: mockPlaylists}),
+                json: () => Promise.resolve(mockPlaylists),
             }), 100))
         );
         
-        render(<FollowedPlaylists onPlaylistClick={mockOnPlaylistClick}/>);
+        renderWithClient(<FollowedPlaylists onPlaylistClick={mockOnPlaylistClick}/>);
         
-        // LoadingSpinnerが表示されるのを待つ
         const spinner = await screen.findByRole('progressbar');
         expect(spinner).toBeInTheDocument();
         
-        // プレイリストが表示されるのを待つ
         await waitFor(() => {
             expect(screen.getByText('フォロー中のプレイリスト')).toBeInTheDocument();
         });
     });
     
     it('fetches and displays playlists correctly', async () => {
-        await act(async () => {
-            render(<FollowedPlaylists onPlaylistClick={mockOnPlaylistClick}/>);
-        });
+        renderWithClient(<FollowedPlaylists onPlaylistClick={mockOnPlaylistClick}/>);
         
         await waitFor(() => {
             expect(screen.getByText('フォロー中のプレイリスト')).toBeInTheDocument();
@@ -97,28 +114,24 @@ describe('FollowedPlaylists', () => {
     });
     
     it('calls onPlaylistClick when a playlist is clicked', async () => {
-        render(<FollowedPlaylists onPlaylistClick={mockOnPlaylistClick}/>);
+        renderWithClient(<FollowedPlaylists onPlaylistClick={mockOnPlaylistClick}/>);
         
-        // プレイリストが表示されるのを待つ
         await waitFor(() => {
             expect(screen.getByText('Playlist 1')).toBeInTheDocument();
         });
         
-        // 各プレイリストをクリックしてテスト
         for (const playlist of mockPlaylists) {
             const playlistElement = screen.getByText(playlist.name);
             await userEvent.click(playlistElement);
             
-            // onPlaylistClickが正しい引数で呼び出されたことを確認
             expect(mockOnPlaylistClick).toHaveBeenCalledWith(playlist.id);
             
-            // モック関数をリセット
             mockOnPlaylistClick.mockClear();
         }
     });
     
     it('displays correct number of playlists', async () => {
-        render(<FollowedPlaylists onPlaylistClick={mockOnPlaylistClick}/>);
+        renderWithClient(<FollowedPlaylists onPlaylistClick={mockOnPlaylistClick}/>);
         
         await waitFor(() => {
             const playlists = screen.getAllByRole('listitem');
@@ -127,27 +140,24 @@ describe('FollowedPlaylists', () => {
     });
     
     it('displays an error message when fetch fails', async () => {
-        const errorMessage = 'API request failed';
-        (global.fetch as jest.Mock).mockImplementationOnce(() =>
-            Promise.reject(new Error(errorMessage))
-        );
+        const errorMessage = 'API request failed with status 500';
+        mockFetch.mockRejectedValueOnce(new Error(errorMessage));
         
-        render(<FollowedPlaylists onPlaylistClick={mockOnPlaylistClick}/>);
+        renderWithClient(<FollowedPlaylists onPlaylistClick={mockOnPlaylistClick}/>);
         
         await waitFor(() => {
-            expect(screen.getByText('フォロー中のプレイリストの取得中にエラーが発生しました。')).toBeInTheDocument();
+            expect(screen.getByText('Error')).toBeInTheDocument();
+            expect(screen.getByText(errorMessage)).toBeInTheDocument();
         });
     });
     
     it('handles empty playlist response', async () => {
-        (global.fetch as jest.Mock).mockImplementationOnce(() =>
-            Promise.resolve({
-                ok: true,
-                json: () => Promise.resolve([]),
-            } as Response)
-        );
+        mockFetch.mockResolvedValueOnce({
+            ok: true,
+            json: () => Promise.resolve([]),
+        } as Response);
         
-        render(<FollowedPlaylists onPlaylistClick={mockOnPlaylistClick}/>);
+        renderWithClient(<FollowedPlaylists onPlaylistClick={mockOnPlaylistClick}/>);
         
         await waitFor(() => {
             expect(screen.getByText('フォロー中のプレイリスト')).toBeInTheDocument();
@@ -157,7 +167,7 @@ describe('FollowedPlaylists', () => {
     });
     
     it('has no accessibility violations', async () => {
-        const {container} = render(<FollowedPlaylists onPlaylistClick={mockOnPlaylistClick}/>);
+        const {container} = renderWithClient(<FollowedPlaylists onPlaylistClick={mockOnPlaylistClick}/>);
         
         await waitFor(() => {
             expect(screen.getByText('フォロー中のプレイリスト')).toBeInTheDocument();
@@ -168,7 +178,7 @@ describe('FollowedPlaylists', () => {
     });
     
     it('matches snapshot', async () => {
-        const {asFragment} = render(<FollowedPlaylists onPlaylistClick={mockOnPlaylistClick}/>);
+        const {asFragment} = renderWithClient(<FollowedPlaylists onPlaylistClick={mockOnPlaylistClick}/>);
         
         await waitFor(() => {
             expect(screen.getByText('フォロー中のプレイリスト')).toBeInTheDocument();
