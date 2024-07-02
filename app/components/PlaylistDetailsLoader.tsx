@@ -30,19 +30,24 @@ const PlaylistDetailsLoader: React.FC<PlaylistDetailsLoaderProps> = ({
             setIsLoading(true);
             try {
                 const response = await axios.get(`/api/playlists/${playlistId}`);
-                const tracks = response.data.tracks.items.map((item: any) => ({
-                    ...item.track,
-                    audioFeatures: item.audioFeatures,
-                }));
-                setPlaylistData({
-                    tracks: tracks,
-                    genreCounts: response.data.genreCounts,
-                    recommendations: response.data.recommendations,
-                    playlistName: response.data.playlistName,
-                    ownerId: response.data.ownerId, // ownerId を設定
-                });
+                if (response && response.data) {
+                    const tracks = response.data.tracks?.items?.map((item: any) => ({
+                        ...item.track,
+                        audioFeatures: item.audioFeatures,
+                    })) || [];
+                    setPlaylistData({
+                        tracks: tracks,
+                        genreCounts: response.data.genreCounts || {},
+                        recommendations: response.data.recommendations || [],
+                        playlistName: response.data.playlistName || null,
+                        ownerId: response.data.ownerId || '',
+                    });
+                } else {
+                    throw new Error('Invalid response data');
+                }
             } catch (error) {
                 console.error("Error fetching playlist details:", error);
+                setPlaylistData(null);
             } finally {
                 setIsLoading(false);
             }
@@ -50,6 +55,7 @@ const PlaylistDetailsLoader: React.FC<PlaylistDetailsLoaderProps> = ({
         
         fetchPlaylistDetails();
     }, [playlistId]);
+    
     
     if (isLoading) {
         return <LoadingSpinner loading={isLoading}/>;
