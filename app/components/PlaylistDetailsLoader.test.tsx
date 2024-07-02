@@ -1,7 +1,8 @@
-// app/components/PlaylistDetailsLoader.test.tsx
+// app/components/__tests__/PlaylistDetailsLoader.test.tsx
 
 import React from 'react';
-import {render, screen, waitFor, act} from '@testing-library/react';
+import {render, screen, waitFor} from '@testing-library/react';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import axios from 'axios';
 import PlaylistDetailsLoader from './PlaylistDetailsLoader';
 import '@testing-library/jest-dom';
@@ -37,6 +38,19 @@ jest.mock('./LoadingSpinner', () => {
 
 expect.extend(toHaveNoViolations);
 
+const createWrapper = () => {
+    const queryClient = new QueryClient({
+        defaultOptions: {
+            queries: {
+                retry: false,
+            },
+        },
+    });
+    return ({children}: { children: React.ReactNode }) => (
+        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+};
+
 describe('PlaylistDetailsLoader', () => {
     const mockPlaylistId = 'mock-playlist-id';
     const mockUserId = 'mock-user-id';
@@ -47,11 +61,9 @@ describe('PlaylistDetailsLoader', () => {
     
     it('renders loading spinner initially', async () => {
         mockedAxios.get.mockImplementationOnce(() => new Promise(() => {
-        })); // 永続的な保留状態をシミュレート
+        }));
         
-        await act(async () => {
-            render(<PlaylistDetailsLoader playlistId={mockPlaylistId} userId={mockUserId}/>);
-        });
+        render(<PlaylistDetailsLoader playlistId={mockPlaylistId} userId={mockUserId}/>, {wrapper: createWrapper()});
         
         expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
     });
@@ -68,9 +80,7 @@ describe('PlaylistDetailsLoader', () => {
         };
         mockedAxios.get.mockResolvedValueOnce(mockResponse);
         
-        await act(async () => {
-            render(<PlaylistDetailsLoader playlistId={mockPlaylistId} userId={mockUserId}/>);
-        });
+        render(<PlaylistDetailsLoader playlistId={mockPlaylistId} userId={mockUserId}/>, {wrapper: createWrapper()});
         
         await waitFor(() => {
             expect(screen.getByTestId('playlist-details')).toBeInTheDocument();
@@ -87,11 +97,9 @@ describe('PlaylistDetailsLoader', () => {
     });
     
     it('renders error message when playlist is not found', async () => {
-        mockedAxios.get.mockRejectedValueOnce({response: {status: 404}});
+        mockedAxios.get.mockRejectedValueOnce(new Error('Not Found'));
         
-        await act(async () => {
-            render(<PlaylistDetailsLoader playlistId={mockPlaylistId} userId={mockUserId}/>);
-        });
+        render(<PlaylistDetailsLoader playlistId={mockPlaylistId} userId={mockUserId}/>, {wrapper: createWrapper()});
         
         await waitFor(() => {
             expect(screen.getByText('プレイリストが見つかりませんでした。')).toBeInTheDocument();
@@ -103,9 +111,7 @@ describe('PlaylistDetailsLoader', () => {
     it('handles network errors gracefully', async () => {
         mockedAxios.get.mockRejectedValueOnce(new Error('Network Error'));
         
-        await act(async () => {
-            render(<PlaylistDetailsLoader playlistId={mockPlaylistId} userId={mockUserId}/>);
-        });
+        render(<PlaylistDetailsLoader playlistId={mockPlaylistId} userId={mockUserId}/>, {wrapper: createWrapper()});
         
         await waitFor(() => {
             expect(screen.getByText('プレイリストが見つかりませんでした。')).toBeInTheDocument();
@@ -124,9 +130,7 @@ describe('PlaylistDetailsLoader', () => {
         };
         mockedAxios.get.mockResolvedValueOnce(mockResponse);
         
-        await act(async () => {
-            render(<PlaylistDetailsLoader playlistId={mockPlaylistId} userId={mockUserId}/>);
-        });
+        render(<PlaylistDetailsLoader playlistId={mockPlaylistId} userId={mockUserId}/>, {wrapper: createWrapper()});
         
         await waitFor(() => {
             expect(screen.getByTestId('playlist-details')).toBeInTheDocument();
@@ -158,7 +162,8 @@ describe('PlaylistDetailsLoader', () => {
         
         mockedAxios.get.mockResolvedValueOnce(mockResponse1);
         
-        const {rerender} = render(<PlaylistDetailsLoader playlistId={mockPlaylistId} userId={mockUserId}/>);
+        const {rerender} = render(<PlaylistDetailsLoader playlistId={mockPlaylistId}
+                                                         userId={mockUserId}/>, {wrapper: createWrapper()});
         
         await waitFor(() => {
             expect(screen.getByText('Playlist Name: Playlist 1')).toBeInTheDocument();
@@ -166,9 +171,7 @@ describe('PlaylistDetailsLoader', () => {
         
         mockedAxios.get.mockResolvedValueOnce(mockResponse2);
         
-        await act(async () => {
-            rerender(<PlaylistDetailsLoader playlistId="new-playlist-id" userId={mockUserId}/>);
-        });
+        rerender(<PlaylistDetailsLoader playlistId="new-playlist-id" userId={mockUserId}/>);
         
         await waitFor(() => {
             expect(screen.getByText('Playlist Name: Playlist 2')).toBeInTheDocument();
@@ -190,7 +193,8 @@ describe('PlaylistDetailsLoader', () => {
         };
         mockedAxios.get.mockResolvedValueOnce(mockResponse);
         
-        const {container} = render(<PlaylistDetailsLoader playlistId={mockPlaylistId} userId={mockUserId}/>);
+        const {container} = render(<PlaylistDetailsLoader playlistId={mockPlaylistId}
+                                                          userId={mockUserId}/>, {wrapper: createWrapper()});
         
         await waitFor(() => {
             expect(screen.getByTestId('playlist-details')).toBeInTheDocument();

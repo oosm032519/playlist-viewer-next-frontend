@@ -1,7 +1,7 @@
 // app/components/PlaylistDetailsLoader.tsx
 "use client";
 
-import {useState, useEffect} from "react";
+import {useQuery} from '@tanstack/react-query';
 import axios from "axios";
 import {Track} from "@/app/types/track";
 import PlaylistDetails from "@/app/components/PlaylistDetails";
@@ -9,59 +9,49 @@ import LoadingSpinner from "./LoadingSpinner";
 
 interface PlaylistDetailsLoaderProps {
     playlistId: string;
-    userId: string; // userId を props として受け取る
+    userId: string;
 }
+
+interface PlaylistData {
+    tracks: Track[];
+    genreCounts: { [genre: string]: number };
+    recommendations: Track[];
+    playlistName: string | null;
+    ownerId: string;
+}
+
+const fetchPlaylistDetails = async (playlistId: string): Promise<PlaylistData> => {
+    const response = await axios.get(`/api/playlists/${playlistId}`);
+    if (response && response.data) {
+        const tracks = response.data.tracks?.items?.map((item: any) => ({
+            ...item.track,
+            audioFeatures: item.audioFeatures,
+        })) || [];
+        return {
+            tracks: tracks,
+            genreCounts: response.data.genreCounts || {},
+            recommendations: response.data.recommendations || [],
+            playlistName: response.data.playlistName || null,
+            ownerId: response.data.ownerId || '',
+        };
+    }
+    throw new Error('Invalid response data');
+};
 
 const PlaylistDetailsLoader: React.FC<PlaylistDetailsLoaderProps> = ({
                                                                          playlistId,
-                                                                         userId, // userId を props から受け取る
+                                                                         userId,
                                                                      }) => {
-    const [playlistData, setPlaylistData] = useState<{
-        tracks: Track[];
-        genreCounts: { [genre: string]: number };
-        recommendations: Track[];
-        playlistName: string | null;
-        ownerId: string; // ownerId を追加
-    } | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    
-    useEffect(() => {
-        const fetchPlaylistDetails = async () => {
-            setIsLoading(true);
-            try {
-                const response = await axios.get(`/api/playlists/${playlistId}`);
-                if (response && response.data) {
-                    const tracks = response.data.tracks?.items?.map((item: any) => ({
-                        ...item.track,
-                        audioFeatures: item.audioFeatures,
-                    })) || [];
-                    setPlaylistData({
-                        tracks: tracks,
-                        genreCounts: response.data.genreCounts || {},
-                        recommendations: response.data.recommendations || [],
-                        playlistName: response.data.playlistName || null,
-                        ownerId: response.data.ownerId || '',
-                    });
-                } else {
-                    throw new Error('Invalid response data');
-                }
-            } catch (error) {
-                console.error("Error fetching playlist details:", error);
-                setPlaylistData(null);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        
-        fetchPlaylistDetails();
-    }, [playlistId]);
-    
+    const {data: playlistData, isLoading, error} = useQuery<PlaylistData, Error>({
+        queryKey: ['playlistDetails', playlistId],
+        queryFn: () => fetchPlaylistDetails(playlistId),
+    });
     
     if (isLoading) {
         return <LoadingSpinner loading={isLoading}/>;
     }
     
-    if (!playlistData) {
+    if (error || !playlistData) {
         return <div>プレイリストが見つかりませんでした。</div>;
     }
     
@@ -71,9 +61,9 @@ const PlaylistDetailsLoader: React.FC<PlaylistDetailsLoaderProps> = ({
             genreCounts={playlistData.genreCounts}
             recommendations={playlistData.recommendations}
             playlistName={playlistData.playlistName}
-            ownerId={playlistData.ownerId} // ownerId を PlaylistDetails に渡す
-            userId={userId} // userId を PlaylistDetails に渡す
-            playlistId={playlistId} // playlistId を PlaylistDetails に渡す
+            ownerId={playlistData.ownerId}
+            userId={userId}
+            playlistId={playlistId}
         />
     );
 };
