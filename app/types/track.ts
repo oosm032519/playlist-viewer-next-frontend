@@ -22,7 +22,7 @@ export interface Track {
         energy: number;
         key: number;
         loudness: number;
-        mode: number;
+        mode: string;
         speechiness: number;
         acousticness: number;
         instrumentalness: number;
