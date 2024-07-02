@@ -3,7 +3,7 @@
 import React from 'react';
 import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import axios from 'axios';
-import PlaylistSearchForm from './PlaylistSearchForm';
+import PlaylistSearchForm from '../PlaylistSearchForm';
 import '@testing-library/jest-dom';
 
 // axiosのモック化
