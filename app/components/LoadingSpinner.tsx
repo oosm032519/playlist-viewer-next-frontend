@@ -12,6 +12,8 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({loading}) => {
         <div
             className="fixed top-0 left-0 w-screen h-screen flex items-center justify-center bg-black/50 z-50"
             style={{display: loading ? "flex" : "none"}}
+            role="progressbar" // 追加
+            aria-valuenow={loading ? 100 : 0}
         >
             <ClipLoader
                 color="#1DB954"
