@@ -1,3 +1,5 @@
+// app/api/playlists/[id]/route.ts
+
 import {NextResponse} from 'next/server';
 
 // バックエンドAPIのベースURLを取得するヘルパー関数
@@ -44,8 +46,15 @@ export async function GET(
     try {
         const data = await fetchPlaylistData(id);
         console.log('パースされたデータ:', data);
-        return NextResponse.json(data);
+        return new NextResponse(JSON.stringify(data), {
+            status: 200,
+            headers: {'Content-Type': 'application/json'}
+        });
     } catch (error) {
-        return NextResponse.json({error: "プレイリストの取得に失敗しました"}, {status: 500});
+        console.error("プレイリストの取得に失敗しました:", error);
+        return new NextResponse(JSON.stringify({error: "プレイリストの取得に失敗しました"}), {
+            status: 500,
+            headers: {'Content-Type': 'application/json'}
+        });
     }
 }
