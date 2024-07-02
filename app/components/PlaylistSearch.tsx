@@ -33,30 +33,31 @@ const schema = yup
     })
     .required();
 
-// APIリクエストを送信してプレイリストを検索する関数
 const searchPlaylists = async (query: string): Promise<Playlist[]> => {
     try {
         const response = await axios.get(`/api/playlists/search?query=${query}`);
         return response.data;
     } catch (error) {
         console.error("プレイリスト検索中にエラーが発生しました:", error);
-        return []; // エラーが発生した場合は空の配列を返す
+        return [];
     }
 };
 
 export default function PlaylistSearch() {
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
     
     const form = useForm<SearchFormInputs>({
         resolver: yupResolver(schema),
     });
     
     const onSubmit = async (data: SearchFormInputs) => {
+        setIsLoading(true);
         const results = await searchPlaylists(data.query);
         setPlaylists(results);
+        setIsLoading(false);
     };
     
-    // useMemoを使用してカラムの定義をメモ化
     const columns = useMemo<Column<Playlist>[]>(
         () => [
             {
@@ -78,8 +79,13 @@ export default function PlaylistSearch() {
         []
     );
     
-    const {getTableProps, getTableBodyProps, headerGroups, rows, prepareRow} =
-        useTable({columns, data: playlists});
+    const {
+        getTableProps,
+        getTableBodyProps,
+        headerGroups,
+        rows,
+        prepareRow
+    } = useTable({columns, data: playlists});
     
     return (
         <Card className="w-full max-w-4xl mx-auto">
@@ -96,8 +102,14 @@ export default function PlaylistSearch() {
                                 <FormItem>
                                     <FormControl>
                                         <div className="flex space-x-2">
-                                            <Input placeholder="Enter playlist name" {...field} />
-                                            <Button type="submit">Search</Button>
+                                            <Input
+                                                placeholder="Enter playlist name"
+                                                aria-label="Enter playlist name"
+                                                {...field}
+                                            />
+                                            <Button type="submit" disabled={isLoading}>
+                                                {isLoading ? "Searching..." : "Search"}
+                                            </Button>
                                         </div>
                                     </FormControl>
                                     <FormMessage/>
@@ -110,9 +122,9 @@ export default function PlaylistSearch() {
                 <Table {...getTableProps()} className="mt-8">
                     <TableHeader>
                         {headerGroups.map((headerGroup) => (
-                            <TableRow {...headerGroup.getHeaderGroupProps()}>
+                            <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((column) => (
-                                    <TableHead {...column.getHeaderProps()}>
+                                    <TableHead key={column.id}>
                                         {column.render("Header")}
                                     </TableHead>
                                 ))}
@@ -123,9 +135,9 @@ export default function PlaylistSearch() {
                         {rows.map((row: Row<Playlist>) => {
                             prepareRow(row);
                             return (
-                                <TableRow {...row.getRowProps()}>
+                                <TableRow key={row.getRowProps().key}>
                                     {row.cells.map((cell) => (
-                                        <TableCell {...cell.getCellProps()}>
+                                        <TableCell key={cell.getCellProps().key}>
                                             {cell.render("Cell")}
                                         </TableCell>
                                     ))}
