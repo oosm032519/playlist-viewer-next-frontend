@@ -20,6 +20,7 @@ import FollowedPlaylists from "./components/FollowedPlaylists";
 import PlaylistTable from "./components/PlaylistTable";
 import PlaylistDetailsLoader from "./components/PlaylistDetailsLoader";
 import {Playlist} from "@/app/types/playlist";
+import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 
 // セッションチェック処理を関数として抽出
 const checkSession = async () => {
@@ -41,6 +42,8 @@ export default function Home() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [selectedPlaylistId, setSelectedPlaylistId] = useState<string | null>(null);
     const [userId, setUserId] = useState<string | null>(null); // userId を状態として保持
+    
+    const queryClient = new QueryClient();
     
     useEffect(() => {
         const initializeSession = async () => {
@@ -79,6 +82,7 @@ export default function Home() {
     };
     
     return (
+        <QueryClientProvider client={queryClient}>
         <main className="flex flex-col items-center justify-center p-8">
             <Card className="w-full max-w-4xl">
                 <CardHeader>
@@ -89,7 +93,7 @@ export default function Home() {
                 <CardContent>
                     <div className="space-y-6">
                         <LoginButton onLoginSuccess={handleLoginSuccess}/>
-                        <PlaylistSearchForm onSearch={handleSearch}/>
+                            <PlaylistSearchForm onSearch={handleSearch}/>
                         <PlaylistIdForm onPlaylistSelect={handlePlaylistClick}/>
                         
                         {error && (
@@ -113,5 +117,6 @@ export default function Home() {
                 </CardContent>
             </Card>
         </main>
+        </QueryClientProvider>
     );
 }
