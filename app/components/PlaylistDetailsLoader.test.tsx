@@ -1,4 +1,4 @@
-// app/components/__tests__/PlaylistDetailsLoader.test.tsx
+// app/components/PlaylistDetailsLoader.test.tsx
 
 import React from 'react';
 import {render, screen, waitFor, act} from '@testing-library/react';
