@@ -1,10 +1,10 @@
 "use client";
 
-import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {yupResolver} from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import axios from "axios";
+import {useQuery, useMutation, useQueryClient} from "@tanstack/react-query";
 
 import {Button} from "@/app/components/ui/button";
 import {Input} from "@/app/components/ui/input";
@@ -40,33 +40,30 @@ interface PlaylistSearchFormProps {
 }
 
 export default function PlaylistSearchForm({onSearch}: PlaylistSearchFormProps) {
-    const [isLoading, setIsLoading] = useState(false);
+    const queryClient = useQueryClient();
     const form = useForm<SearchFormInputs>({
         resolver: yupResolver(schema),
-        defaultValues: {query: ""}, // 初期値を設定
+        defaultValues: {query: ""},
     });
     
     const searchPlaylists = async (query: string) => {
-        try {
-            const response = await axios.get<Playlist[]>(`/api/playlists/search?query=${query}`);
-            return response.data;
-        } catch (error: any) {
-            console.error("プレイリスト検索中にエラーが発生しました:", error);
-            throw error;
-        }
+        const response = await axios.get<Playlist[]>(`/api/playlists/search?query=${query}`);
+        return response.data;
     };
     
+    const searchMutation = useMutation({
+        mutationFn: searchPlaylists,
+        onSuccess: (data) => {
+            onSearch(data);
+            queryClient.setQueryData(['playlists', form.getValues().query], data);
+        },
+        onError: (error: any) => {
+            console.error("プレイリスト検索中にエラーが発生しました:", error);
+        },
+    });
+    
     const onSubmit = async (data: SearchFormInputs) => {
-        setIsLoading(true);
-        try {
-            const playlists = await searchPlaylists(data.query);
-            onSearch(playlists);
-        } catch (error) {
-            // エラー処理
-        } finally {
-            setIsLoading(false);
-            // form.reset() を削除
-        }
+        searchMutation.mutate(data.query);
     };
     
     return (
@@ -85,13 +82,13 @@ export default function PlaylistSearchForm({onSearch}: PlaylistSearchFormProps) 
                                                 <Input
                                                     placeholder="Enter playlist name"
                                                     {...field}
-                                                    disabled={isLoading}
+                                                    disabled={searchMutation.isPending}
                                                 />
                                                 <Button
                                                     type="submit"
-                                                    disabled={isLoading}
+                                                    disabled={searchMutation.isPending}
                                                 >
-                                                    {isLoading ? "Searching..." : "Search"}
+                                                    {searchMutation.isPending ? "Searching..." : "Search"}
                                                 </Button>
                                             </div>
                                         </FormControl>
@@ -103,7 +100,7 @@ export default function PlaylistSearchForm({onSearch}: PlaylistSearchFormProps) 
                     </Form>
                 </CardContent>
             </Card>
-            <LoadingSpinner loading={isLoading}/>
+            <LoadingSpinner loading={searchMutation.isPending}/>
         </>
     );
 }
