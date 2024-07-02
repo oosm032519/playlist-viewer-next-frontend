@@ -1,3 +1,5 @@
+// PlaylistTable.tsx
+
 import {Playlist} from "@/app/types/playlist";
 import {
     Table,
@@ -27,13 +29,17 @@ export default function PlaylistTable({playlists, onPlaylistClick}: PlaylistTabl
                 {playlists.map((playlist) => (
                     <TableRow key={playlist.id} onClick={() => onPlaylistClick(playlist.id)}>
                         <TableCell>
-                            <img
-                                src={playlist.images[0]?.url}
-                                alt={playlist.name}
-                                className="w-12 h-12 object-cover rounded-full"
-                                width={48}
-                                height={48}
-                            />
+                            {playlist.images[0]?.url ? (
+                                <img
+                                    src={playlist.images[0].url}
+                                    alt={playlist.name}
+                                    className="w-12 h-12 object-cover rounded-full"
+                                    width={48}
+                                    height={48}
+                                />
+                            ) : (
+                                <div className="w-12 h-12 bg-gray-200 rounded-full"
+                                     data-testid="image-placeholder"></div>)}
                         </TableCell>
                         <TableCell>{playlist.name}</TableCell>
                         <TableCell>{playlist.tracks.total}</TableCell>
