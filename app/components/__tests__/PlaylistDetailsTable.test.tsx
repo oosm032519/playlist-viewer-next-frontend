@@ -7,43 +7,156 @@ import {Track} from '@/app/types/track';
 import '@testing-library/jest-dom';
 
 // モックデータの準備
+// @ts-ignore
+// @ts-ignore
 const mockTracks: Track[] = [
     {
         id: '1',
-        name: 'Track 1',
+        name: 'Bohemian Rhapsody',
         artists: [{
-            name: 'Artist 1',
+            name: 'Queen',
             externalUrls: undefined
         }],
         album: {
-            name: 'Album 1', images: [{url: 'https://example.com/image1.jpg'}],
+            name: 'A Night at the Opera', images: [{url: 'https://example.com/queen_anato.jpg'}],
             externalUrls: undefined
         },
-        durationMs: 200000,
+        durationMs: 354320,
         audioFeatures: {
-            danceability: 0.8,
-            energy: 0.6,
-            key: 5,
-            loudness: -5.5,
-            mode: 'Major',
-            speechiness: 0.1,
-            acousticness: 0.2,
-            instrumentalness: 0.01,
-            liveness: 0.1,
-            valence: 0.7,
-            tempo: 120,
+            danceability: 0.414,
+            energy: 0.737,
+            key: 0,
+            loudness: -9.928,
+            mode: 'Minor',
+            speechiness: 0.0583,
+            acousticness: 0.0204,
+            instrumentalness: 0.000203,
+            liveness: 0.248,
+            valence: 0.228,
+            tempo: 143.883,
             timeSignature: 4,
         },
         previewUrl: undefined
     },
-    // 他のトラックも同様に追加
+    {
+        id: '2',
+        name: 'Billie Jean',
+        artists: [{
+            name: 'Michael Jackson',
+            externalUrls: undefined
+        }],
+        album: {
+            name: 'Thriller', images: [{url: 'https://example.com/mj_thriller.jpg'}],
+            externalUrls: undefined
+        },
+        durationMs: 293827,
+        audioFeatures: {
+            danceability: 0.878,
+            energy: 0.696,
+            key: 6,
+            loudness: -3.252,
+            mode: 'Major',
+            speechiness: 0.0284,
+            acousticness: 0.0152,
+            instrumentalness: 0.0117,
+            liveness: 0.0812,
+            valence: 0.818,
+            tempo: 116.982,
+            timeSignature: 4,
+        },
+        previewUrl: undefined
+    },
+    {
+        id: '3',
+        name: 'Imagine',
+        artists: [{
+            name: 'John Lennon',
+            externalUrls: undefined
+        }],
+        album: {
+            name: 'Imagine', images: [{url: 'https://example.com/lennon_imagine.jpg'}],
+            externalUrls: undefined
+        },
+        durationMs: 183000,
+        audioFeatures: {
+            danceability: 0.535,
+            energy: 0.205,
+            key: 7,
+            loudness: -12.726,
+            mode: 'Major',
+            speechiness: 0.0293,
+            acousticness: 0.883,
+            instrumentalness: 0.000166,
+            liveness: 0.0957,
+            valence: 0.324,
+            tempo: 75.13,
+            timeSignature: 4,
+        },
+        previewUrl: undefined
+    },
+    {
+        id: '4',
+        name: 'Smells Like Teen Spirit',
+        artists: [{
+            name: 'Nirvana',
+            externalUrls: undefined
+        }],
+        album: {
+            name: 'Nevermind', images: [{url: 'https://example.com/nirvana_nevermind.jpg'}],
+            externalUrls: undefined
+        },
+        durationMs: 301920,
+        audioFeatures: {
+            danceability: 0.502,
+            energy: 0.912,
+            key: 1,
+            loudness: -5.698,
+            mode: 'Minor',
+            speechiness: 0.0498,
+            acousticness: 0.00015,
+            instrumentalness: 0.0000829,
+            liveness: 0.0486,
+            valence: 0.714,
+            tempo: 116.761,
+            timeSignature: 4,
+        },
+        previewUrl: undefined
+    },
+    {
+        id: '5',
+        name: 'Take Five',
+        artists: [{
+            name: 'Dave Brubeck',
+            externalUrls: undefined
+        }],
+        album: {
+            name: 'Time Out', images: [{url: 'https://example.com/brubeck_timeout.jpg'}],
+            externalUrls: undefined
+        },
+        durationMs: 324000,
+        audioFeatures: {
+            danceability: 0.474,
+            energy: 0.358,
+            key: 4,
+            loudness: -13.261,
+            mode: 'Minor',
+            speechiness: 0.0366,
+            acousticness: 0.675,
+            instrumentalness: 0.897,
+            liveness: 0.0863,
+            valence: 0.327,
+            tempo: 172.079,
+            timeSignature: 5,
+        },
+        previewUrl: undefined
+    },
 ];
 
 // next/imageのモック
 jest.mock('next/image', () => ({
     __esModule: true,
     default: (props: any) => {
-        return <img {...props}  alt={"Album 1"}/>;
+        return <img {...props} />;
     },
 }));
 
@@ -82,15 +195,17 @@ describe('PlaylistDetailsTable', () => {
         
         const firstRow = screen.getAllByRole('row')[1]; // 0はヘッダー行
         
-        expect(within(firstRow).getByAltText('Album 1')).toBeInTheDocument();
-        expect(within(firstRow).getByText('Track 1')).toBeInTheDocument();
-        expect(within(firstRow).getByText('Artist 1')).toBeInTheDocument();
-        expect(within(firstRow).getByText('0.800')).toBeInTheDocument(); // Danceability
-        expect(within(firstRow).getByText('0.600')).toBeInTheDocument(); // Energy
-        expect(within(firstRow).getByText('5')).toBeInTheDocument(); // Key
-        expect(within(firstRow).getByText('-5.500')).toBeInTheDocument(); // Loudness
-        expect(within(firstRow).getByText('Major')).toBeInTheDocument(); // Mode
-        // 他のオーディオ特性も同様にテスト
+        expect(within(firstRow).getByRole('img')).toHaveAttribute('src', 'https://example.com/queen_anato.jpg');
+        expect(within(firstRow).getByText('Bohemian Rhapsody')).toBeInTheDocument();
+        expect(within(firstRow).getByText('Queen')).toBeInTheDocument();
+        expect(within(firstRow).getByText('0.414')).toBeInTheDocument(); // Danceability
+        expect(within(firstRow).getByText('0.737')).toBeInTheDocument(); // Energy
+        expect(within(firstRow).getByText('0')).toBeInTheDocument(); // Key
+        expect(within(firstRow).getByText('-9.928')).toBeInTheDocument(); // Loudness
+        expect(within(firstRow).getByText('Minor')).toBeInTheDocument(); // Mode
+        expect(within(firstRow).getByText('143.883')).toBeInTheDocument(); // Tempo
+        expect(within(firstRow).getByText('354320')).toBeInTheDocument(); // Duration
+        expect(within(firstRow).getByText('4')).toBeInTheDocument(); // Time Signature
     });
     
     it('sorts the table when header is clicked', async () => {
@@ -102,13 +217,14 @@ describe('PlaylistDetailsTable', () => {
         // ソート後の最初の行を取得
         const firstRow = screen.getAllByRole('row')[1];
         
-        // ソートされた結果を確認（この例では最小値が上に来ることを想定）
-        expect(within(firstRow).getByText('0.800')).toBeInTheDocument();
+        // Bohemian Rhapsodyが最も低いdanceabilityを持つので、最初に来るはず
+        expect(within(firstRow).getByText('Bohemian Rhapsody')).toBeInTheDocument();
         
         // 逆順ソートのテスト
         fireEvent.click(danceabilityHeader);
         const newFirstRow = screen.getAllByRole('row')[1];
-        expect(within(newFirstRow).getByText('0.800')).toBeInTheDocument();
+        // Billie Jeanが最も高いdanceabilityを持つので、最初に来るはず
+        expect(within(newFirstRow).getByText('Billie Jean')).toBeInTheDocument();
     });
     
     it('displays AudioFeaturesChart when a row is clicked', () => {
@@ -118,6 +234,14 @@ describe('PlaylistDetailsTable', () => {
         fireEvent.click(firstRow);
         
         expect(screen.getByTestId('audio-features-chart')).toBeInTheDocument();
-        expect(screen.getByText('Audio Features: Track 1')).toBeInTheDocument();
+        expect(screen.getByText('Audio Features: Bohemian Rhapsody')).toBeInTheDocument();
+    });
+    
+    it('handles tracks with different time signatures', () => {
+        render(<PlaylistDetailsTable tracks={mockTracks}/>);
+        
+        const lastRow = screen.getAllByRole('row')[mockTracks.length];
+        expect(within(lastRow).getByText('Take Five')).toBeInTheDocument();
+        expect(within(lastRow).getByText('5')).toBeInTheDocument(); // Time Signature
     });
 });
