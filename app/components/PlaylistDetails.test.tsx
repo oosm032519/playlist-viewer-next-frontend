@@ -5,11 +5,11 @@ import {render, screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {axe, toHaveNoViolations} from 'jest-axe';
 import '@testing-library/jest-dom';
-import PlaylistDetails from '../PlaylistDetails';
+import PlaylistDetails from './PlaylistDetails';
 import {Track} from '@/app/types/track';
 
 // モックコンポーネントの作成
-jest.mock('../PlaylistDetailsTable', () => ({
+jest.mock('./PlaylistDetailsTable', () => ({
     PlaylistDetailsTable: ({tracks}: { tracks: Track[] }) => (
         <div data-testid="playlist-details-table">
             Mocked PlaylistDetailsTable
@@ -18,7 +18,7 @@ jest.mock('../PlaylistDetailsTable', () => ({
     ),
 }));
 
-jest.mock('../GenreChart', () => ({
+jest.mock('./GenreChart', () => ({
     __esModule: true,
     default: ({genreCounts}: { genreCounts: { [genre: string]: number } }) => (
         <div data-testid="genre-chart">
@@ -28,7 +28,7 @@ jest.mock('../GenreChart', () => ({
     ),
 }));
 
-jest.mock('../RecommendationsTable', () => ({
+jest.mock('./RecommendationsTable', () => ({
     RecommendationsTable: ({tracks, ownerId, userId, playlistId}: {
         tracks: Track[],
         ownerId: string,

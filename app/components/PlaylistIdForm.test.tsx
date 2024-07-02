@@ -4,7 +4,7 @@
 import React from 'react';
 import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import {axe, toHaveNoViolations} from 'jest-axe';
-import PlaylistIdForm from '../PlaylistIdForm';
+import PlaylistIdForm from './PlaylistIdForm';
 import LoadingSpinner from '@/app/components/LoadingSpinner';
 
 expect.extend(toHaveNoViolations);

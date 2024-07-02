@@ -1,7 +1,7 @@
 import React from 'react';
 import {render, screen} from '@testing-library/react';
 import '@testing-library/jest-dom';
-import GenreChart, {prepareChartData} from '../GenreChart';
+import GenreChart, {prepareChartData} from './GenreChart';
 
 // rechartsのモックを修正
 jest.mock('recharts', () => {

@@ -3,7 +3,7 @@ import {render, screen, waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import axios from 'axios';
 import {axe} from 'jest-axe';
-import PlaylistSearch from '../PlaylistSearch';
+import PlaylistSearch from './PlaylistSearch';
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;

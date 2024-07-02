@@ -2,7 +2,7 @@
 
 import React from 'react';
 import {render, screen, fireEvent, within, act} from '@testing-library/react';
-import {PlaylistDetailsTable} from '../PlaylistDetailsTable';
+import {PlaylistDetailsTable} from './PlaylistDetailsTable';
 import {Track} from '@/app/types/track';
 import '@testing-library/jest-dom';
 import {axe, toHaveNoViolations} from 'jest-axe';
@@ -165,7 +165,7 @@ jest.mock('next/image', () => ({
 }));
 
 // AudioFeaturesChartコンポーネントのモック
-jest.mock('../AudioFeaturesChart', () => {
+jest.mock('./AudioFeaturesChart', () => {
     return {
         __esModule: true,
         default: () => <div data-testid="audio-features-chart"/>,

@@ -4,7 +4,7 @@ import React from 'react';
 import {render, screen} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import {axe, toHaveNoViolations} from 'jest-axe';
-import LoadingSpinner from '../LoadingSpinner';
+import LoadingSpinner from './LoadingSpinner';
 
 expect.extend(toHaveNoViolations);
 

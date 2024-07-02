@@ -4,7 +4,7 @@ import React from 'react';
 import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import {axe, toHaveNoViolations} from 'jest-axe';
 import axios from 'axios';
-import * as renderer from 'react-test-renderer';import PlaylistSearchForm from '../PlaylistSearchForm';
+import * as renderer from 'react-test-renderer';import PlaylistSearchForm from './PlaylistSearchForm';
 import '@testing-library/jest-dom';
 
 expect.extend(toHaveNoViolations);

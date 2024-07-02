@@ -3,7 +3,7 @@
 import React from 'react';
 import {render, screen, waitFor, act, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import FollowedPlaylists from '../FollowedPlaylists';
+import FollowedPlaylists from './FollowedPlaylists';
 import {Playlist} from '@/app/types/playlist';
 import {axe, toHaveNoViolations} from 'jest-axe';
 

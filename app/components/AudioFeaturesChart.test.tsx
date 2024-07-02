@@ -1,6 +1,6 @@
 import React from 'react';
 import {render, screen} from '@testing-library/react';
-import AudioFeaturesChart from '../AudioFeaturesChart';
+import AudioFeaturesChart from './AudioFeaturesChart';
 import {Track} from '@/app/types/track';
 import {axe, toHaveNoViolations} from 'jest-axe';
 

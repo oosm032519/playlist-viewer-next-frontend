@@ -4,7 +4,7 @@ import React from 'react';
 import {render, screen, waitFor, act} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import axios from 'axios';
-import PlaylistDetailsLoader from '../PlaylistDetailsLoader';
+import PlaylistDetailsLoader from './PlaylistDetailsLoader';
 import '@testing-library/jest-dom';
 import {axe, toHaveNoViolations} from 'jest-axe';
 
@@ -13,7 +13,7 @@ jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 // PlaylistDetailsコンポーネントのモック
-jest.mock('../PlaylistDetails', () => {
+jest.mock('./PlaylistDetails', () => {
     return function DummyPlaylistDetails(props: any) {
         return (
             <div data-testid="playlist-details">
@@ -30,7 +30,7 @@ jest.mock('../PlaylistDetails', () => {
 });
 
 // LoadingSpinnerコンポーネントのモック
-jest.mock('../LoadingSpinner', () => {
+jest.mock('./LoadingSpinner', () => {
     return function DummyLoadingSpinner({loading}: { loading: boolean }) {
         return loading ? <div data-testid="loading-spinner">Loading...</div> : null;
     };

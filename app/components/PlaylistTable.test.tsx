@@ -4,7 +4,7 @@ import React from 'react';
 import {render, screen, fireEvent, within} from '@testing-library/react';
 import {axe, toHaveNoViolations} from 'jest-axe';
 import '@testing-library/jest-dom';
-import PlaylistTable from '../PlaylistTable';
+import PlaylistTable from './PlaylistTable';
 import {Playlist} from '@/app/types/playlist';
 
 // jest-axeのマッチャーを追加
