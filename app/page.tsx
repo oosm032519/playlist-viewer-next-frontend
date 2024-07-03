@@ -1,4 +1,3 @@
-// app/page.tsx
 "use client";
 
 import {useState, useEffect} from "react";
@@ -21,20 +20,7 @@ import PlaylistTable from "./components/PlaylistTable";
 import PlaylistDetailsLoader from "./components/PlaylistDetailsLoader";
 import {Playlist} from "@/app/types/playlist";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
-
-// セッションチェック処理を関数として抽出
-const checkSession = async () => {
-    try {
-        const response = await fetch('http://localhost:8080/api/session/check', {
-            credentials: 'include'
-        });
-        const data = await response.json();
-        return data.status === 'success';
-    } catch (error) {
-        console.error('セッションチェックエラー:', error);
-        return false;
-    }
-};
+import {checkSession} from "./lib/checkSession"; // セッションチェック関数をインポート
 
 export default function Home() {
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
@@ -83,40 +69,40 @@ export default function Home() {
     
     return (
         <QueryClientProvider client={queryClient}>
-        <main className="flex flex-col items-center justify-center p-8">
-            <Card className="w-full max-w-4xl">
-                <CardHeader>
-                    <CardTitle className="text-4xl font-bold text-center text-spotify-green">
-                        Playlist Viewer
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-6">
-                        <LoginButton onLoginSuccess={handleLoginSuccess}/>
+            <main className="flex flex-col items-center justify-center p-8">
+                <Card className="w-full max-w-4xl">
+                    <CardHeader>
+                        <CardTitle className="text-4xl font-bold text-center text-spotify-green">
+                            Playlist Viewer
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-6">
+                            <LoginButton onLoginSuccess={handleLoginSuccess}/>
                             <PlaylistSearchForm onSearch={handleSearch}/>
-                        <PlaylistIdForm onPlaylistSelect={handlePlaylistClick}/>
-                        
-                        {error && (
-                            <Alert variant="destructive">
-                                <AlertTitle>Error</AlertTitle>
-                                <AlertDescription>{error}</AlertDescription>
-                            </Alert>
-                        )}
-                        
-                        {/* 条件式を整理 */}
-                        {playlists.length > 0 && !selectedPlaylistId && (
-                            <PlaylistTable playlists={playlists} onPlaylistClick={handlePlaylistClick}/>
-                        )}
-                        
-                        {selectedPlaylistId && userId && (
-                            <PlaylistDetailsLoader playlistId={selectedPlaylistId} userId={userId}/>
-                        )}
-                        
-                        {isLoggedIn && <FollowedPlaylists onPlaylistClick={handlePlaylistClick}/>}
-                    </div>
-                </CardContent>
-            </Card>
-        </main>
+                            <PlaylistIdForm onPlaylistSelect={handlePlaylistClick}/>
+                            
+                            {error && (
+                                <Alert variant="destructive">
+                                    <AlertTitle>Error</AlertTitle>
+                                    <AlertDescription>{error}</AlertDescription>
+                                </Alert>
+                            )}
+                            
+                            {/* 条件式を整理 */}
+                            {playlists.length > 0 && !selectedPlaylistId && (
+                                <PlaylistTable playlists={playlists} onPlaylistClick={handlePlaylistClick}/>
+                            )}
+                            
+                            {selectedPlaylistId && userId && (
+                                <PlaylistDetailsLoader playlistId={selectedPlaylistId} userId={userId}/>
+                            )}
+                            
+                            {isLoggedIn && <FollowedPlaylists onPlaylistClick={handlePlaylistClick}/>}
+                        </div>
+                    </CardContent>
+                </Card>
+            </main>
         </QueryClientProvider>
     );
 }
