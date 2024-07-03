@@ -1,4 +1,4 @@
-// src/app/components/__tests__/LoginButton.test.tsx
+// src/app/components/LoginButton.test.tsx
 
 import React from 'react';
 import {render, screen, fireEvent, waitFor} from '@testing-library/react';
@@ -6,27 +6,22 @@ import axios from 'axios';
 import {axe, toHaveNoViolations} from 'jest-axe';
 import LoginButton from './LoginButton';
 
-// axeのマッチャーを追加
 expect.extend(toHaveNoViolations);
 
-// axiosのモック
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe('LoginButton', () => {
-    // 各テストの前にモックをクリア
     beforeEach(() => {
         jest.clearAllMocks();
     });
     
-    // アクセシビリティテスト
     test('アクセシビリティに問題がないこと', async () => {
         const {container} = render(<LoginButton onLoginSuccess={jest.fn()}/>);
         const results = await axe(container);
         expect(results).toHaveNoViolations();
     });
     
-    // ログイン状態のテスト
     describe('ログイン状態', () => {
         beforeEach(() => {
             mockedAxios.get.mockResolvedValue({data: {status: 'success'}});
@@ -60,7 +55,7 @@ describe('LoginButton', () => {
             
             fireEvent.click(screen.getByRole('button', {name: 'ログアウト'}));
             
-            expect(mockedAxios.post).toHaveBeenCalledWith('http://localhost:8080/logout', {withCredentials: true});
+            expect(mockedAxios.post).toHaveBeenCalledWith('http://localhost:8080/logout', {}, {withCredentials: true});
             
             await waitFor(() => {
                 expect(mockReload).toHaveBeenCalledTimes(1);
@@ -68,7 +63,6 @@ describe('LoginButton', () => {
         });
     });
     
-    // 未ログイン状態のテスト
     describe('未ログイン状態', () => {
         beforeEach(() => {
             mockedAxios.get.mockRejectedValue(new Error('Unauthorized'));
