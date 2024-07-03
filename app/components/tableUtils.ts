@@ -8,6 +8,7 @@ export const audioFeatureSort = (
 ) => {
     const aValue = a.original.audioFeatures?.[accessorKey];
     const bValue = b.original.audioFeatures?.[accessorKey];
+    if (aValue === undefined && bValue === undefined) return 0;
     if (aValue === undefined) return 1;
     if (bValue === undefined) return -1;
     return aValue - bValue;
