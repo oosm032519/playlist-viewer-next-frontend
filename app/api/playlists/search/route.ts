@@ -1,4 +1,4 @@
-// route.ts
+// app/api/playlists/search/route.ts
 
 import {NextResponse} from 'next/server'
 import axios from 'axios'
