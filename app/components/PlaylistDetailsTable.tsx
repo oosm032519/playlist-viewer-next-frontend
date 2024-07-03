@@ -1,3 +1,5 @@
+// PlaylistDetailsTable.tsx
+
 "use client";
 
 import React, {useMemo, useState} from "react";
@@ -20,23 +22,11 @@ import {
 import {ArrowUpDown} from "lucide-react";
 import Image from "next/image";
 import AudioFeaturesChart from "./AudioFeaturesChart";
+import {audioFeatureSort} from "./tableUtils";
 
 interface PlaylistDetailsTableProps {
     tracks: Track[];
 }
-
-// オーディオ機能のソートタイプ関数を定義
-const audioFeatureSort = (
-    a: { original: { audioFeatures: { [key: string]: number | undefined } } },
-    b: { original: { audioFeatures: { [key: string]: number | undefined } } },
-    accessorKey: string
-) => {
-    const aValue = a.original.audioFeatures?.[accessorKey];
-    const bValue = b.original.audioFeatures?.[accessorKey];
-    if (aValue === undefined) return 1;
-    if (bValue === undefined) return -1;
-    return aValue - bValue;
-};
 
 export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
                                                                               tracks,
