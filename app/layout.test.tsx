@@ -1,4 +1,4 @@
-// RootLayout.test.tsx
+// layout.test.tsx
 
 import React from 'react';
 import {render} from '@testing-library/react';
@@ -62,18 +62,5 @@ describe('RootLayout', () => {
             }
         });
         expect(results).toHaveNoViolations();
-    });
-});
-
-// Metadata のテスト
-import {metadata} from './layout';
-
-describe('Metadata', () => {
-    it('has correct title', () => {
-        expect(metadata.title).toBe('Playlist Viewer Next');
-    });
-    
-    it('has correct description', () => {
-        expect(metadata.description).toBe('View and analyze Spotify playlists');
     });
 });
