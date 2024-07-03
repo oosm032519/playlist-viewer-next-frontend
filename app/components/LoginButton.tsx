@@ -1,5 +1,3 @@
-// src/app/components/LoginButton.tsx
-
 "use client";
 
 import React, {useState, useEffect} from 'react';
@@ -15,9 +13,13 @@ const LoginButton: React.FC<LoginButtonProps> = ({onLoginSuccess}) => {
     
     const checkLoginStatus = async () => {
         try {
-            const response = await axios.get('http://localhost:8080/api/session/check', {withCredentials: true});
-            console.log("Session check response:", response);
-            if (response && response.data && response.data.status === 'success') {
+            const response = await fetch('/api/session', {
+                method: 'GET',
+                credentials: 'include'
+            });
+            const data = await response.json();
+            console.log("Session check response:", data);
+            if (data && data.status === 'success') {
                 setIsLoggedIn(true);
                 onLoginSuccess();
             } else {

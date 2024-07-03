@@ -1,5 +1,3 @@
-// src/app/components/LoginButton.test.tsx
-
 import React from 'react';
 import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import axios from 'axios';
@@ -10,6 +8,9 @@ expect.extend(toHaveNoViolations);
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
+
+// fetchのモック
+global.fetch = jest.fn() as jest.Mock;
 
 describe('LoginButton', () => {
     beforeEach(() => {
@@ -24,7 +25,9 @@ describe('LoginButton', () => {
     
     describe('ログイン状態', () => {
         beforeEach(() => {
-            mockedAxios.get.mockResolvedValue({data: {status: 'success'}});
+            (global.fetch as jest.Mock).mockResolvedValue({
+                json: () => Promise.resolve({status: 'success'})
+            });
         });
         
         test('ログアウトボタンが表示される', async () => {
@@ -65,22 +68,17 @@ describe('LoginButton', () => {
     
     describe('未ログイン状態', () => {
         beforeEach(() => {
-            mockedAxios.get.mockRejectedValue(new Error('Unauthorized'));
+            (global.fetch as jest.Mock).mockResolvedValue({
+                json: () => Promise.resolve({status: 'error'})
+            });
         });
         
         test('ログインボタンが表示される', async () => {
-            const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {
-            });
-            
             render(<LoginButton onLoginSuccess={jest.fn()}/>);
             
             await waitFor(() => {
                 expect(screen.getByRole('button', {name: 'Spotifyでログイン'})).toBeInTheDocument();
             });
-            
-            expect(consoleSpy).toHaveBeenCalledWith('セッションチェックエラー:', expect.any(Error));
-            
-            consoleSpy.mockRestore();
         });
         
         test('ログインボタンクリックで正しいURLにリダイレクトされる', () => {
@@ -112,7 +110,7 @@ describe('LoginButton', () => {
         const mockConsoleError = jest.spyOn(console, 'error').mockImplementation(() => {
         });
         
-        mockedAxios.get.mockRejectedValue(new Error('Network Error'));
+        (global.fetch as jest.Mock).mockRejectedValue(new Error('Network Error'));
         
         render(<LoginButton onLoginSuccess={jest.fn()}/>);
         
