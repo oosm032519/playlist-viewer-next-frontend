@@ -3,7 +3,7 @@
 import React from 'react';
 import axios from 'axios';
 import {Button} from "./ui/button";
-import {useQuery, useMutation, useQueryClient} from 'react-query';
+import {useMutation, useQuery, useQueryClient} from 'react-query';
 
 interface LoginButtonProps {
     onLoginSuccess: () => void;
@@ -64,7 +64,7 @@ async function logout() {
 }
 
 function handleLogin() {
-    window.location.href = 'http://localhost:8080/oauth2/authorization/spotify';
+    window.location.href = process.env.NEXT_PUBLIC_SPOTIFY_AUTH_URL || 'http://localhost:8080/oauth2/authorization/spotify';
 }
 
 export default LoginButton;
