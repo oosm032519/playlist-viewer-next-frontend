@@ -1,58 +1,69 @@
 "use client";
 
-import React, {useState, useEffect} from 'react';
+import React from 'react';
 import axios from 'axios';
 import {Button} from "./ui/button";
+import {useQuery, useMutation, useQueryClient} from 'react-query';
 
 interface LoginButtonProps {
     onLoginSuccess: () => void;
 }
 
 const LoginButton: React.FC<LoginButtonProps> = ({onLoginSuccess}) => {
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const queryClient = useQueryClient();
     
-    const checkLoginStatus = async () => {
+    const {data: loginStatus, isLoading} = useQuery('loginStatus', async () => {
         try {
             const response = await fetch('/api/session', {
                 method: 'GET',
                 credentials: 'include'
             });
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
             const data = await response.json();
             console.log("Session check response:", data);
-            if (data && data.status === 'success') {
-                setIsLoggedIn(true);
-                onLoginSuccess();
-            } else {
-                setIsLoggedIn(false);
-            }
+            return data && data.status === 'success';
         } catch (error) {
             console.error('セッションチェックエラー:', error);
-            setIsLoggedIn(false);
+            return false;
         }
-    };
+    }, {
+        onSuccess: (isLoggedIn) => {
+            if (isLoggedIn) {
+                onLoginSuccess();
+            }
+        }
+    });
     
-    useEffect(() => {
-        checkLoginStatus();
-    }, [onLoginSuccess]);
+    
+    const logoutMutation = useMutation(
+        async () => {
+            await axios.post('http://localhost:8080/logout', {}, {withCredentials: true});
+        },
+        {
+            onSuccess: () => {
+                queryClient.setQueryData('loginStatus', false);
+                window.location.reload();
+            },
+            onError: (error) => {
+                console.error('ログアウトエラー:', error);
+            }
+        }
+    );
     
     const handleLogin = () => {
         window.location.href = 'http://localhost:8080/oauth2/authorization/spotify';
     };
     
-    const handleLogout = async () => {
-        try {
-            await axios.post('http://localhost:8080/logout', {}, {withCredentials: true});
-            setIsLoggedIn(false);
-            window.location.reload();
-        } catch (error) {
-            console.error('ログアウトエラー:', error);
-        }
-    };
+    if (isLoading) {
+        return <Button disabled>読み込み中...</Button>;
+    }
     
     return (
         <div>
-            {isLoggedIn ? (
-                <Button onClick={handleLogout}>ログアウト</Button>
+            {loginStatus ? (
+                <Button onClick={() => logoutMutation.mutate()}>ログアウト</Button>
             ) : (
                 <Button onClick={handleLogin}>Spotifyでログイン</Button>
             )}

@@ -1,38 +1,63 @@
 import React from 'react';
-import {render, screen, fireEvent, waitFor} from '@testing-library/react';
+import {render, screen, fireEvent, waitFor, act} from '@testing-library/react';
 import axios from 'axios';
 import {axe, toHaveNoViolations} from 'jest-axe';
 import LoginButton from './LoginButton';
+import {QueryClient, QueryClientProvider} from 'react-query';
 
 expect.extend(toHaveNoViolations);
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
-// fetchのモック
-global.fetch = jest.fn() as jest.Mock;
+const mockFetch = jest.fn();
+global.fetch = mockFetch;
+
+let queryClient: QueryClient;
+
+const createWrapper = () => {
+    queryClient = new QueryClient({
+        defaultOptions: {
+            queries: {
+                retry: false,
+            },
+        },
+    });
+    return ({children}: { children: React.ReactNode }) => (
+        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+};
 
 describe('LoginButton', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        queryClient?.clear();
+        mockFetch.mockClear();
     });
     
     test('アクセシビリティに問題がないこと', async () => {
-        const {container} = render(<LoginButton onLoginSuccess={jest.fn()}/>);
+        mockFetch.mockResolvedValue({
+            ok: true,
+            json: () => Promise.resolve({status: 'error'})
+        });
+        const {container} = render(<LoginButton onLoginSuccess={jest.fn()}/>, {wrapper: createWrapper()});
         const results = await axe(container);
         expect(results).toHaveNoViolations();
     });
     
     describe('ログイン状態', () => {
         beforeEach(() => {
-            (global.fetch as jest.Mock).mockResolvedValue({
+            mockFetch.mockResolvedValue({
+                ok: true,
                 json: () => Promise.resolve({status: 'success'})
             });
         });
         
         test('ログアウトボタンが表示される', async () => {
             const mockOnLoginSuccess = jest.fn();
-            render(<LoginButton onLoginSuccess={mockOnLoginSuccess}/>);
+            await act(async () => {
+                render(<LoginButton onLoginSuccess={mockOnLoginSuccess}/>, {wrapper: createWrapper()});
+            });
             
             await waitFor(() => {
                 expect(screen.getByRole('button', {name: 'ログアウト'})).toBeInTheDocument();
@@ -50,17 +75,20 @@ describe('LoginButton', () => {
                 writable: true
             });
             
-            render(<LoginButton onLoginSuccess={jest.fn()}/>);
+            await act(async () => {
+                render(<LoginButton onLoginSuccess={jest.fn()}/>, {wrapper: createWrapper()});
+            });
             
             await waitFor(() => {
                 expect(screen.getByRole('button', {name: 'ログアウト'})).toBeInTheDocument();
             });
             
-            fireEvent.click(screen.getByRole('button', {name: 'ログアウト'}));
-            
-            expect(mockedAxios.post).toHaveBeenCalledWith('http://localhost:8080/logout', {}, {withCredentials: true});
+            await act(async () => {
+                fireEvent.click(screen.getByRole('button', {name: 'ログアウト'}));
+            });
             
             await waitFor(() => {
+                expect(mockedAxios.post).toHaveBeenCalledWith('http://localhost:8080/logout', {}, {withCredentials: true});
                 expect(mockReload).toHaveBeenCalledTimes(1);
             });
         });
@@ -68,20 +96,23 @@ describe('LoginButton', () => {
     
     describe('未ログイン状態', () => {
         beforeEach(() => {
-            (global.fetch as jest.Mock).mockResolvedValue({
+            mockFetch.mockResolvedValue({
+                ok: true,
                 json: () => Promise.resolve({status: 'error'})
             });
         });
         
         test('ログインボタンが表示される', async () => {
-            render(<LoginButton onLoginSuccess={jest.fn()}/>);
+            await act(async () => {
+                render(<LoginButton onLoginSuccess={jest.fn()}/>, {wrapper: createWrapper()});
+            });
             
             await waitFor(() => {
                 expect(screen.getByRole('button', {name: 'Spotifyでログイン'})).toBeInTheDocument();
             });
         });
         
-        test('ログインボタンクリックで正しいURLにリダイレクトされる', () => {
+        test('ログインボタンクリックで正しいURLにリダイレクトされる', async () => {
             const originalLocation = window.location;
             const mockLocation = {
                 ...originalLocation,
@@ -92,7 +123,13 @@ describe('LoginButton', () => {
                 value: mockLocation,
             });
             
-            render(<LoginButton onLoginSuccess={jest.fn()}/>);
+            await act(async () => {
+                render(<LoginButton onLoginSuccess={jest.fn()}/>, {wrapper: createWrapper()});
+            });
+            
+            await waitFor(() => {
+                expect(screen.getByRole('button', {name: 'Spotifyでログイン'})).toBeInTheDocument();
+            });
             
             fireEvent.click(screen.getByRole('button', {name: 'Spotifyでログイン'}));
             
@@ -105,21 +142,31 @@ describe('LoginButton', () => {
         });
     });
     
-    // エラー処理のテスト
     test('セッションチェックでエラーが発生した場合の処理', async () => {
         const mockConsoleError = jest.spyOn(console, 'error').mockImplementation(() => {
         });
         
-        (global.fetch as jest.Mock).mockRejectedValue(new Error('Network Error'));
+        mockFetch.mockRejectedValue(new Error('Network Error'));
         
-        render(<LoginButton onLoginSuccess={jest.fn()}/>);
+        await act(async () => {
+            render(<LoginButton onLoginSuccess={jest.fn()}/>, {wrapper: createWrapper()});
+        });
         
         await waitFor(() => {
             expect(mockConsoleError).toHaveBeenCalledWith('セッションチェックエラー:', expect.any(Error));
+            expect(screen.getByRole('button', {name: 'Spotifyでログイン'})).toBeInTheDocument();
         });
         
-        expect(screen.getByRole('button', {name: 'Spotifyでログイン'})).toBeInTheDocument();
-        
         mockConsoleError.mockRestore();
+    });
+    
+    test('ローディング中の表示', async () => {
+        mockFetch.mockImplementation(() => new Promise(() => {
+        })); // 永続的なペンディング状態
+        
+        render(<LoginButton onLoginSuccess={jest.fn()}/>, {wrapper: createWrapper()});
+        
+        expect(screen.getByRole('button', {name: '読み込み中...'})).toBeInTheDocument();
+        expect(screen.getByRole('button', {name: '読み込み中...'})).toBeDisabled();
     });
 });
