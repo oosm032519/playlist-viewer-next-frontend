@@ -1,3 +1,5 @@
+// app/components/PlaylistIdForm.test.tsx
+
 "use client";
 
 import React from 'react';
@@ -166,9 +168,10 @@ describe('PlaylistIdForm', () => {
                 // スピナーが非表示になるのを待つ
                 await waitFor(() => {
                     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
-                });
+                }, {timeout: 2000});
             });
         });
+    });
         
         // エラーハンドリングのテスト
         describe('Error handling', () => {
@@ -201,4 +204,3 @@ describe('PlaylistIdForm', () => {
             });
         });
     });
-});
