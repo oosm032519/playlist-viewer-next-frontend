@@ -1,5 +1,7 @@
 "use client";
 
+"use client";
+
 import {useState, useEffect} from "react";
 import {
     Card,
@@ -33,25 +35,34 @@ export default function Home() {
     
     useEffect(() => {
         const initializeSession = async () => {
-            setIsLoggedIn(await checkSession());
+            const sessionStatus = await checkSession();
+            setIsLoggedIn(sessionStatus);
             
-            // セッションチェックが成功したらuserIdを取得
-            if (isLoggedIn) {
+            if (sessionStatus) {
                 try {
                     const response = await fetch("http://localhost:8080/api/session/check", {
                         credentials: "include",
                     });
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
                     const data = await response.json();
                     if (data.userId) {
                         setUserId(data.userId); // userId を状態に設定
                     }
                 } catch (error) {
-                    console.error("ユーザーIDの取得中にエラーが発生しました:", error);
+                    if (error instanceof Error) {
+                        console.error("ユーザーIDの取得中にエラーが発生しました:", error.message, (error as any).code);
+                        setError("ユーザーIDの取得中にエラーが発生しました。");
+                    } else {
+                        console.error("ユーザーIDの取得中にエラーが発生しました:", error);
+                        setError("ユーザーIDの取得中にエラーが発生しました。");
+                    }
                 }
             }
         };
         initializeSession();
-    }, [isLoggedIn]);
+    }, []);
     
     const handleSearch = (playlists: Playlist[]) => {
         setPlaylists(playlists);
@@ -89,7 +100,6 @@ export default function Home() {
                                 </Alert>
                             )}
                             
-                            {/* 条件式を整理 */}
                             {playlists.length > 0 && !selectedPlaylistId && (
                                 <PlaylistTable playlists={playlists} onPlaylistClick={handlePlaylistClick}/>
                             )}
