@@ -88,7 +88,7 @@ describe('LoginButton', () => {
             });
             
             await waitFor(() => {
-                expect(mockedAxios.post).toHaveBeenCalledWith('http://localhost:8080/logout', {}, {withCredentials: true});
+                expect(mockedAxios.post).toHaveBeenCalledWith('/api/logout', {}, {withCredentials: true});
                 expect(mockReload).toHaveBeenCalledTimes(1);
             });
         });

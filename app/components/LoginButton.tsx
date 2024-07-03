@@ -39,7 +39,7 @@ const LoginButton: React.FC<LoginButtonProps> = ({onLoginSuccess}) => {
     
     const logoutMutation = useMutation(
         async () => {
-            await axios.post('http://localhost:8080/logout', {}, {withCredentials: true});
+            await axios.post('/api/logout', {}, {withCredentials: true});
         },
         {
             onSuccess: () => {
