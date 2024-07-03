@@ -14,7 +14,7 @@ import {
 import {ArrowUpDown} from "lucide-react";
 import Image from "next/image";
 import AudioFeaturesChart from "./AudioFeaturesChart";
-import {audioFeatureSort} from "./tableUtils";
+import {audioFeatureSort} from "../lib/tableUtils";
 
 interface PlaylistDetailsTableProps {
     tracks: Track[];
