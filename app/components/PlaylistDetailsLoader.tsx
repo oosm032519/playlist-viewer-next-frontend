@@ -9,7 +9,7 @@ import LoadingSpinner from "./LoadingSpinner";
 
 interface PlaylistDetailsLoaderProps {
     playlistId: string;
-    userId: string;
+    userId?: string; // userIdをオプションのプロパティにする
 }
 
 interface PlaylistData {
@@ -62,7 +62,7 @@ const PlaylistDetailsLoader: React.FC<PlaylistDetailsLoaderProps> = ({
             recommendations={playlistData.recommendations}
             playlistName={playlistData.playlistName}
             ownerId={playlistData.ownerId}
-            userId={userId}
+            userId={userId || ''}
             playlistId={playlistId}
         />
     );
