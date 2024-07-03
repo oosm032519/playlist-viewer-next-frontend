@@ -2,7 +2,7 @@
 
 export const checkSession = async () => {
     try {
-        const response = await fetch('http://localhost:8080/api/session/check', {
+        const response = await fetch('/api/session', {
             credentials: 'include'
         });
         const data = await response.json();

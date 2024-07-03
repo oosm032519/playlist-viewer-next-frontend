@@ -40,7 +40,7 @@ export default function Home() {
             
             if (sessionStatus) {
                 try {
-                    const response = await fetch("http://localhost:8080/api/session/check", {
+                    const response = await fetch("/api/session", {
                         credentials: "include",
                     });
                     if (!response.ok) {
@@ -48,7 +48,7 @@ export default function Home() {
                     }
                     const data = await response.json();
                     if (data.userId) {
-                        setUserId(data.userId); // userId を状態に設定
+                        setUserId(data.userId);
                     }
                 } catch (error) {
                     if (error instanceof Error) {
