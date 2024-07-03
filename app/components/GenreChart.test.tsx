@@ -3,7 +3,7 @@ import {render, screen} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import GenreChart, {prepareChartData} from './GenreChart';
 
-// rechartsのモックを修正
+// Rechartsのモックを修正
 jest.mock('recharts', () => {
     const OriginalModule = jest.requireActual('recharts');
     return {
@@ -15,10 +15,16 @@ jest.mock('recharts', () => {
         Cell: ({fill}: { fill: string }) => <div data-testid="cell" data-fill={fill}>Cell</div>,
         Tooltip: () => <div data-testid="tooltip">Tooltip</div>,
         Legend: () => <div data-testid="legend">Legend</div>,
-        Text: ({children, ...props}: { children: React.ReactNode }) => (
-            <text data-testid="text" {...props}>
-                <tspan>{children}</tspan>
-            </text>
+        // TextとtspanをReactコンポーネントとしてモック
+        Text: ({children, ...props}: { children: React.ReactNode, [key: string]: any }) => (
+            <p data-testid="text" {...props}>
+                {children}
+            </p>
+        ),
+        tspan: ({children, ...props}: { children: React.ReactNode, [key: string]: any }) => (
+            <span {...props}>
+                {children}
+            </span>
         ),
     };
 });

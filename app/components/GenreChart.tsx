@@ -11,6 +11,9 @@ import {
 import {TooltipProps} from 'recharts';
 import {NameType, ValueType} from 'recharts/types/component/DefaultTooltipContent';
 
+// Textコンポーネントをインポート
+import {Text as RechartsText} from 'recharts';
+
 interface GenreChartData {
     name: string;
     value: number;
@@ -105,7 +108,8 @@ const GenreChart: React.FC<GenreChartProps> = ({
     return (
         <ResponsiveContainer width='100%' height={300}>
             <PieChart>
-                <Text
+                {/* RechartsTextコンポーネントを使用 */}
+                <RechartsText
                     x={125}
                     y={150}
                     textAnchor='middle'
@@ -113,7 +117,7 @@ const GenreChart: React.FC<GenreChartProps> = ({
                     fontSize={16}
                 >
                     {playlistName || ''}
-                </Text>
+                </RechartsText>
                 <Pie
                     data={data}
                     cx='50%'
