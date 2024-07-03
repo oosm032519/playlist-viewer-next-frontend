@@ -1,3 +1,5 @@
+// app/lib/checkSession.ts
+
 export const checkSession = async () => {
     try {
         const response = await fetch('http://localhost:8080/api/session/check', {
