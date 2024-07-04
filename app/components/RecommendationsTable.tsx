@@ -14,6 +14,7 @@ import {
 } from "@/app/components/ui/table";
 import Image from "next/image";
 import {Button} from "@/app/components/ui/button";
+import axios from "axios";
 
 interface RecommendationsTableProps {
     tracks: Track[];
@@ -63,19 +64,14 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({
     // 曲を追加する関数
     const handleAddTrack = async (trackId: string) => {
         try {
-            const response = await fetch(`/api/playlists/${playlistId}/tracks`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({trackId}), // 追加する曲のIDを指定
+            const response = await axios.post("/api/playlist/add-track", {
+                playlistId,
+                trackId,
             });
             
-            if (response.ok) {
-                // 成功時の処理
+            if (response.status === 200) {
                 console.log("曲が正常に追加されました");
             } else {
-                // エラー時の処理
                 console.error("曲の追加に失敗しました");
             }
         } catch (error) {
