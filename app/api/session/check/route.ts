@@ -1,10 +1,11 @@
-// app/api/session/route.ts
+import {NextRequest, NextResponse} from 'next/server';
 
-import {NextResponse} from 'next/server';
-
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
         const response = await fetch('http://localhost:8080/api/session/check', {
+            headers: {
+                'Cookie': request.headers.get('Cookie') || '',
+            },
             credentials: 'include',
         });
         const data = await response.json();

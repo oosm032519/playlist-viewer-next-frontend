@@ -2,7 +2,7 @@
 
 export const checkSession = async () => {
     try {
-        const response = await fetch('/api/session', {
+        const response = await fetch('/api/session/check', {
             credentials: 'include'
         });
         const data = await response.json();

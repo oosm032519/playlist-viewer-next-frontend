@@ -1,3 +1,5 @@
+// app/components/LoginButton.tsx
+
 "use client";
 
 import React from 'react';
@@ -47,7 +49,7 @@ const LoginButton: React.FC<LoginButtonProps> = ({onLoginSuccess}) => {
 
 async function checkLoginStatus() {
     try {
-        const response = await fetch('/api/session', {
+        const response = await fetch('/api/session/check', {
             method: 'GET',
             credentials: 'include'
         });

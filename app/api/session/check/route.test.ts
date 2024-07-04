@@ -1,4 +1,4 @@
-import {GET} from '@/app/api/session/route';
+import {GET} from '@/app/api/session/check/route';
 import fetchMock from 'jest-fetch-mock';
 
 // NextResponseをモック化
