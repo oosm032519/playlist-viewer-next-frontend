@@ -1,3 +1,5 @@
+// app/components/GenreChart.tsx
+
 import React from 'react';
 import {
     PieChart,

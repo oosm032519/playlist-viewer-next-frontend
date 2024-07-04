@@ -41,4 +41,47 @@ describe('プレイリスト詳細の表示', () => {
         cy.wait('@getPlaylist');
         cy.get('.loading-spinner').should('not.be.visible');
     });
+    
+    it('プレイリストの音声特徴チャートが正しく表示される', () => {
+        cy.get('input[placeholder="Enter playlist URL"]').type(validPlaylistUrl);
+        cy.get('button').contains('Submit').click();
+        cy.wait('@getPlaylist');
+        
+        cy.get('table', {timeout: 10000}).should('be.visible');
+        cy.get('table tbody tr').first().click();
+        
+        // チャートのコンテナが表示されるまで待機
+        cy.get('.recharts-responsive-container', {timeout: 10000}).should('be.visible');
+        
+        // チャートのタイトルを確認
+        cy.contains('Audio Features: Track Name 1').should('be.visible');
+        
+        // レーダーチャートの特定の要素を確認
+        cy.get('.recharts-polar-grid', {timeout: 5000}).should('exist');
+        cy.get('.recharts-polar-angle-axis', {timeout: 5000}).should('exist');
+        cy.get('.recharts-polar-radius-axis', {timeout: 5000}).should('exist');
+        
+        // Genre Distributionセクションの存在を確認
+        cy.contains('Genre Distribution').should('be.visible');
+    });
+    
+    it('ジャンル分布チャートが正しく表示される', () => {
+        cy.get('input[placeholder="Enter playlist URL"]').type(validPlaylistUrl);
+        cy.get('button').contains('Submit').click();
+        cy.wait('@getPlaylist');
+        cy.get('.recharts-responsive-container').should('be.visible');
+        cy.get('.recharts-pie').should('exist');
+    });
+    
+    it('おすすめ楽曲テーブルが正しく表示される', () => {
+        cy.get('input[placeholder="Enter playlist URL"]').type(validPlaylistUrl);
+        cy.get('button').contains('Submit').click();
+        cy.wait('@getPlaylist');
+        cy.get('table').should('be.visible');
+        cy.get('table thead th').should('contain', 'Album')
+            .and('contain', 'Title')
+            .and('contain', 'Artist')
+            .and('contain', 'Preview')
+            .and('contain', 'Actions');
+    });
 });
