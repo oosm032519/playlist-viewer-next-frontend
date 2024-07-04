@@ -102,7 +102,7 @@ describe('PlaylistDetailsLoader', () => {
         render(<PlaylistDetailsLoader playlistId={mockPlaylistId} userId={mockUserId}/>, {wrapper: createWrapper()});
         
         await waitFor(() => {
-            expect(screen.getByText('プレイリストが見つかりませんでした。')).toBeInTheDocument();
+            expect(screen.getByText('プレイリスト取得中にエラーが発生しました')).toBeInTheDocument();
         });
         
         expect(screen.queryByTestId('loading-spinner')).not.toBeInTheDocument();
@@ -114,7 +114,7 @@ describe('PlaylistDetailsLoader', () => {
         render(<PlaylistDetailsLoader playlistId={mockPlaylistId} userId={mockUserId}/>, {wrapper: createWrapper()});
         
         await waitFor(() => {
-            expect(screen.getByText('プレイリストが見つかりませんでした。')).toBeInTheDocument();
+            expect(screen.getByText('プレイリスト取得中にエラーが発生しました')).toBeInTheDocument();
         });
     });
     
