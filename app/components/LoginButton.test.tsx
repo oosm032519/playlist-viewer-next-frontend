@@ -3,7 +3,7 @@ import {render, screen, fireEvent, waitFor, act} from '@testing-library/react';
 import axios from 'axios';
 import {axe, toHaveNoViolations} from 'jest-axe';
 import LoginButton from './LoginButton';
-import {QueryClient, QueryClientProvider} from 'react-query';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 
 expect.extend(toHaveNoViolations);
 

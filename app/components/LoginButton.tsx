@@ -3,7 +3,7 @@
 import React from 'react';
 import axios from 'axios';
 import {Button} from "./ui/button";
-import {useMutation, useQuery, useQueryClient} from 'react-query';
+import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 
 interface LoginButtonProps {
     onLoginSuccess: () => void;
@@ -12,17 +12,21 @@ interface LoginButtonProps {
 const LoginButton: React.FC<LoginButtonProps> = ({onLoginSuccess}) => {
     const queryClient = useQueryClient();
     
-    const {data: isLoggedIn, isLoading} = useQuery('loginStatus', checkLoginStatus, {
-        onSuccess: (isLoggedIn) => {
-            if (isLoggedIn) {
-                onLoginSuccess();
-            }
-        }
+    const {data: isLoggedIn, isLoading} = useQuery<boolean, Error>({
+        queryKey: ['loginStatus'],
+        queryFn: checkLoginStatus,
     });
     
-    const logoutMutation = useMutation(logout, {
+    React.useEffect(() => {
+        if (isLoggedIn) {
+            onLoginSuccess();
+        }
+    }, [isLoggedIn, onLoginSuccess]);
+    
+    const logoutMutation = useMutation({
+        mutationFn: logout,
         onSuccess: () => {
-            queryClient.setQueryData('loginStatus', false);
+            queryClient.setQueryData(['loginStatus'], false);
             window.location.reload();
         },
         onError: (error) => {
