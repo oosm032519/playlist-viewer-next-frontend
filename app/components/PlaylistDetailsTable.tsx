@@ -69,8 +69,8 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({track
         {
             Header: "Duration (ms)",
             accessor: "durationMs",
-            sortType: (a: Row<Track>, b: Row<Track>) => a.original.durationMs - b.original.durationMs,
-            Cell: ({value}: { value: number }) => value.toString(),
+            sortType: (a: Row<Track>, b: Row<Track>) => (a.original.durationMs || 0) - (b.original.durationMs || 0),
+            Cell: ({value}: { value: number | undefined }) => value?.toString() ?? "-",
         },
         {
             Header: "Time Signature",
@@ -89,6 +89,14 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({track
     } = useTable({columns, data: tracks}, useSortBy);
     
     const handleRowClick = (row: Row<Track>) => setSelectedTrack(row.original);
+    
+    if (tracks.length === 0) {
+        return (
+            <div className="text-center text-gray-500 my-4">
+                このプレイリストには曲が含まれていません
+            </div>
+        );
+    }
     
     return (
         <div className="flex flex-col">

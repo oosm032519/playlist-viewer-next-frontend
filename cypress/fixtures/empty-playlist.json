@@ -1,0 +1,13 @@
+{
+  "id": "37i9dQZF1DXcWRjTQVzjmK",
+  "name": "Empty Playlist",
+  "description": "This is an empty playlist",
+  "tracks": {
+    "items": []
+  },
+  "images": [
+    {
+      "url": "https://example.com/empty-playlist-image.jpg"
+    }
+  ]
+}

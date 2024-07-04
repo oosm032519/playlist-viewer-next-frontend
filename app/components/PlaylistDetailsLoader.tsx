@@ -23,6 +23,7 @@ interface PlaylistData {
 const fetchPlaylistDetails = async (playlistId: string): Promise<PlaylistData> => {
     const response = await axios.get(`/api/playlists/${playlistId}`);
     if (response && response.data) {
+        console.log(response.data);
         const tracks = response.data.tracks?.items?.map((item: any) => ({
             ...item.track,
             audioFeatures: item.audioFeatures,
@@ -52,7 +53,7 @@ const PlaylistDetailsLoader: React.FC<PlaylistDetailsLoaderProps> = ({
     }
     
     if (error || !playlistData) {
-        return <div>プレイリストが見つかりませんでした。</div>;
+        return <div>プレイリスト取得中にエラーが発生しました</div>;
     }
     
     return (

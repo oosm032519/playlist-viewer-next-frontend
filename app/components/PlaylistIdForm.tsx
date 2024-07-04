@@ -34,7 +34,7 @@ export default ({onPlaylistSelect}: PlaylistIdFormProps) => {
         onError: (error) => {
             console.error("Error sending playlist ID:", error);
             // エラーメッセージを設定
-            setErrorMessage("Invalid Playlist URL");
+            setErrorMessage("プレイリストの取得中にエラーが発生しました");
         },
     });
     
@@ -46,7 +46,7 @@ export default ({onPlaylistSelect}: PlaylistIdFormProps) => {
         
         if (!extractedId) {
             console.error("Invalid Playlist URL:", playlistId);
-            setErrorMessage("Invalid Playlist URL"); // エラーメッセージを設定
+            setErrorMessage("無効なプレイリストURLです"); // エラーメッセージを設定
             return;
         }
         
