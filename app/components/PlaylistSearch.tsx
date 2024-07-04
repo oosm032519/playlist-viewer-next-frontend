@@ -1,5 +1,3 @@
-// app/components/PlaylistSearch.tsx
-
 "use client";
 
 import {useForm} from "react-hook-form";
@@ -7,7 +5,12 @@ import {yupResolver} from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import axios from "axios";
 import {useMemo, useState} from "react";
-import {useTable, Column, Row} from "react-table";
+import {
+    useReactTable,
+    getCoreRowModel,
+    flexRender,
+    createColumnHelper,
+} from "@tanstack/react-table";
 
 import {Button} from "@/app/components/ui/button";
 import {Input} from "@/app/components/ui/input";
@@ -51,6 +54,7 @@ export default function PlaylistSearch() {
     
     const form = useForm<SearchFormInputs>({
         resolver: yupResolver(schema),
+        defaultValues: {query: ''},
     });
     
     const onSubmit = async (data: SearchFormInputs) => {
@@ -60,34 +64,32 @@ export default function PlaylistSearch() {
         setIsLoading(false);
     };
     
-    const columns = useMemo<Column<Playlist>[]>(
+    const columnHelper = createColumnHelper<Playlist>();
+    
+    const columns = useMemo(
         () => [
-            {
-                Header: "Image",
-                accessor: "images",
-                Cell: ({value}: { value: { url: string }[] }) => (
+            columnHelper.accessor("images", {
+                header: "Image",
+                cell: (info) => (
                     <img
-                        src={value[0]?.url}
+                        src={info.getValue()[0]?.url}
                         alt="Playlist"
                         className="w-12 h-12 object-cover rounded-full"
                     />
                 ),
-            },
-            {
-                Header: "Name",
-                accessor: "name",
-            },
+            }),
+            columnHelper.accessor("name", {
+                header: "Name",
+            }),
         ],
         []
     );
     
-    const {
-        getTableProps,
-        getTableBodyProps,
-        headerGroups,
-        rows,
-        prepareRow
-    } = useTable({columns, data: playlists});
+    const table = useReactTable({
+        data: playlists,
+        columns,
+        getCoreRowModel: getCoreRowModel(),
+    });
     
     return (
         <Card className="w-full max-w-4xl mx-auto">
@@ -108,6 +110,7 @@ export default function PlaylistSearch() {
                                                 placeholder="Enter playlist name"
                                                 aria-label="Enter playlist name"
                                                 {...field}
+                                                value={field.value || ''}
                                             />
                                             <Button type="submit" disabled={isLoading}>
                                                 {isLoading ? "Searching..." : "Search"}
@@ -121,31 +124,28 @@ export default function PlaylistSearch() {
                     </form>
                 </Form>
                 
-                <Table {...getTableProps()} className="mt-8">
+                <Table className="mt-8">
                     <TableHeader>
-                        {headerGroups.map((headerGroup) => (
+                        {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
-                                {headerGroup.headers.map((column) => (
-                                    <TableHead key={column.id}>
-                                        {column.render("Header")}
+                                {headerGroup.headers.map((header) => (
+                                    <TableHead key={header.id}>
+                                        {flexRender(header.column.columnDef.header, header.getContext())}
                                     </TableHead>
                                 ))}
                             </TableRow>
                         ))}
                     </TableHeader>
-                    <TableBody {...getTableBodyProps()}>
-                        {rows.map((row: Row<Playlist>) => {
-                            prepareRow(row);
-                            return (
-                                <TableRow key={row.getRowProps().key}>
-                                    {row.cells.map((cell) => (
-                                        <TableCell key={cell.getCellProps().key}>
-                                            {cell.render("Cell")}
-                                        </TableCell>
-                                    ))}
-                                </TableRow>
-                            );
-                        })}
+                    <TableBody>
+                        {table.getRowModel().rows.map((row) => (
+                            <TableRow key={row.id}>
+                                {row.getVisibleCells().map((cell) => (
+                                    <TableCell key={cell.id}>
+                                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                    </TableCell>
+                                ))}
+                            </TableRow>
+                        ))}
                     </TableBody>
                 </Table>
             </CardContent>
