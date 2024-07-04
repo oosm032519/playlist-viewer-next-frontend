@@ -40,9 +40,11 @@ describe('LoginButton', () => {
             ok: true,
             json: () => Promise.resolve({status: 'error'})
         });
-        const {container} = render(<LoginButton onLoginSuccess={jest.fn()}/>, {wrapper: createWrapper()});
-        const results = await axe(container);
-        expect(results).toHaveNoViolations();
+        await act(async () => {
+            const {container} = render(<LoginButton onLoginSuccess={jest.fn()}/>, {wrapper: createWrapper()});
+            const results = await axe(container);
+            expect(results).toHaveNoViolations();
+        });
     });
     
     describe('ログイン状態', () => {
