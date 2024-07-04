@@ -1,4 +1,6 @@
-import {Row} from 'react-table';
+// app/lib/tableUtils.ts
+
+import {Row} from '@tanstack/react-table';
 import {Track} from '@/app/types/track';
 
 type AudioFeature = keyof NonNullable<Track['audioFeatures']>;

@@ -1,7 +1,16 @@
+// app/components/PlaylistDetailsTable.tsx
+
 "use client";
 
 import React, {useMemo, useState} from "react";
-import {useTable, useSortBy, Column, Row} from "react-table";
+import {
+    useReactTable,
+    getCoreRowModel,
+    getSortedRowModel,
+    flexRender,
+    createColumnHelper,
+    SortingState,
+} from "@tanstack/react-table";
 import {Track} from "@/app/types/track";
 import {
     Table,
@@ -21,7 +30,7 @@ interface PlaylistDetailsTableProps {
 }
 
 type AudioFeature =
-    'danceability'
+    | 'danceability'
     | 'energy'
     | 'key'
     | 'loudness'
@@ -32,63 +41,70 @@ type AudioFeature =
     | 'valence'
     | 'tempo';
 
+const columnHelper = createColumnHelper<Track>();
+
 export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({tracks}) => {
     const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
+    const [sorting, setSorting] = useState<SortingState>([]);
     
-    const columns = useMemo<Column<Track>[]>(() => [
-        {
-            Header: "Album",
-            accessor: "album",
-            Cell: ({value}: { value: Track['album'] }) => (
-                <Image src={value.images[0].url} alt={value.name} width={50} height={50}/>
+    const columns = useMemo(() => [
+        columnHelper.accessor("album", {
+            header: "Album",
+            cell: (info) => (
+                <Image src={info.getValue().images[0].url} alt={info.getValue().name} width={50} height={50}/>
             ),
-            disableSortBy: true,
-        },
-        {Header: "Title", accessor: "name"},
-        {
-            Header: "Artist",
-            accessor: "artists",
-            Cell: ({value}: { value: Track['artists'] }) => <span>{value[0].name}</span>,
-        },
-        ...(["danceability", "energy", "key", "loudness", "speechiness", "acousticness", "instrumentalness", "liveness", "valence", "tempo"] as AudioFeature[]).map(feature => ({
-            Header: feature.charAt(0).toUpperCase() + feature.slice(1),
-            accessor: (row: Track) => row.audioFeatures?.[feature],
-            sortType: (a: Row<Track>, b: Row<Track>) => audioFeatureSort(a, b, feature),
-            Cell: ({value}: { value: number | undefined }) => value?.toFixed(3) ?? "-",
-        })),
-        {
-            Header: "Mode",
-            accessor: (row: Track) => row.audioFeatures?.mode,
-            sortType: (a: Row<Track>, b: Row<Track>) => {
+            enableSorting: false,
+        }),
+        columnHelper.accessor("name", {
+            header: "Title",
+        }),
+        columnHelper.accessor("artists", {
+            header: "Artist",
+            cell: (info) => <span>{info.getValue()[0].name}</span>,
+        }),
+        ...(["danceability", "energy", "key", "loudness", "speechiness", "acousticness", "instrumentalness", "liveness", "valence", "tempo"] as AudioFeature[]).map((feature) =>
+            columnHelper.accessor((row) => row.audioFeatures?.[feature], {
+                id: feature,
+                header: feature.charAt(0).toUpperCase() + feature.slice(1),
+                sortingFn: (a, b) => audioFeatureSort(a, b, feature),
+                cell: (info) => info.getValue()?.toFixed(3) ?? "-",
+            })
+        ),
+        columnHelper.accessor((row) => row.audioFeatures?.mode, {
+            id: "mode",
+            header: "Mode",
+            sortingFn: (a, b) => {
                 const modeA = a.original.audioFeatures?.mode ?? "";
                 const modeB = b.original.audioFeatures?.mode ?? "";
                 return modeA.localeCompare(modeB);
             },
-            Cell: ({value}: { value: string | undefined }) => value ?? "-",
-        },
-        {
-            Header: "Duration (ms)",
-            accessor: "durationMs",
-            sortType: (a: Row<Track>, b: Row<Track>) => (a.original.durationMs || 0) - (b.original.durationMs || 0),
-            Cell: ({value}: { value: number | undefined }) => value?.toString() ?? "-",
-        },
-        {
-            Header: "Time Signature",
-            accessor: (row: Track) => row.audioFeatures?.timeSignature,
-            sortType: (a: Row<Track>, b: Row<Track>) => audioFeatureSort(a, b, 'timeSignature'),
-            Cell: ({value}: { value: number | undefined }) => value?.toString() ?? "-",
-        },
+            cell: (info) => info.getValue() ?? "-",
+        }),
+        columnHelper.accessor("durationMs", {
+            header: "Duration (ms)",
+            sortingFn: (a, b) => (a.original.durationMs || 0) - (b.original.durationMs || 0),
+            cell: (info) => info.getValue()?.toString() ?? "-",
+        }),
+        columnHelper.accessor((row) => row.audioFeatures?.timeSignature, {
+            id: "timeSignature",
+            header: "Time Signature",
+            sortingFn: (a, b) => audioFeatureSort(a, b, 'timeSignature'),
+            cell: (info) => info.getValue()?.toString() ?? "-",
+        }),
     ], []);
     
-    const {
-        getTableProps,
-        getTableBodyProps,
-        headerGroups,
-        rows,
-        prepareRow,
-    } = useTable({columns, data: tracks}, useSortBy);
+    const table = useReactTable({
+        data: tracks,
+        columns,
+        state: {
+            sorting,
+        },
+        onSortingChange: setSorting,
+        getCoreRowModel: getCoreRowModel(),
+        getSortedRowModel: getSortedRowModel(),
+    });
     
-    const handleRowClick = (row: Row<Track>) => setSelectedTrack(row.original);
+    const handleRowClick = (row: Track) => setSelectedTrack(row);
     
     if (tracks.length === 0) {
         return (
@@ -101,54 +117,33 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({track
     return (
         <div className="flex flex-col">
             <div className="w-full overflow-x-auto">
-                <Table {...getTableProps()}>
+                <Table>
                     <TableHeader>
-                        {headerGroups.map(headerGroup => {
-                            const {key, ...headerGroupProps} = headerGroup.getHeaderGroupProps();
-                            return (
-                                <TableRow key={key} {...headerGroupProps}>
-                                    {headerGroup.headers.map((column, index) => {
-                                        const {
-                                            key,
-                                            ...columnProps
-                                        } = column.getHeaderProps((column as any).getSortByToggleProps());
-                                        return (
-                                            <TableHead key={key} {...columnProps}>
-                                                {column.render("Header")}
-                                                {index !== 0 && <ArrowUpDown className="ml-2 h-4 w-4"/>}
-                                            </TableHead>
-                                        );
-                                    })}
-                                </TableRow>
-                            );
-                        })}
+                        {table.getHeaderGroups().map((headerGroup) => (
+                            <TableRow key={headerGroup.id}>
+                                {headerGroup.headers.map((header, index) => (
+                                    <TableHead key={header.id} onClick={header.column.getToggleSortingHandler()}>
+                                        {flexRender(header.column.columnDef.header, header.getContext())}
+                                        {index !== 0 && <ArrowUpDown className="ml-2 h-4 w-4"/>}
+                                    </TableHead>
+                                ))}
+                            </TableRow>
+                        ))}
                     </TableHeader>
-                    <TableBody {...getTableBodyProps()}>
-                        {rows.map(row => {
-                            prepareRow(row);
-                            const {key, ...rowProps} = row.getRowProps();
-                            return (
-                                <TableRow
-                                    key={key}
-                                    {...rowProps}
-                                    onClick={() => handleRowClick(row)}
-                                    style={{cursor: "pointer"}}
-                                >
-                                    {row.cells.map(cell => {
-                                        const {key, ...cellProps} = cell.getCellProps();
-                                        return (
-                                            <TableCell
-                                                key={key}
-                                                {...cellProps}
-                                                data-testid={cell.column.id}
-                                            >
-                                                {cell.render("Cell")}
-                                            </TableCell>
-                                        );
-                                    })}
-                                </TableRow>
-                            );
-                        })}
+                    <TableBody>
+                        {table.getRowModel().rows.map((row) => (
+                            <TableRow
+                                key={row.id}
+                                onClick={() => handleRowClick(row.original)}
+                                style={{cursor: "pointer"}}
+                            >
+                                {row.getVisibleCells().map((cell) => (
+                                    <TableCell key={cell.id} data-testid={cell.column.id}>
+                                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                    </TableCell>
+                                ))}
+                            </TableRow>
+                        ))}
                     </TableBody>
                 </Table>
             </div>

@@ -129,7 +129,7 @@ describe('PlaylistDetailsTable', () => {
                 expect(withinRow.getByTestId(/key/i)).toHaveTextContent(track.audioFeatures.key.toString());
                 expect(withinRow.getByTestId(/loudness/i)).toHaveTextContent(track.audioFeatures.loudness.toFixed(3));
                 expect(withinRow.getByTestId(/mode/i)).toHaveTextContent(track.audioFeatures.mode);
-                expect(withinRow.getByTestId(/time signature/i)).toHaveTextContent(track.audioFeatures.timeSignature.toString());
+                expect(withinRow.getByTestId(/timeSignature/i)).toHaveTextContent(track.audioFeatures.timeSignature.toString());
                 
                 // 追加のオーディオ特徴のテスト
                 expect(withinRow.getByTestId(/speechiness/i)).toHaveTextContent(track.audioFeatures.speechiness.toFixed(3));
