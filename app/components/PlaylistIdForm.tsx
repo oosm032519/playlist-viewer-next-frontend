@@ -12,6 +12,9 @@ import {Button} from "./ui/button";
 import {Input} from "./ui/input";
 import LoadingSpinner from "./LoadingSpinner";
 
+// Alertコンポーネントをインポート
+import {Alert, AlertDescription, AlertTitle} from "./ui/alert";
+
 interface PlaylistIdFormProps {
     onPlaylistSelect: (playlistId: string) => Promise<void>;
 }
@@ -24,11 +27,14 @@ const extractPlaylistIdFromUrl = (url: string): string | null => {
 
 export default ({onPlaylistSelect}: PlaylistIdFormProps) => {
     const [playlistId, setPlaylistId] = useState("");
+    const [errorMessage, setErrorMessage] = useState<string | null>(null); // エラーメッセージの状態
     
     const mutation = useMutation({
         mutationFn: (extractedId: string) => onPlaylistSelect(extractedId),
         onError: (error) => {
             console.error("Error sending playlist ID:", error);
+            // エラーメッセージを設定
+            setErrorMessage("Invalid Playlist URL");
         },
     });
     
@@ -40,9 +46,11 @@ export default ({onPlaylistSelect}: PlaylistIdFormProps) => {
         
         if (!extractedId) {
             console.error("Invalid Playlist URL:", playlistId);
+            setErrorMessage("Invalid Playlist URL"); // エラーメッセージを設定
             return;
         }
         
+        setErrorMessage(null); // エラーメッセージをクリア
         mutation.mutate(extractedId);
     };
     
@@ -53,6 +61,14 @@ export default ({onPlaylistSelect}: PlaylistIdFormProps) => {
                     <CardTitle>Enter Playlist URL</CardTitle>
                 </CardHeader>
                 <CardContent>
+                    {/* エラーメッセージ表示領域 */}
+                    {errorMessage && (
+                        <Alert variant="destructive">
+                            <AlertTitle>Error</AlertTitle>
+                            <AlertDescription>{errorMessage}</AlertDescription>
+                        </Alert>
+                    )}
+                    
                     <form onSubmit={handleSubmit} className="flex space-x-2">
                         <Input
                             type="text"

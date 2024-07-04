@@ -1,0 +1,46 @@
+{
+  "tracks": {
+    "items": [
+      {
+        "track": {
+          "name": "Track Name 1",
+          "artists": [
+            {
+              "name": "Artist 1"
+            }
+          ],
+          "album": {
+            "images": [
+              {
+                "url": "https://example.com/image1.jpg"
+              }
+            ]
+          },
+          "durationMs": 180000,
+          "audioFeatures": {
+            "danceability": 0.8,
+            "energy": 0.7,
+            "key": 1,
+            "loudness": -5,
+            "mode": "major",
+            "speechiness": 0.1,
+            "acousticness": 0.2,
+            "instrumentalness": 0,
+            "liveness": 0.1,
+            "valence": 0.9,
+            "tempo": 120,
+            "timeSignature": 4
+          }
+        }
+      }
+    ]
+  },
+  "genreCounts": {
+    "pop": 5,
+    "rock": 3,
+    "jazz": 2
+  },
+  "recommendations": [],
+  "playlistName": "Test Playlist",
+  "ownerId": "testuser"
+}

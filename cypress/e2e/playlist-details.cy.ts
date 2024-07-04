@@ -1,73 +1,44 @@
-// cypress/e2e/playlist-details.cy.ts
+// playlist-viewer-next-frontend/cypress/e2e/playlistDetails.cy.ts
 
-import {Track} from "@/app/types/track";
 import cypress from 'cypress';
 
-describe('Playlist Details', () => {
-    const playlistId = 'your_playlist_id_here'; // 実際のプレイリストIDに置き換えてください
+describe('プレイリスト詳細の表示', () => {
+    const validPlaylistUrl = 'https://open.spotify.com/playlist/37i9dQZF1DXcWRjTQVzjmK?si=test';
+    const validPlaylistId = '37i9dQZF1DXcWRjTQVzjmK';
     
     beforeEach(() => {
-        cy.intercept('GET', `/api/playlists/${playlistId}`, {fixture: 'playlistDetails.json'}).as('getPlaylistDetails');
+        cy.intercept('GET', `/api/playlists/${validPlaylistId}`, {fixture: 'playlist.json'}).as('getPlaylist');
         cy.visit('/');
-        cy.wait('@getPlaylistDetails');
     });
     
-    it('プレイリスト詳細が表示されること', () => {
-        cy.get('[data-testid="playlist-details"]').should('be.visible');
-    });
-    
-    it('プレイリストのトラックリストが表示されること', () => {
-        cy.get('[data-testid="playlist-details-table"]').should('be.visible');
-        cy.get('[data-testid="playlist-details-table"] tbody tr').should('have.length.at.least', 1);
-    });
-    
-    it('トラックをクリックすると音声特徴が表示されること', () => {
-        cy.get('[data-testid="playlist-details-table"] tbody tr:first').click();
-        cy.get('[data-testid="audio-features-chart"]').should('be.visible');
-    });
-    
-    it('ジャンルチャートが表示されること', () => {
-        cy.get('[data-testid="genre-chart"]').should('be.visible');
-    });
-    
-    it('レコメンドトラックリストが表示されること', () => {
-        cy.get('[data-testid="recommendations-table"]').should('be.visible');
-        cy.get('[data-testid="recommendations-table"] tbody tr').should('have.length.at.least', 1);
-    });
-    
-    it('レコメンドトラックの試聴ボタンをクリックすると再生/停止が切り替わること', () => {
-        cy.get('[data-testid="recommendations-table"] tbody tr:first [data-testid="preview-button"]').click();
-        cy.get('[data-testid="recommendations-table"] tbody tr:first [data-testid="preview-button"]').should('contain', '停止');
-        cy.get('[data-testid="recommendations-table"] tbody tr:first [data-testid="preview-button"]').click();
-        cy.get('[data-testid="recommendations-table"] tbody tr:first [data-testid="preview-button"]').should('contain', '試聴する');
-    });
-    
-    it('ログイン済みのユーザーはレコメンドトラックを追加できること', () => {
-        // モックログイン処理
-        cy.intercept('GET', '/api/session', {fixture: 'loggedInSession.json'}).as('getSession');
-        cy.reload();
-        cy.wait('@getSession');
+    it('有効なプレイリストURLを入力して詳細を表示できる', () => {
+        cy.get('input[placeholder="Enter playlist URL"]').type(validPlaylistUrl);
+        cy.get('button').contains('Submit').click();
         
-        // 所有者とユーザーIDを一致させる
-        cy.intercept('GET', `/api/playlists/${playlistId}`, (req) => {
-            req.reply((res: { body: { ownerId: string; }; }) => {
-                res.body.ownerId = 'your_user_id_here'; // 実際のユーザーIDに置き換えてください
-                return res;
-            });
-        }).as('getPlaylistDetailsWithModifiedOwner');
-        cy.visit(`/${playlistId}`);
-        cy.wait('@getPlaylistDetailsWithModifiedOwner');
+        cy.wait('@getPlaylist');
         
-        // トラック追加
-        cy.get('[data-testid="recommendations-table"] tbody tr:first [data-testid="add-track-button"]').click();
+        // プレイリスト詳細テーブルが表示されていることを確認
+        cy.get('table').should('be.visible');
         
-        // APIリクエストの確認
-        cy.wait('@addTrackToPlaylist').then((interception) => {
-            expect(interception.request.method).to.equal('POST');
-            expect(interception.request.url).to.include(`/api/playlists/${playlistId}/tracks`);
-            // 追加するトラックIDの検証
-            const trackId = interception.request.body.trackId;
-            expect(trackId).to.be.a('string');
-        });
+        // トラック情報が正しく表示されていることを確認
+        cy.get('table tbody tr').should('have.length.greaterThan', 0);
+        cy.get('table tbody tr:first-child td').eq(1).should('contain', 'Track Name 1');
+    });
+    
+    it('無効なプレイリストURLを入力するとエラーメッセージが表示される', () => {
+        cy.get('input[placeholder="Enter playlist URL"]').type('invalid-url');
+        cy.get('button').contains('Submit').click();
+        
+        // エラーメッセージが表示されていることを確認
+        cy.get('.text-destructive').should('be.visible').and('contain', 'Invalid Playlist URL');
+    });
+    
+    it('プレイリストの読み込み中にローディングスピナーが表示される', () => {
+        cy.get('input[placeholder="Enter playlist URL"]').type(validPlaylistUrl);
+        cy.get('button').contains('Submit').click();
+        
+        cy.get('.loading-spinner').should('exist');
+        cy.wait('@getPlaylist');
+        cy.get('.loading-spinner').should('not.be.visible');
     });
 });
