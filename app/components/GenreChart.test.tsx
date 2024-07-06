@@ -2,6 +2,7 @@ import React from 'react';
 import {render, screen} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import GenreChart, {prepareChartData} from './GenreChart';
+import {expect} from '@jest/globals';
 
 // Rechartsのモックを修正
 jest.mock('recharts', () => {

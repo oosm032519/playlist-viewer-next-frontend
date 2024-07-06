@@ -7,6 +7,7 @@ import axios from 'axios';
 import PlaylistDetailsLoader from './PlaylistDetailsLoader';
 import '@testing-library/jest-dom';
 import {axe, toHaveNoViolations} from 'jest-axe';
+import {expect} from '@jest/globals';
 
 // axiosのモック
 jest.mock('axios');

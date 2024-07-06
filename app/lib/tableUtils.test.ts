@@ -1,6 +1,7 @@
 // tableUtils.test.ts
 
 import {audioFeatureSort} from './tableUtils';
+import {expect} from '@jest/globals';
 
 describe('audioFeatureSort', () => {
     const createMockTrack = (value: number | undefined) => ({

@@ -3,6 +3,7 @@
 import {GET} from '@/app/api/session/check/route';
 import fetchMock from 'jest-fetch-mock';
 import {NextRequest} from 'next/server';
+import {expect} from '@jest/globals';
 
 // NextResponseとNextRequestをモック化
 jest.mock('next/server', () => ({

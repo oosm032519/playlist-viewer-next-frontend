@@ -4,6 +4,7 @@ import React from 'react';
 import {render} from '@testing-library/react';
 import {axe, toHaveNoViolations} from 'jest-axe';
 import RootLayout from './layout';
+import {expect} from '@jest/globals';
 
 expect.extend(toHaveNoViolations);
 

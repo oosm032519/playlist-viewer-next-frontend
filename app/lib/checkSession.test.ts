@@ -2,6 +2,7 @@
 
 import {checkSession} from './checkSession';
 import fetchMock from 'jest-fetch-mock';
+import {expect} from '@jest/globals';
 
 // fetchをモック化
 fetchMock.enableMocks();

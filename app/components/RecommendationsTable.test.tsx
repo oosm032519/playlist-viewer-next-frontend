@@ -7,6 +7,7 @@ import '@testing-library/jest-dom';
 import {Track} from '@/app/types/track';
 import {axe, toHaveNoViolations} from 'jest-axe';
 import axios from 'axios';
+import {expect} from '@jest/globals';
 
 // jest-axeのマッチャーを追加
 expect.extend(toHaveNoViolations);

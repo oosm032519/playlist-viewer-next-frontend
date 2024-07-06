@@ -6,6 +6,7 @@ import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import FollowedPlaylists from './FollowedPlaylists';
 import {Playlist} from '@/app/types/playlist';
 import {axe, toHaveNoViolations} from 'jest-axe';
+import {expect} from '@jest/globals';
 
 expect.extend(toHaveNoViolations);
 

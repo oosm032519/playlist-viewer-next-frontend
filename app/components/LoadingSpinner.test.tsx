@@ -5,6 +5,7 @@ import {render, screen} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import {axe, toHaveNoViolations} from 'jest-axe';
 import LoadingSpinner from './LoadingSpinner';
+import {expect} from '@jest/globals';
 
 expect.extend(toHaveNoViolations);
 

@@ -4,6 +4,7 @@ import axios from 'axios';
 import {axe, toHaveNoViolations} from 'jest-axe';
 import LoginButton from './LoginButton';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import {expect} from '@jest/globals';
 
 expect.extend(toHaveNoViolations);
 

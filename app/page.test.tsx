@@ -4,6 +4,7 @@ import '@testing-library/jest-dom';
 import {axe, toHaveNoViolations} from 'jest-axe';
 import Home from './page';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import {expect} from '@jest/globals';
 
 expect.extend(toHaveNoViolations);
 

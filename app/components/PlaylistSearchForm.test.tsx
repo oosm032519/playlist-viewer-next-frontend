@@ -8,6 +8,7 @@ import * as renderer from 'react-test-renderer';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import PlaylistSearchForm from './PlaylistSearchForm';
 import '@testing-library/jest-dom';
+import {expect} from '@jest/globals';
 
 expect.extend(toHaveNoViolations);
 

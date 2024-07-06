@@ -7,6 +7,7 @@ import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import {axe, toHaveNoViolations} from 'jest-axe';
 import PlaylistIdForm from './PlaylistIdForm';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import {expect} from '@jest/globals';
 
 expect.extend(toHaveNoViolations);
 

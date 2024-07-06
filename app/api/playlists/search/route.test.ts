@@ -3,7 +3,8 @@
 import {GET} from './route';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
-import {NextRequest, NextResponse} from 'next/server';
+import {NextRequest} from 'next/server';
+import {expect} from '@jest/globals';
 
 jest.mock('next/server', () => ({
     NextRequest: jest.fn().mockImplementation((input: string, init?: RequestInit) => ({

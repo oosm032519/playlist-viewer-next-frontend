@@ -3,6 +3,7 @@
 import {NextApiRequest, NextApiResponse} from 'next';
 import axios from 'axios';
 import handler from './route';
+import {expect} from '@jest/globals';
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;

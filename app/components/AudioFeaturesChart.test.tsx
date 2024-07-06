@@ -4,6 +4,7 @@ import AudioFeaturesChart from './AudioFeaturesChart';
 import {Track} from '@/app/types/track';
 import {axe, toHaveNoViolations} from 'jest-axe';
 import '@testing-library/jest-dom';
+import {expect} from '@jest/globals';
 
 declare global {
     namespace jest {

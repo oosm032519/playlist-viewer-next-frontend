@@ -6,6 +6,7 @@ import {axe, toHaveNoViolations} from 'jest-axe';
 import '@testing-library/jest-dom';
 import PlaylistTable from './PlaylistTable';
 import {Playlist} from '@/app/types/playlist';
+import {expect} from '@jest/globals';
 
 // jest-axeのマッチャーを追加
 expect.extend(toHaveNoViolations);

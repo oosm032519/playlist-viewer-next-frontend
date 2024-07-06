@@ -7,6 +7,7 @@ import {axe, toHaveNoViolations} from 'jest-axe';
 import '@testing-library/jest-dom';
 import PlaylistDetails from './PlaylistDetails';
 import {Track} from '@/app/types/track';
+import {expect} from '@jest/globals';
 
 // モックコンポーネントの作成
 jest.mock('./PlaylistDetailsTable', () => ({
