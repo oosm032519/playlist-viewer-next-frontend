@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import axios from 'axios';
 import {axe} from 'jest-axe';
 import PlaylistSearch from './PlaylistSearch';
+import 'jest-axe/extend-expect';
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;

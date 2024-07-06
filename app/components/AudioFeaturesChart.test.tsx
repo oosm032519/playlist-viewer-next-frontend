@@ -3,6 +3,15 @@ import {render, screen} from '@testing-library/react';
 import AudioFeaturesChart from './AudioFeaturesChart';
 import {Track} from '@/app/types/track';
 import {axe, toHaveNoViolations} from 'jest-axe';
+import '@testing-library/jest-dom';
+
+declare global {
+    namespace jest {
+        interface Matchers<R> {
+            toBeInTheDocument(): R;
+        }
+    }
+}
 
 expect.extend(toHaveNoViolations);
 
