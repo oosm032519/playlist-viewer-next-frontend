@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {useQuery} from '@tanstack/react-query';
-import {Playlist} from '@/app/types/playlist';
+import {Playlist} from '../types/playlist';
 import {Alert, AlertDescription, AlertTitle} from "./ui/alert";
 import LoadingSpinner from "./LoadingSpinner";
 

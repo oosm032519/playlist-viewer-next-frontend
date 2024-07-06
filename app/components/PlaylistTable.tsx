@@ -1,6 +1,6 @@
 // PlaylistTable.tsx
 
-import {Playlist} from "@/app/types/playlist";
+import {Playlist} from "../types/playlist";
 import {
     Table,
     TableBody,
@@ -8,7 +8,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "@/app/components/ui/table";
+} from "./ui/table";
 
 interface PlaylistTableProps {
     playlists: Playlist[];

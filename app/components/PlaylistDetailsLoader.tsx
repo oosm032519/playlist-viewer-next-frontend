@@ -3,8 +3,8 @@
 
 import {useQuery} from '@tanstack/react-query';
 import axios from "axios";
-import {Track} from "@/app/types/track";
-import PlaylistDetails from "@/app/components/PlaylistDetails";
+import {Track} from "../types/track";
+import PlaylistDetails from "./PlaylistDetails";
 import LoadingSpinner from "./LoadingSpinner";
 
 interface PlaylistDetailsLoaderProps {

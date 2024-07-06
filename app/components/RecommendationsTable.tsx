@@ -2,26 +2,13 @@
 
 "use client";
 
-import React, {useEffect, useRef, useState} from "react";
-import {Track} from "@/app/types/track";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/app/components/ui/table";
+import React, {useEffect} from "react";
 import Image from "next/image";
-import {Button} from "@/app/components/ui/button";
-import axios from "axios";
-
-interface RecommendationsTableProps {
-    tracks: Track[];
-    ownerId: string;
-    userId: string;
-    playlistId: string;
-}
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "./ui/table";
+import {Button} from "./ui/button";
+import {TrackPlayer} from "./TrackPlayer";
+import {addTrackToPlaylist, removeTrackFromPlaylist} from "../lib/utils";
+import {RecommendationsTableProps} from '../types/recommendationsTableProps'
 
 export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({
                                                                               tracks,
@@ -29,73 +16,10 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({
                                                                               userId,
                                                                               playlistId,
                                                                           }) => {
-    const audioRef = useRef<HTMLAudioElement>(null);
-    const [isPlaying, setIsPlaying] = useState<boolean>(false);
-    const [currentTrackId, setCurrentTrackId] = useState<string | null>(null);
-    
-    // コンポーネントがレンダリングされるたびに実行されるuseEffect
     useEffect(() => {
-        // ownerIdとuserIdをコンソールに出力
         console.log("ownerId:", ownerId);
         console.log("userId:", userId);
     }, [ownerId, userId]);
-    
-    /**
-     * 指定されたトラックの再生/停止を制御します。
-     * @param trackId トラックID
-     */
-    const handlePlayTrack = (trackId: string) => {
-        const track = tracks.find((t) => t.id === trackId);
-        if (track && audioRef.current) {
-            if (currentTrackId === trackId && isPlaying) {
-                // 同じトラックを再生中で、再生中の場合は停止する
-                audioRef.current.pause();
-                setIsPlaying(false);
-            } else {
-                // 別のトラックを再生する場合は、現在のトラックを設定して再生する
-                audioRef.current.src = track.previewUrl || ""; // previewUrlがない場合は空文字列を設定
-                audioRef.current.play();
-                setIsPlaying(true);
-                setCurrentTrackId(trackId);
-            }
-        }
-    };
-    
-    // 曲を追加する関数
-    const handleAddTrack = async (trackId: string) => {
-        try {
-            const response = await axios.post("/api/playlist/add-track", {
-                playlistId,
-                trackId,
-            });
-            
-            if (response.status === 200) {
-                console.log("曲が正常に追加されました");
-            } else {
-                console.error("曲の追加に失敗しました");
-            }
-        } catch (error) {
-            console.error("エラーが発生しました:", error);
-        }
-    };
-    
-    // 曲を削除する関数
-    const handleRemoveTrack = async (trackId: string) => {
-        try {
-            const response = await axios.post("/api/playlists/remove-track", {
-                playlistId, // プレイリストIDを追加
-                trackId,
-            });
-            
-            if (response.status === 200) {
-                console.log("曲が正常に削除されました");
-            } else {
-                console.error("曲の削除に失敗しました", response.data);
-            }
-        } catch (error) {
-            console.error("エラーが発生しました:", error);
-        }
-    };
     
     return (
         <div className="w-full overflow-x-auto">
@@ -124,20 +48,15 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({
                             <TableCell>{track.name}</TableCell>
                             <TableCell>{track.artists[0].name}</TableCell>
                             <TableCell>
-                                {/* preview_urlが存在する場合のみボタンを表示 */}
-                                {track.previewUrl && (
-                                    <Button onClick={() => handlePlayTrack(track.id as string)}>
-                                        {isPlaying && currentTrackId === track.id ? "停止" : "試聴する"}
-                                    </Button>
-                                )}
+                                <TrackPlayer track={track}/>
                             </TableCell>
                             <TableCell>
                                 {ownerId === userId && (
                                     <>
-                                        <Button onClick={() => handleAddTrack(track.id as string)}>
+                                        <Button onClick={() => addTrackToPlaylist(playlistId, track.id as string)}>
                                             追加
                                         </Button>
-                                        <Button onClick={() => handleRemoveTrack(track.id as string)}>
+                                        <Button onClick={() => removeTrackFromPlaylist(playlistId, track.id as string)}>
                                             削除
                                         </Button>
                                     </>
@@ -147,7 +66,6 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({
                     ))}
                 </TableBody>
             </Table>
-            <audio ref={audioRef}/>
         </div>
     );
 };

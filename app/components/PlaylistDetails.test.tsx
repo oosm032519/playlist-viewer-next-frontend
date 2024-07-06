@@ -2,11 +2,10 @@
 
 import React from 'react';
 import {render, screen, within} from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import {axe, toHaveNoViolations} from 'jest-axe';
 import '@testing-library/jest-dom';
 import PlaylistDetails from './PlaylistDetails';
-import {Track} from '@/app/types/track';
+import {Track} from '../types/track';
 import {expect} from '@jest/globals';
 
 // モックコンポーネントの作成

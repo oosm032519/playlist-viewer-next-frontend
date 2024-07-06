@@ -2,10 +2,10 @@
 "use client";
 
 import React from "react";
-import {Track} from "@/app/types/track";
-import {PlaylistDetailsTable} from "@/app/components/PlaylistDetailsTable";
+import {Track} from "../types/track";
+import {PlaylistDetailsTable} from "./PlaylistDetailsTable";
 import GenreChart from "./GenreChart";
-import {RecommendationsTable} from "@/app/components/RecommendationsTable";
+import {RecommendationsTable} from "./RecommendationsTable";
 
 interface PlaylistDetailsProps {
     tracks: Track[];

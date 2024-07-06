@@ -6,23 +6,23 @@ import {useForm} from "react-hook-form";
 import {yupResolver} from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import axios from "axios";
-import {useQuery, useMutation, useQueryClient} from "@tanstack/react-query";
+import {useMutation, useQueryClient} from "@tanstack/react-query";
 
-import {Button} from "@/app/components/ui/button";
-import {Input} from "@/app/components/ui/input";
+import {Button} from "./ui/button";
+import {Input} from "./ui/input";
 import {
     Form,
     FormControl,
     FormField,
     FormItem,
     FormMessage,
-} from "@/app/components/ui/form";
+} from "./ui/form";
 import {
     Card,
     CardContent,
-} from "@/app/components/ui/card";
+} from "./ui/card";
 import LoadingSpinner from "./LoadingSpinner";
-import {Playlist} from "@/app/types/playlist";
+import {Playlist} from "../types/playlist";
 
 interface SearchFormInputs {
     query: string;

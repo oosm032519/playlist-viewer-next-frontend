@@ -9,7 +9,7 @@ import {
     PolarRadiusAxis,
     ResponsiveContainer,
 } from 'recharts';
-import {Track} from '@/app/types/track';
+import {Track} from '../types/track';
 
 interface AudioFeaturesChartProps {
     track: Track;

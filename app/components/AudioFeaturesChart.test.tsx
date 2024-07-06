@@ -2,7 +2,7 @@ import '@testing-library/jest-dom';
 import React from 'react';
 import {render, screen} from '@testing-library/react';
 import AudioFeaturesChart from './AudioFeaturesChart';
-import {Track} from '@/app/types/track';
+import {Track} from '../types/track';
 import {axe, toHaveNoViolations} from 'jest-axe';
 import {expect} from '@jest/globals';
 import {toBeInTheDocument} from '@testing-library/jest-dom/matchers';

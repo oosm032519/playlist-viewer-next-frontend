@@ -1,6 +1,6 @@
 // app/api/session/check/route.test.ts
 
-import {GET} from '@/app/api/session/check/route';
+import {GET} from './route';
 import fetchMock from 'jest-fetch-mock';
 import {NextRequest} from 'next/server';
 import {expect} from '@jest/globals';

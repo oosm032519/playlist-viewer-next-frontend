@@ -20,7 +20,7 @@ import LoginButton from "./components/LoginButton";
 import FollowedPlaylists from "./components/FollowedPlaylists";
 import PlaylistTable from "./components/PlaylistTable";
 import PlaylistDetailsLoader from "./components/PlaylistDetailsLoader";
-import {Playlist} from "@/app/types/playlist";
+import {Playlist} from "./types/playlist";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {checkSession} from "./lib/checkSession"; // セッションチェック関数をインポート
 

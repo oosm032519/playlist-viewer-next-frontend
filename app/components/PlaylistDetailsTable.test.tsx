@@ -4,7 +4,7 @@ import React from 'react';
 import {render, screen, fireEvent, within} from '@testing-library/react';
 import {axe, toHaveNoViolations} from 'jest-axe';
 import {PlaylistDetailsTable} from './PlaylistDetailsTable';
-import {Track} from '@/app/types/track';
+import {Track} from '../types/track';
 import {expect} from '@jest/globals';
 
 expect.extend(toHaveNoViolations);
