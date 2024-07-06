@@ -1,10 +1,12 @@
+import '@testing-library/jest-dom';
 import React from 'react';
 import {render, screen} from '@testing-library/react';
 import AudioFeaturesChart from './AudioFeaturesChart';
 import {Track} from '@/app/types/track';
 import {axe, toHaveNoViolations} from 'jest-axe';
-import '@testing-library/jest-dom';
 import {expect} from '@jest/globals';
+import {toBeInTheDocument} from '@testing-library/jest-dom/matchers';
+expect.extend({toBeInTheDocument});
 
 declare global {
     namespace jest {
