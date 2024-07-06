@@ -1,3 +1,5 @@
+// app/lib/checkSession.test.ts
+
 import {checkSession} from './checkSession';
 import fetchMock from 'jest-fetch-mock';
 
@@ -16,7 +18,7 @@ describe('checkSession', () => {
         
         expect(result).toBe(true);
         expect(fetchMock).toHaveBeenCalledTimes(1);
-        expect(fetchMock).toHaveBeenCalledWith('/api/session', {
+        expect(fetchMock).toHaveBeenCalledWith('/api/session/check', {
             credentials: 'include'
         });
     });
@@ -28,7 +30,7 @@ describe('checkSession', () => {
         
         expect(result).toBe(false);
         expect(fetchMock).toHaveBeenCalledTimes(1);
-        expect(fetchMock).toHaveBeenCalledWith('/api/session', {
+        expect(fetchMock).toHaveBeenCalledWith('/api/session/check', {
             credentials: 'include'
         });
     });
@@ -40,7 +42,7 @@ describe('checkSession', () => {
         
         expect(result).toBe(false);
         expect(fetchMock).toHaveBeenCalledTimes(1);
-        expect(fetchMock).toHaveBeenCalledWith('/api/session', {
+        expect(fetchMock).toHaveBeenCalledWith('/api/session/check', {
             credentials: 'include'
         });
     });
@@ -52,7 +54,7 @@ describe('checkSession', () => {
         
         expect(result).toBe(false);
         expect(fetchMock).toHaveBeenCalledTimes(1);
-        expect(fetchMock).toHaveBeenCalledWith('/api/session', {
+        expect(fetchMock).toHaveBeenCalledWith('/api/session/check', {
             credentials: 'include'
         });
     });
@@ -64,7 +66,7 @@ describe('checkSession', () => {
         
         expect(result).toBe(false);
         expect(fetchMock).toHaveBeenCalledTimes(1);
-        expect(fetchMock).toHaveBeenCalledWith('/api/session', {
+        expect(fetchMock).toHaveBeenCalledWith('/api/session/check', {
             credentials: 'include'
         });
     });
@@ -85,7 +87,7 @@ describe('checkSession', () => {
         
         await checkSession();
         
-        expect(fetchMock).toHaveBeenCalledWith('/api/session', {
+        expect(fetchMock).toHaveBeenCalledWith('/api/session/check', {
             credentials: 'include'
         });
     });
