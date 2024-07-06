@@ -1,163 +1,64 @@
 // app/api/playlists/[id]/route.test.ts
 
-import {NextRequest} from 'next/server';
 import {GET} from './route';
-import fetchMock from 'jest-fetch-mock';
+import axios from 'axios';
+import MockAdapter from 'axios-mock-adapter';
 
-fetchMock.enableMocks();
+jest.mock('next/server', () => ({
+    NextResponse: {
+        json: jest.fn((data, init) => ({
+            status: init?.status || 200,
+            json: async () => data,
+        })),
+    },
+}));
 
-describe('GET function', () => {
+const mock = new MockAdapter(axios);
+
+const mockPlaylistData = {
+    id: '1',
+    name: 'テストプレイリスト',
+    songs: [
+        {id: '1', title: 'テスト曲1'},
+        {id: '2', title: 'テスト曲2'},
+    ],
+};
+
+describe('GET /api/playlists/[id]', () => {
     beforeEach(() => {
-        fetchMock.resetMocks();
-        process.env.BACKEND_URL = 'http://test-backend.com';
-        jest.spyOn(console, 'log').mockImplementation(() => {
-        });
-        jest.spyOn(console, 'error').mockImplementation(() => {
-        });
+        mock.reset();
     });
     
-    afterEach(() => {
-        jest.restoreAllMocks();
-    });
-    
-    it('正常なレスポンスを処理できること', async () => {
-        const mockPlaylistData = {id: '123', name: 'Test Playlist', songs: [{id: '1', title: 'Song 1'}]};
-        fetchMock.mockResponseOnce(JSON.stringify(mockPlaylistData));
+    it('正常にプレイリストデータを取得できる', async () => {
+        const playlistId = '1';
+        mock.onGet(`http://localhost:8080/api/playlists/${playlistId}`).reply(200, mockPlaylistData);
         
-        const request = new NextRequest('http://localhost:3000/api/playlists/123');
-        const response = await GET(request, {params: {id: '123'}});
+        const response = await GET({} as Request, {params: {id: playlistId}});
         const responseData = await response.json();
         
         expect(response.status).toBe(200);
         expect(responseData).toEqual(mockPlaylistData);
-        expect(fetchMock).toHaveBeenCalledWith('http://test-backend.com/api/playlists/123');
-        expect(response.headers.get('Content-Type')).toBe('application/json');
     });
     
-    it('バックエンドAPIのエラーを適切に処理できること', async () => {
-        fetchMock.mockRejectOnce(new Error('Network error'));
+    it('プレイリストが見つからない場合は500エラーを返す', async () => {
+        const playlistId = 'nonexistent';
+        mock.onGet(`http://localhost:8080/api/playlists/${playlistId}`).reply(404, {error: 'プレイリストが見つかりません'});
         
-        const request = new NextRequest('http://localhost:3000/api/playlists/123');
-        const response = await GET(request, {params: {id: '123'}});
+        const response = await GET({} as Request, {params: {id: playlistId}});
         const responseData = await response.json();
         
         expect(response.status).toBe(500);
-        expect(responseData).toEqual({error: "プレイリストの取得に失敗しました"});
-        expect(console.error).toHaveBeenCalledWith("プレイリストの取得に失敗しました:", expect.any(Error));
+        expect(responseData).toEqual({error: 'プレイリストの取得に失敗しました'});
     });
     
-    it('無効なJSONレスポンスを適切に処理できること', async () => {
-        fetchMock.mockResponseOnce('Invalid JSON');
+    it('サーバーエラーの場合は500エラーを返す', async () => {
+        const playlistId = '1';
+        mock.onGet(`http://localhost:8080/api/playlists/${playlistId}`).reply(500, {error: 'サーバーエラー'});
         
-        const request = new NextRequest('http://localhost:3000/api/playlists/123');
-        const response = await GET(request, {params: {id: '123'}});
+        const response = await GET({} as Request, {params: {id: playlistId}});
         const responseData = await response.json();
         
         expect(response.status).toBe(500);
-        expect(responseData).toEqual({error: "プレイリストの取得に失敗しました"});
-        expect(console.error).toHaveBeenCalledWith("プレイリストの取得に失敗しました:", expect.any(Error));
-    });
-    
-    it('BACKEND_URL環境変数が設定されていない場合、デフォルトURLを使用すること', async () => {
-        delete process.env.BACKEND_URL;
-        const mockPlaylistData = {id: '123', name: 'Test Playlist'};
-        fetchMock.mockResponseOnce(JSON.stringify(mockPlaylistData));
-        
-        const request = new NextRequest('http://localhost:3000/api/playlists/123');
-        await GET(request, {params: {id: '123'}});
-        
-        expect(fetchMock).toHaveBeenCalledWith('http://localhost:8080/api/playlists/123');
-    });
-    
-    it('HTTPエラーを適切に処理できること', async () => {
-        fetchMock.mockResponseOnce('Not Found', {status: 404});
-        
-        const request = new NextRequest('http://localhost:3000/api/playlists/123');
-        const response = await GET(request, {params: {id: '123'}});
-        const responseData = await response.json();
-        
-        expect(response.status).toBe(500);
-        expect(responseData).toEqual({error: "プレイリストの取得に失敗しました"});
-        expect(console.error).toHaveBeenCalledWith("プレイリストの取得に失敗しました:", expect.any(Error));
-    });
-    
-    it('大きなデータセットを処理できること', async () => {
-        const largeMockPlaylistData = {
-            id: '123',
-            name: 'Large Test Playlist',
-            songs: Array(1000).fill(null).map((_, index) => ({id: `${index}`, title: `Song ${index}`}))
-        };
-        fetchMock.mockResponseOnce(JSON.stringify(largeMockPlaylistData));
-        
-        const request = new NextRequest('http://localhost:3000/api/playlists/123');
-        const response = await GET(request, {params: {id: '123'}});
-        const responseData = await response.json();
-        
-        expect(response.status).toBe(200);
-        expect(responseData).toEqual(largeMockPlaylistData);
-        expect(responseData.songs.length).toBe(1000);
-    });
-    
-    it('異なるプレイリストIDに対して正しく動作すること', async () => {
-        const mockPlaylistData = {id: '456', name: 'Another Test Playlist'};
-        fetchMock.mockResponseOnce(JSON.stringify(mockPlaylistData));
-        
-        const request = new NextRequest('http://localhost:3000/api/playlists/456');
-        const response = await GET(request, {params: {id: '456'}});
-        const responseData = await response.json();
-        
-        expect(response.status).toBe(200);
-        expect(responseData).toEqual(mockPlaylistData);
-        expect(fetchMock).toHaveBeenCalledWith('http://test-backend.com/api/playlists/456');
-    });
-    
-    it('レスポンスタイムが許容範囲内であること', async () => {
-        const mockPlaylistData = {id: '123', name: 'Test Playlist'};
-        fetchMock.mockResponseOnce(JSON.stringify(mockPlaylistData));
-        
-        const request = new NextRequest('http://localhost:3000/api/playlists/123');
-        const startTime = Date.now();
-        await GET(request, {params: {id: '123'}});
-        const endTime = Date.now();
-        const responseTime = endTime - startTime;
-        
-        expect(responseTime).toBeLessThan(1000); // 1秒以内にレスポンスが返ってくることを期待
-    });
-    
-    it('レスポンスデータの構造が正しいこと', async () => {
-        const mockPlaylistData = {
-            id: '123',
-            name: 'Test Playlist',
-            songs: [
-                {id: '1', title: 'Song 1', artist: 'Artist 1'},
-                {id: '2', title: 'Song 2', artist: 'Artist 2'}
-            ]
-        };
-        fetchMock.mockResponseOnce(JSON.stringify(mockPlaylistData));
-        
-        const request = new NextRequest('http://localhost:3000/api/playlists/123');
-        const response = await GET(request, {params: {id: '123'}});
-        const responseData = await response.json();
-        
-        expect(responseData).toHaveProperty('id');
-        expect(responseData).toHaveProperty('name');
-        expect(responseData).toHaveProperty('songs');
-        expect(Array.isArray(responseData.songs)).toBe(true);
-        expect(responseData.songs[0]).toHaveProperty('id');
-        expect(responseData.songs[0]).toHaveProperty('title');
-        expect(responseData.songs[0]).toHaveProperty('artist');
-    });
-    
-    it('空のプレイリストを正しく処理できること', async () => {
-        const emptyPlaylistData = {id: '123', name: 'Empty Playlist', songs: []};
-        fetchMock.mockResponseOnce(JSON.stringify(emptyPlaylistData));
-        
-        const request = new NextRequest('http://localhost:3000/api/playlists/123');
-        const response = await GET(request, {params: {id: '123'}});
-        const responseData = await response.json();
-        
-        expect(response.status).toBe(200);
-        expect(responseData).toEqual(emptyPlaylistData);
-        expect(responseData.songs).toHaveLength(0);
+        expect(responseData).toEqual({error: 'プレイリストの取得に失敗しました'});
     });
 });

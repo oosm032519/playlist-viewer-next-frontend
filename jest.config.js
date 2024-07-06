@@ -9,6 +9,9 @@ const customJestConfig = {
     testEnvironment: 'jest-environment-jsdom',
     silent: false,
     preset: 'ts-jest',
+    moduleNameMapper: {
+        '^@/(.*)$': '<rootDir>/$1',
+    },
     moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
     transform: {
         '^.+\\.(ts|tsx)$': 'ts-jest',
