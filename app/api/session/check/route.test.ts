@@ -1,7 +1,10 @@
+// app/api/session/check/route.test.ts
+
 import {GET} from '@/app/api/session/check/route';
 import fetchMock from 'jest-fetch-mock';
+import {NextRequest} from 'next/server';
 
-// NextResponseをモック化
+// NextResponseとNextRequestをモック化
 jest.mock('next/server', () => ({
     NextResponse: {
         json: jest.fn((body, init) => ({
@@ -9,6 +12,11 @@ jest.mock('next/server', () => ({
             status: init?.status || 200,
         })),
     },
+    NextRequest: jest.fn().mockImplementation(() => ({
+        headers: {
+            get: jest.fn().mockReturnValue('test-cookie'),
+        },
+    })),
 }));
 
 // fetchをモック化
@@ -24,12 +32,16 @@ describe('Session API Route', () => {
         const mockData = {status: 'active', userId: '123'};
         fetchMock.mockResponseOnce(JSON.stringify(mockData));
         
-        const response = await GET();
+        const mockRequest = new NextRequest('http://localhost:3000/api/session/check');
+        const response = await GET(mockRequest);
         const data = await response.json();
         
         expect(response.status).toBe(200);
         expect(data).toEqual(mockData);
         expect(fetchMock).toHaveBeenCalledWith('http://localhost:8080/api/session/check', {
+            headers: {
+                'Cookie': 'test-cookie',
+            },
             credentials: 'include',
         });
     });
@@ -37,7 +49,8 @@ describe('Session API Route', () => {
     it('外部APIがエラーを返した場合、エラーレスポンスを返すべき', async () => {
         fetchMock.mockRejectOnce(new Error('Network error'));
         
-        const response = await GET();
+        const mockRequest = new NextRequest('http://localhost:3000/api/session/check');
+        const response = await GET(mockRequest);
         const data = await response.json();
         
         expect(response.status).toBe(500);
@@ -50,7 +63,8 @@ describe('Session API Route', () => {
     it('外部APIからの無効なJSONレスポンスを処理すべき', async () => {
         fetchMock.mockResponseOnce('Invalid JSON');
         
-        const response = await GET();
+        const mockRequest = new NextRequest('http://localhost:3000/api/session/check');
+        const response = await GET(mockRequest);
         const data = await response.json();
         
         expect(response.status).toBe(500);
@@ -63,7 +77,8 @@ describe('Session API Route', () => {
     it('外部APIからの予期しないステータスコードを処理すべき', async () => {
         fetchMock.mockResponseOnce(JSON.stringify({error: 'Unauthorized'}), {status: 401});
         
-        const response = await GET();
+        const mockRequest = new NextRequest('http://localhost:3000/api/session/check');
+        const response = await GET(mockRequest);
         const data = await response.json();
         
         expect(response.status).toBe(200);
@@ -73,9 +88,13 @@ describe('Session API Route', () => {
     it('クレデンシャルが正しく設定されているか確認すべき', async () => {
         fetchMock.mockResponseOnce(JSON.stringify({}));
         
-        await GET();
+        const mockRequest = new NextRequest('http://localhost:3000/api/session/check');
+        await GET(mockRequest);
         
         expect(fetchMock).toHaveBeenCalledWith('http://localhost:8080/api/session/check', {
+            headers: {
+                'Cookie': 'test-cookie',
+            },
             credentials: 'include',
         });
     });
@@ -84,7 +103,8 @@ describe('Session API Route', () => {
         const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
         fetchMock.mockRejectOnce(new Error('Network error'));
         
-        await GET();
+        const mockRequest = new NextRequest('http://localhost:3000/api/session/check');
+        await GET(mockRequest);
         
         expect(consoleSpy).toHaveBeenCalledWith('セッションチェックエラー:', expect.any(Error));
         consoleSpy.mockRestore();

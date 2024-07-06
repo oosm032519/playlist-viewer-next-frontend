@@ -1,10 +1,13 @@
+// app/api/session/check/route.ts
+
 import {NextRequest, NextResponse} from 'next/server';
 
 export async function GET(request: NextRequest) {
     try {
+        const cookie = request.headers.get('Cookie') || '';
         const response = await fetch('http://localhost:8080/api/session/check', {
             headers: {
-                'Cookie': request.headers.get('Cookie') || '',
+                'Cookie': cookie,
             },
             credentials: 'include',
         });
