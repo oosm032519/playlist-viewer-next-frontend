@@ -1,4 +1,4 @@
-// app/components/__tests__/RecommendationsTable.test.tsx
+// app/components/RecommendationsTable.test.tsx
 
 import React from 'react';
 import {render, screen, fireEvent, waitFor} from '@testing-library/react';
@@ -6,6 +6,7 @@ import {RecommendationsTable} from './RecommendationsTable';
 import '@testing-library/jest-dom';
 import {Track} from '@/app/types/track';
 import {axe, toHaveNoViolations} from 'jest-axe';
+import axios from 'axios';
 
 // jest-axeのマッチャーを追加
 expect.extend(toHaveNoViolations);
@@ -67,6 +68,10 @@ global.fetch = jest.fn(() =>
     })
 ) as jest.Mock;
 
+// axiosのモック
+jest.mock('axios');
+const mockedAxios = axios as jest.Mocked<typeof axios>;
+
 // Audioのモック
 class AudioMock {
     src: string = '';
@@ -79,7 +84,8 @@ class AudioMock {
 describe('RecommendationsTable', () => {
     // 各テストの前にモックをリセット
     beforeEach(() => {
-        (global.fetch as jest.Mock).mockClear();
+        mockedAxios.post.mockClear();
+        mockedAxios.delete.mockClear();
     });
     
     // アクセシビリティテスト
@@ -147,16 +153,17 @@ describe('RecommendationsTable', () => {
     
     // 追加ボタンのクリックテスト
     it('handles add track button click correctly', async () => {
+        mockedAxios.post.mockResolvedValue({status: 200});
+        
         render(<RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="owner1" playlistId="playlist1"/>);
         
         const addButtons = screen.getAllByText('追加');
         fireEvent.click(addButtons[0]);
         
         await waitFor(() => {
-            expect(global.fetch).toHaveBeenCalledWith('/api/playlists/playlist1/tracks', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({trackId: '1'}),
+            expect(mockedAxios.post).toHaveBeenCalledWith('/api/playlist/add-track', {
+                playlistId: 'playlist1',
+                trackId: '1',
             });
         });
     });
@@ -188,7 +195,7 @@ describe('RecommendationsTable', () => {
     
     // エラーハンドリングのテスト
     it('handles API errors correctly', async () => {
-        (global.fetch as jest.Mock).mockImplementationOnce(() => Promise.reject(new Error('API Error')));
+        mockedAxios.post.mockRejectedValue(new Error('API Error'));
         
         const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {
         });
