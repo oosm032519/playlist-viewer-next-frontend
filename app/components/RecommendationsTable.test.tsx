@@ -1,5 +1,3 @@
-// app/components/RecommendationsTable.test.tsx
-
 import React from 'react';
 import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import {RecommendationsTable} from './RecommendationsTable';
@@ -171,16 +169,17 @@ describe('RecommendationsTable', () => {
     
     // 削除ボタンのクリックテスト
     it('handles remove track button click correctly', async () => {
+        mockedAxios.post.mockResolvedValue({status: 200}); // モックのレスポンスを修正
+        
         render(<RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="owner1" playlistId="playlist1"/>);
         
         const removeButtons = screen.getAllByText('削除');
         fireEvent.click(removeButtons[0]);
         
         await waitFor(() => {
-            expect(global.fetch).toHaveBeenCalledWith('/api/playlists/playlist1/tracks', {
-                method: 'DELETE',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({trackId: '1'}),
+            expect(mockedAxios.post).toHaveBeenCalledWith('/api/playlists/remove-track', { // APIのエンドポイントを修正
+                playlistId: 'playlist1',
+                trackId: '1',
             });
         });
     });
