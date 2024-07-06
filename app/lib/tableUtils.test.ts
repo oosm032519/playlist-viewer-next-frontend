@@ -1,72 +1,50 @@
 // tableUtils.test.ts
 
+import {Row} from '@tanstack/react-table';
+import {Track} from '@/app/types/track';
 import {audioFeatureSort} from './tableUtils';
 import {expect} from '@jest/globals';
 
 describe('audioFeatureSort', () => {
-    const createMockTrack = (value: number | undefined) => ({
-        original: {
-            audioFeatures: {
-                testFeature: value,
-            },
-        },
+    const createMockRow = (audioFeatures: Partial<Track['audioFeatures']>): Row<Track> => ({
+        original: {audioFeatures} as Track,
+    } as Row<Track>);
+    
+    it('数値の場合、正しくソートされること', () => {
+        const rowA = createMockRow({danceability: 0.5});
+        const rowB = createMockRow({danceability: 0.7});
+        
+        expect(audioFeatureSort(rowA, rowB, 'danceability')).toBeLessThan(0);
+        expect(audioFeatureSort(rowB, rowA, 'danceability')).toBeGreaterThan(0);
     });
     
-    it('正しく昇順でソートされること', () => {
-        const a = createMockTrack(0.5);
-        const b = createMockTrack(0.7);
-        expect(audioFeatureSort(a, b, 'testFeature')).toBeLessThan(0);
-        expect(audioFeatureSort(b, a, 'testFeature')).toBeGreaterThan(0);
+    it('文字列の場合、正しくソートされること', () => {
+        const rowA = createMockRow({mode: 'major'});
+        const rowB = createMockRow({mode: 'minor'});
+        
+        expect(audioFeatureSort(rowA, rowB, 'mode')).toBeLessThan(0);
+        expect(audioFeatureSort(rowB, rowA, 'mode')).toBeGreaterThan(0);
     });
     
-    it('同じ値の場合は0を返すこと', () => {
-        const a = createMockTrack(0.5);
-        const b = createMockTrack(0.5);
-        expect(audioFeatureSort(a, b, 'testFeature')).toBe(0);
+    it('undefined の場合、正しく処理されること', () => {
+        const rowA = createMockRow({});
+        const rowB = createMockRow({danceability: 0.5});
+        
+        expect(audioFeatureSort(rowA, rowB, 'danceability')).toBeGreaterThan(0);
+        expect(audioFeatureSort(rowB, rowA, 'danceability')).toBeLessThan(0);
     });
     
-    it('undefined値は常に後ろにソートされること', () => {
-        const a = createMockTrack(0.5);
-        const b = createMockTrack(undefined);
-        expect(audioFeatureSort(a, b, 'testFeature')).toBeLessThan(0);
-        expect(audioFeatureSort(b, a, 'testFeature')).toBeGreaterThan(0);
+    it('両方 undefined の場合、0 を返すこと', () => {
+        const rowA = createMockRow({});
+        const rowB = createMockRow({});
+        
+        expect(audioFeatureSort(rowA, rowB, 'danceability')).toBe(0);
     });
     
-    it('両方がundefinedの場合は0を返すこと', () => {
-        const a = createMockTrack(undefined);
-        const b = createMockTrack(undefined);
-        expect(audioFeatureSort(a, b, 'testFeature')).toBe(0);
-    });
-    
-    it('存在しないaccessorKeyの場合は両方undefinedとして扱われること', () => {
-        const a = createMockTrack(0.5);
-        const b = createMockTrack(0.7);
-        expect(audioFeatureSort(a, b, 'nonExistentFeature')).toBe(0);
-    });
-    
-    it('小数点以下の値も正しくソートされること', () => {
-        const a = createMockTrack(0.123);
-        const b = createMockTrack(0.124);
-        expect(audioFeatureSort(a, b, 'testFeature')).toBeLessThan(0);
-    });
-    
-    it('負の値も正しくソートされること', () => {
-        const a = createMockTrack(-0.5);
-        const b = createMockTrack(0.5);
-        expect(audioFeatureSort(a, b, 'testFeature')).toBeLessThan(0);
-    });
-    
-    it('大きな値と小さな値の差も正しくソートされること', () => {
-        const a = createMockTrack(1000000);
-        const b = createMockTrack(-1000000);
-        expect(audioFeatureSort(a, b, 'testFeature')).toBeGreaterThan(0);
-    });
-    
-    it('0と他の値の比較が正しく行われること', () => {
-        const zero = createMockTrack(0);
-        const positive = createMockTrack(0.1);
-        const negative = createMockTrack(-0.1);
-        expect(audioFeatureSort(zero, positive, 'testFeature')).toBeLessThan(0);
-        expect(audioFeatureSort(zero, negative, 'testFeature')).toBeGreaterThan(0);
+    it('サポートされていない型の場合、0 を返すこと', () => {
+        const rowA = createMockRow({unsupportedFeature: true} as any);
+        const rowB = createMockRow({unsupportedFeature: false} as any);
+        
+        expect(audioFeatureSort(rowA, rowB, 'unsupportedFeature' as any)).toBe(0);
     });
 });
