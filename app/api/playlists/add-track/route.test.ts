@@ -51,7 +51,8 @@ describe('POST /api/playlist/add-track', () => {
         const responseData = await response.json();
         
         expect(response.status).toBe(500);
-        expect(responseData).toEqual({error: 'Failed to add track to playlist'});
+        expect(responseData.error).toBe('Failed to add track to playlist');
+        expect(responseData.details).toBe('Request failed with status code 500');
     });
     
     it('BACKEND_URL環境変数が設定されていない場合、デフォルトURLを使用すること', async () => {

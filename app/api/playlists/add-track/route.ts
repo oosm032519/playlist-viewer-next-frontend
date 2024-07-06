@@ -1,4 +1,4 @@
-import {NextRequest, NextResponse} from "next/server";
+import {NextRequest} from "next/server";
 import axios from "axios";
 
 export async function POST(request: NextRequest) {
@@ -24,10 +24,18 @@ export async function POST(request: NextRequest) {
             headers: {'Content-Type': 'application/json'}
         });
     } catch (error) {
-        console.error("Error adding track to playlist:", error);
-        return new Response(
-            JSON.stringify({error: "Failed to add track to playlist"}),
-            {status: 500, headers: {'Content-Type': 'application/json'}}
-        );
+        if (error instanceof Error) {
+            console.error("Error adding track to playlist:", error.message);
+            return new Response(
+                JSON.stringify({error: "Failed to add track to playlist", details: error.message}),
+                {status: 500, headers: {'Content-Type': 'application/json'}}
+            );
+        } else {
+            console.error("Unknown error:", error);
+            return new Response(
+                JSON.stringify({error: "Failed to add track to playlist", details: "Unknown error"}),
+                {status: 500, headers: {'Content-Type': 'application/json'}}
+            );
+        }
     }
 }
