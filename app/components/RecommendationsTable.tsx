@@ -82,20 +82,15 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({
     // 曲を削除する関数
     const handleRemoveTrack = async (trackId: string) => {
         try {
-            const response = await fetch(`/api/playlists/${playlistId}/tracks`, {
-                method: "DELETE",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({trackId}), // 削除する曲のIDを指定
+            const response = await axios.post("/api/playlists/remove-track", {
+                playlistId, // プレイリストIDを追加
+                trackId,
             });
             
-            if (response.ok) {
-                // 成功時の処理
+            if (response.status === 200) {
                 console.log("曲が正常に削除されました");
             } else {
-                // エラー時の処理
-                console.error("曲の削除に失敗しました");
+                console.error("曲の削除に失敗しました", response.data);
             }
         } catch (error) {
             console.error("エラーが発生しました:", error);
