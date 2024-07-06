@@ -1,9 +1,7 @@
-// app/api/playlist/add-track/route.ts
-
-import {NextResponse} from "next/server";
+import {NextRequest, NextResponse} from "next/server";
 import axios from "axios";
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
     try {
         const {playlistId, trackId} = await request.json();
         
@@ -21,12 +19,15 @@ export async function POST(request: Request) {
             }
         );
         
-        return NextResponse.json(response.data, {status: response.status});
+        return new Response(JSON.stringify(response.data), {
+            status: response.status,
+            headers: {'Content-Type': 'application/json'}
+        });
     } catch (error) {
         console.error("Error adding track to playlist:", error);
-        return NextResponse.json(
-            {error: "Failed to add track to playlist"},
-            {status: 500}
+        return new Response(
+            JSON.stringify({error: "Failed to add track to playlist"}),
+            {status: 500, headers: {'Content-Type': 'application/json'}}
         );
     }
 }
