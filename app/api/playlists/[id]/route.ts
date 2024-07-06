@@ -3,10 +3,8 @@
 import {NextResponse} from 'next/server';
 import axios from 'axios';
 
-// バックエンドAPIのベースURLを固定値として設定
 const BACKEND_URL = 'http://localhost:8080';
 
-// プレイリストデータを取得するヘルパー関数
 const fetchPlaylistData = async (id: string) => {
     const fullUrl = `${BACKEND_URL}/api/playlists/${id}`;
     console.log(`フルURL: ${fullUrl}`);
@@ -15,7 +13,6 @@ const fetchPlaylistData = async (id: string) => {
         console.log(`リクエストを開始: ${fullUrl}`);
         const response = await axios.get(fullUrl);
         console.log(`レスポンスステータス: ${response.status}`);
-        
         console.log(`レスポンスデータ: ${JSON.stringify(response.data)}`);
         return response.data;
     } catch (error) {
@@ -51,6 +48,13 @@ export async function GET(
     } catch (error) {
         console.error("プレイリストの取得に失敗しました:", error);
         console.log('エラーレスポンスを作成中...');
-        return NextResponse.json({error: "プレイリストの取得に失敗しました"}, {status: 500});
+        if (axios.isAxiosError(error) && error.response) {
+            if (error.response.status === 404) {
+                return NextResponse.json({error: "プレイリストが見つかりません"}, {status: 404});
+            } else if (error.response.status === 500) {
+                return NextResponse.json({error: "プレイリストの取得中にサーバーエラーが発生しました"}, {status: 500});
+            }
+        }
+        return NextResponse.json({error: "プレイリストの取得中に予期せぬエラーが発生しました"}, {status: 500});
     }
 }

@@ -40,15 +40,15 @@ describe('GET /api/playlists/[id]', () => {
         expect(responseData).toEqual(mockPlaylistData);
     });
     
-    it('プレイリストが見つからない場合は500エラーを返す', async () => {
+    it('プレイリストが見つからない場合は404エラーを返す', async () => {
         const playlistId = 'nonexistent';
         mock.onGet(`http://localhost:8080/api/playlists/${playlistId}`).reply(404, {error: 'プレイリストが見つかりません'});
         
         const response = await GET({} as Request, {params: {id: playlistId}});
         const responseData = await response.json();
         
-        expect(response.status).toBe(500);
-        expect(responseData).toEqual({error: 'プレイリストの取得に失敗しました'});
+        expect(response.status).toBe(404);
+        expect(responseData).toEqual({error: 'プレイリストが見つかりません'});
     });
     
     it('サーバーエラーの場合は500エラーを返す', async () => {
@@ -59,6 +59,6 @@ describe('GET /api/playlists/[id]', () => {
         const responseData = await response.json();
         
         expect(response.status).toBe(500);
-        expect(responseData).toEqual({error: 'プレイリストの取得に失敗しました'});
+        expect(responseData).toEqual({error: 'プレイリストの取得中にサーバーエラーが発生しました'});
     });
 });
