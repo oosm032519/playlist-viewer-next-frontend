@@ -1,18 +1,20 @@
-import {NextRequest, NextResponse} from 'next/server';
+// app/api/logout/route.ts
+
+import {NextApiRequest, NextApiResponse} from 'next';
 import axios, {AxiosError} from 'axios';
 
-const logout = async (req: NextRequest) => {
+const logout = async (req: NextApiRequest) => {
     console.log('logout関数が呼び出されました'); // 関数の開始をログ出力
     
     try {
         console.log('APIリクエストを送信します:', 'http://localhost:8080/api/logout'); // リクエスト送信前のログ
-        console.log('リクエストヘッダー:', req.headers.get('cookie')); // Cookieヘッダーの内容をログ出力
+        console.log('リクエストヘッダー:', req.headers.cookie); // Cookieヘッダーの内容をログ出力
         
         const response = await axios.post('http://localhost:8080/api/logout', {}, {
             withCredentials: true,
             headers: {
                 'Content-Type': 'application/json',
-                'Cookie': req.headers.get('cookie') || '',
+                'Cookie': req.headers.cookie || '',
             },
         });
         
@@ -32,17 +34,18 @@ const logout = async (req: NextRequest) => {
     }
 };
 
-export async function POST(req: NextRequest) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    if (req.method !== 'POST') {
+        res.setHeader('Allow', ['POST']);
+        res.status(405).end(`Method ${req.method} Not Allowed`);
+        return;
+    }
+    
     try {
-        await logout(req)
-        const response = NextResponse.json({message: 'ログアウトしました'}, {status: 200});
-        
-        // セッションクッキーを削除
-        response.cookies.delete('JSESSIONID');
-        
-        return response;
+        await logout(req);
+        res.status(200).json({message: 'ログアウトしました'});
     } catch (error) {
         console.error('POSTハンドラーでエラーが発生しました:', error);
-        return NextResponse.json({error: 'ログアウト中にエラーが発生しました'}, {status: 500});
+        res.status(500).json({error: 'ログアウト中にエラーが発生しました'});
     }
 }

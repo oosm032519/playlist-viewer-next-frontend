@@ -1,4 +1,4 @@
-// api/session/route.test.ts
+// app/api/logout/route.test.ts
 
 import {NextApiRequest, NextApiResponse} from 'next';
 import axios from 'axios';
@@ -14,6 +14,9 @@ describe('Session API Route', () => {
     beforeEach(() => {
         req = {
             method: 'POST',
+            headers: {
+                cookie: 'test-cookie',
+            },
         };
         res = {
             status: jest.fn().mockReturnThis(),
@@ -39,6 +42,7 @@ describe('Session API Route', () => {
                 withCredentials: true,
                 headers: {
                     'Content-Type': 'application/json',
+                    'Cookie': 'test-cookie',
                 },
             }
         );
@@ -54,7 +58,8 @@ describe('Session API Route', () => {
         
         await handler(req as NextApiRequest, res as NextApiResponse);
         
-        expect(consoleSpy).toHaveBeenCalledWith('ログアウトエラー:', error);
+        expect(consoleSpy).toHaveBeenNthCalledWith(1, 'APIリクエスト中にエラーが発生しました:', error);
+        expect(consoleSpy).toHaveBeenNthCalledWith(2, 'POSTハンドラーでエラーが発生しました:', expect.any(Error));
         expect(res.status).toHaveBeenCalledWith(500);
         expect(res.json).toHaveBeenCalledWith({error: 'ログアウト中にエラーが発生しました'});
         
@@ -83,6 +88,7 @@ describe('Session API Route', () => {
                 withCredentials: true,
                 headers: {
                     'Content-Type': 'application/json',
+                    'Cookie': 'test-cookie',
                 },
             }
         );
