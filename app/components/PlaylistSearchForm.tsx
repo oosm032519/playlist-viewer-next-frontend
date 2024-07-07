@@ -1,13 +1,9 @@
-// app/components/PlaylistSearchForm.tsx
-
 "use client";
 
 import {useForm} from "react-hook-form";
 import {yupResolver} from "@hookform/resolvers/yup";
-import * as yup from "yup";
-import axios from "axios";
-import {useMutation, useQueryClient} from "@tanstack/react-query";
-
+import {schema} from "../validationSchema";
+import {useSearchPlaylists} from "../hooks/useSearchPlaylists";
 import {Button} from "./ui/button";
 import {Input} from "./ui/input";
 import {
@@ -28,40 +24,18 @@ interface SearchFormInputs {
     query: string;
 }
 
-const schema = yup
-    .object({
-        query: yup
-            .string()
-            .required("検索クエリを入力してください")
-            .min(2, "最低2文字以上入力してください"),
-    })
-    .required();
-
 interface PlaylistSearchFormProps {
     onSearch(playlists: Playlist[]): void;
 }
 
 export default function PlaylistSearchForm({onSearch}: PlaylistSearchFormProps) {
-    const queryClient = useQueryClient();
     const form = useForm<SearchFormInputs>({
         resolver: yupResolver(schema),
         defaultValues: {query: ""},
     });
     
-    const searchPlaylists = async (query: string) => {
-        const response = await axios.get<Playlist[]>(`/api/playlists/search?query=${query}`);
-        return response.data;
-    };
-    
-    const searchMutation = useMutation({
-        mutationFn: searchPlaylists,
-        onSuccess: (data) => {
-            onSearch(data);
-            queryClient.setQueryData(['playlists', form.getValues().query], data);
-        },
-        onError: (error: any) => {
-            console.error("プレイリスト検索中にエラーが発生しました:", error);
-        },
+    const searchMutation = useSearchPlaylists((data) => {
+        onSearch(data);
     });
     
     const onSubmit = async (data: SearchFormInputs) => {
