@@ -1,14 +1,13 @@
-// app/components/RecommendationsTable.tsx
-
 "use client";
 
-import React, {useEffect} from "react";
+import React, {useEffect, useState} from "react";
 import Image from "next/image";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "./ui/table";
 import {Button} from "./ui/button";
 import {TrackPlayer} from "./TrackPlayer";
 import {addTrackToPlaylist, removeTrackFromPlaylist} from "../lib/utils";
-import {RecommendationsTableProps} from '../types/recommendationsTableProps'
+import {RecommendationsTableProps} from '../types/recommendationsTableProps';
+import axios from 'axios';
 
 export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({
                                                                               tracks,
@@ -16,10 +15,22 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({
                                                                               userId,
                                                                               playlistId,
                                                                           }) => {
+    const [createdPlaylistId, setCreatedPlaylistId] = useState<string | null>(null);
+    
     useEffect(() => {
         console.log("ownerId:", ownerId);
         console.log("userId:", userId);
     }, [ownerId, userId]);
+    
+    const createPlaylist = async () => {
+        try {
+            const trackIds = tracks.map(track => track.id);
+            const response = await axios.post('/api/playlists/create', trackIds);
+            setCreatedPlaylistId(response.data);
+        } catch (error) {
+            console.error("プレイリストの作成中にエラーが発生しました。", error);
+        }
+    };
     
     return (
         <div className="w-full overflow-x-auto">
@@ -66,6 +77,15 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({
                     ))}
                 </TableBody>
             </Table>
+            <div className="mt-4">
+                <Button onClick={createPlaylist}>おすすめ楽曲をもとにプレイリストを作成する</Button>
+                {createdPlaylistId && (
+                    <Button className="ml-4"
+                            onClick={() => window.open(`https://open.spotify.com/playlist/${createdPlaylistId}`, '_blank')}>
+                        作成したプレイリストを表示
+                    </Button>
+                )}
+            </div>
         </div>
     );
 };
