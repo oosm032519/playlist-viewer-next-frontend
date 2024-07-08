@@ -14,7 +14,7 @@ import {
     FormItem,
     FormMessage,
 } from "./ui/form";
-import {Card, CardContent} from "./ui/card";
+import {Card, CardContent, CardHeader, CardTitle} from "./ui/card";
 import LoadingSpinner from "./LoadingSpinner";
 import {Playlist} from "../types/playlist";
 import {useQueryClient} from "@tanstack/react-query";
@@ -86,6 +86,9 @@ export default function PlaylistSearchForm({
     return (
         <>
             <Card>
+                <CardHeader>
+                    <CardTitle>Enter Playlist Name</CardTitle>
+                </CardHeader>
                 <CardContent>
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
