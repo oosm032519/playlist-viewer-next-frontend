@@ -1,4 +1,4 @@
-// PlaylistDetailsTable.test.tsx
+// PlaylistDetailsTableColumns.test.tsx
 
 import React from 'react';
 import {render, screen, fireEvent, within} from '@testing-library/react';
