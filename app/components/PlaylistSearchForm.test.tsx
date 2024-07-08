@@ -56,7 +56,7 @@ describe('PlaylistSearchForm', () => {
         fireEvent.change(input, {target: {value: 'test query'}});
         fireEvent.click(button);
         await waitFor(() => {
-            expect(mockAxios.get).toHaveBeenCalledWith('/api/playlists/search?query=test query');
+            expect(mockAxios.get).toHaveBeenCalledWith('/api/playlists/search?query=test query&offset=0&limit=20');
             expect(onSearchMock).toHaveBeenCalledWith(mockPlaylists);
         });
     });
@@ -125,7 +125,7 @@ describe('PlaylistSearchForm', () => {
         fireEvent.change(input, {target: {value: 'ab'}});
         fireEvent.click(button);
         await waitFor(() => {
-            expect(mockAxios.get).toHaveBeenCalledWith('/api/playlists/search?query=ab');
+            expect(mockAxios.get).toHaveBeenCalledWith('/api/playlists/search?query=ab&offset=0&limit=20');
             expect(onSearchMock).toHaveBeenCalledWith(mockPlaylists);
         });
     });
