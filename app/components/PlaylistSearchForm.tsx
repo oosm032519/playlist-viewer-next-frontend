@@ -17,13 +17,14 @@ import {
 import {Card, CardContent} from "./ui/card";
 import LoadingSpinner from "./LoadingSpinner";
 import {Playlist} from "../types/playlist";
+import {useQueryClient} from "@tanstack/react-query";
 
 interface SearchFormInputs {
     query: string;
 }
 
 interface PlaylistSearchFormProps {
-    onSearch(playlists: Playlist[], totalPlaylists: number): void;
+    onSearch(playlists: Playlist[]): void;
 }
 
 export default function PlaylistSearchForm({
@@ -31,6 +32,7 @@ export default function PlaylistSearchForm({
                                            }: PlaylistSearchFormProps) {
     const [currentPage, setCurrentPage] = useState(1);
     const [currentPlaylists, setCurrentPlaylists] = useState<Playlist[]>([]);
+    const queryClient = useQueryClient();
     
     const form = useForm<SearchFormInputs>({
         resolver: yupResolver(schema),
@@ -38,7 +40,7 @@ export default function PlaylistSearchForm({
     });
     
     const searchMutation = useSearchPlaylists((data) => {
-        onSearch(data, data.length);
+        onSearch(data);
         setCurrentPlaylists(data);
     });
     
@@ -56,15 +58,36 @@ export default function PlaylistSearchForm({
         });
     };
     
+    const handlePrevPage = () => {
+        const prevPage = currentPage - 1;
+        setCurrentPage(prevPage);
+        
+        // キャッシュからデータを取得
+        const cachedData = queryClient.getQueryData([
+            "playlists",
+            form.getValues("query"),
+            prevPage,
+        ]) as Playlist[] | undefined;
+        
+        if (cachedData) {
+            // キャッシュがある場合はキャッシュからデータを設定
+            setCurrentPlaylists(cachedData);
+        } else {
+            // キャッシュがない場合はAPIリクエストを送信
+            searchMutation.mutate({
+                query: form.getValues("query"),
+                page: prevPage,
+                limit: 20,
+            });
+        }
+    };
+    
     return (
         <>
             <Card>
                 <CardContent>
                     <Form {...form}>
-                        <form
-                            onSubmit={form.handleSubmit(onSubmit)}
-                            className="space-y-8"
-                        >
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                             <FormField
                                 control={form.control}
                                 name="query"
@@ -81,9 +104,7 @@ export default function PlaylistSearchForm({
                                                     type="submit"
                                                     disabled={searchMutation.isPending}
                                                 >
-                                                    {searchMutation.isPending
-                                                        ? "Searching..."
-                                                        : "Search"}
+                                                    {searchMutation.isPending ? "Searching..." : "Search"}
                                                 </Button>
                                             </div>
                                         </FormControl>
@@ -96,12 +117,22 @@ export default function PlaylistSearchForm({
                 </CardContent>
             </Card>
             <LoadingSpinner loading={searchMutation.isPending}/>
-            <Button
-                onClick={handleNextPage}
-                disabled={searchMutation.isPending || currentPlaylists.length < 20}
-            >
-                Next
-            </Button>
+            <div className="flex justify-center space-x-2 mt-4">
+                <Button
+                    onClick={handlePrevPage}
+                    disabled={searchMutation.isPending || currentPage === 1}
+                >
+                    Previous
+                </Button>
+                <Button
+                    onClick={handleNextPage}
+                    disabled={
+                        searchMutation.isPending || currentPlaylists.length < 20
+                    }
+                >
+                    Next
+                </Button>
+            </div>
         </>
     );
 }
