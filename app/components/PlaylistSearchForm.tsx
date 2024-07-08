@@ -18,6 +18,7 @@ import {Card, CardContent} from "./ui/card";
 import LoadingSpinner from "./LoadingSpinner";
 import {Playlist} from "../types/playlist";
 import {useQueryClient} from "@tanstack/react-query";
+import PaginationButtons from "./PaginationButtons";
 
 interface SearchFormInputs {
     query: string;
@@ -118,22 +119,13 @@ export default function PlaylistSearchForm({
             </Card>
             <LoadingSpinner loading={searchMutation.isPending}/>
             {currentPlaylists.length > 0 && ( // 条件を追加
-                <div className="flex justify-center space-x-2 mt-4">
-                    <Button
-                        onClick={handlePrevPage}
-                        disabled={searchMutation.isPending || currentPage === 1}
-                    >
-                        Previous
-                    </Button>
-                    <Button
-                        onClick={handleNextPage}
-                        disabled={
-                            searchMutation.isPending || currentPlaylists.length < 20
-                        }
-                    >
-                        Next
-                    </Button>
-                </div>
+                <PaginationButtons
+                    currentPage={currentPage}
+                    isPending={searchMutation.isPending}
+                    hasNextPage={currentPlaylists.length === 20}
+                    onNextPage={handleNextPage}
+                    onPrevPage={handlePrevPage}
+                />
             )}
         </>
     );

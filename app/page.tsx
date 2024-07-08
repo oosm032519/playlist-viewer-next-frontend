@@ -101,7 +101,7 @@ export default function Home() {
                             )}
                             
                             {playlists.length > 0 && !selectedPlaylistId && (
-                                <PlaylistTable playlists={playlists} onPlaylistClick={handlePlaylistClick}/>
+                                <PlaylistTable playlists={playlists} onPlaylistClick={handlePlaylistClick} totalPlaylists={playlists.length} currentPage={1}/>
                             )}
                             
                             {selectedPlaylistId && (
