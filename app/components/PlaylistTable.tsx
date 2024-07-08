@@ -7,9 +7,11 @@ import PlaylistTableRow from "./PlaylistTableRow";
 interface PlaylistTableProps {
     playlists: Playlist[];
     onPlaylistClick: (playlistId: string) => void;
+    currentPage: number;
+    totalPlaylists: number;
 }
 
-export default function PlaylistTable({playlists, onPlaylistClick}: PlaylistTableProps) {
+export default function PlaylistTable({playlists, onPlaylistClick, currentPage, totalPlaylists}: PlaylistTableProps) {
     return (
         <Table>
             <PlaylistTableHeader/>
