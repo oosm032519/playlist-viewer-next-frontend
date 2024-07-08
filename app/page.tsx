@@ -90,8 +90,8 @@ export default function Home() {
                     <CardContent>
                         <div className="space-y-6">
                             <LoginButton onLoginSuccess={handleLoginSuccess}/>
-                            <PlaylistSearchForm onSearch={handleSearch}/>
                             <PlaylistIdForm onPlaylistSelect={handlePlaylistClick}/>
+                            <PlaylistSearchForm onSearch={handleSearch}/>
                             
                             {error && (
                                 <Alert variant="destructive">
