@@ -1,5 +1,3 @@
-// app/components/RecommendationsTable.tsx
-
 import React, {useEffect, useState, useMemo} from "react";
 import Image from "next/image";
 import {
@@ -52,45 +50,52 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({
         createPlaylistMutation.mutate(trackIds);
     };
     
-    const columns = useMemo<ColumnDef<typeof tracks[0]>[]>(() => [
-        {
-            header: 'Album',
-            cell: info => (
-                <Image
-                    src={info.row.original.album.images[0].url}
-                    alt={info.row.original.album.name}
-                    width={50}
-                    height={50}
-                    className="object-cover rounded-full"
-                />
-            ),
-        },
-        {
-            header: 'Title',
-            accessorKey: 'name',
-        },
-        {
-            header: 'Artist',
-            cell: info => info.row.original.artists[0].name,
-        },
-        {
-            header: 'Preview',
-            cell: info => <TrackPlayer track={info.row.original}/>,
-        },
-        {
-            header: 'Actions',
-            cell: info => ownerId === userId && (
-                <>
-                    <Button onClick={() => addTrackToPlaylist(playlistId, info.row.original.id as string)}>
-                        追加
-                    </Button>
-                    <Button onClick={() => removeTrackFromPlaylist(playlistId, info.row.original.id as string)}>
-                        削除
-                    </Button>
-                </>
-            ),
-        },
-    ], [ownerId, userId, playlistId]);
+    const columns = useMemo<ColumnDef<typeof tracks[0]>[]>(() => {
+        const baseColumns: ColumnDef<typeof tracks[0]>[] = [
+            {
+                header: 'Album',
+                cell: info => (
+                    <Image
+                        src={info.row.original.album.images[0].url}
+                        alt={info.row.original.album.name}
+                        width={50}
+                        height={50}
+                        className="object-cover rounded-full"
+                    />
+                ),
+            },
+            {
+                header: 'Title',
+                accessorKey: 'name',
+            },
+            {
+                header: 'Artist',
+                cell: info => info.row.original.artists[0].name,
+            },
+            {
+                header: 'Preview',
+                cell: info => <TrackPlayer track={info.row.original}/>,
+            },
+        ];
+        
+        if (ownerId === userId) {
+            baseColumns.push({
+                header: 'Actions',
+                cell: info => ownerId === userId && (
+                    <>
+                        <Button onClick={() => addTrackToPlaylist(playlistId, info.row.original.id as string)}>
+                            追加
+                        </Button>
+                        <Button onClick={() => removeTrackFromPlaylist(playlistId, info.row.original.id as string)}>
+                            削除
+                        </Button>
+                    </>
+                ),
+            });
+        }
+        
+        return baseColumns;
+    }, [ownerId, userId, playlistId]);
     
     const table = useReactTable({
         data: tracks,
@@ -133,15 +138,17 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({
                     </TableBody>
                 </Table>
             </div>
-            <div className="mt-4">
-                <Button onClick={createPlaylist}>おすすめ楽曲をもとにプレイリストを作成する</Button>
-                {createdPlaylistId && (
-                    <Button className="ml-4"
-                            onClick={() => window.open(`https://open.spotify.com/playlist/${createdPlaylistId}`, '_blank')}>
-                        作成したプレイリストを表示
-                    </Button>
-                )}
-            </div>
+            {userId && (
+                <div className="mt-4">
+                    <Button onClick={createPlaylist}>おすすめ楽曲をもとにプレイリストを作成する</Button>
+                    {createdPlaylistId && (
+                        <Button className="ml-4"
+                                onClick={() => window.open(`https://open.spotify.com/playlist/${createdPlaylistId}`, '_blank')}>
+                            作成したプレイリストを表示
+                        </Button>
+                    )}
+                </div>
+            )}
         </div>
     );
 };

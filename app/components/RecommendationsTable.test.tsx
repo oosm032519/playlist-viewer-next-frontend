@@ -6,7 +6,7 @@ import {Track} from '../types/track';
 import {axe, toHaveNoViolations} from 'jest-axe';
 import * as utils from '../lib/utils';
 import {expect} from '@jest/globals';
-import {QueryClient, QueryClientProvider} from '@tanstack/react-query'; // react-queryのインポートを追加
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 
 expect.extend(toHaveNoViolations);
 
@@ -65,10 +65,12 @@ const mockTracks: Track[] = [
 describe('RecommendationsTable', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        jest.spyOn(console, 'log').mockImplementation(() => {
+        }); // console.logをモック
     });
     
     it('should not have any accessibility violations', async () => {
-        const queryClient = new QueryClient(); // 新しいQueryClientを作成
+        const queryClient = new QueryClient();
         const {container} = render(
             <QueryClientProvider client={queryClient}>
                 <RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="user1" playlistId="playlist1"/>
@@ -82,7 +84,7 @@ describe('RecommendationsTable', () => {
         const queryClient = new QueryClient();
         render(
             <QueryClientProvider client={queryClient}>
-                <RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="user1" playlistId="playlist1"/>
+                <RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="owner1" playlistId="playlist1"/>
             </QueryClientProvider>
         );
         expect(screen.getByText('Album')).toBeInTheDocument();
@@ -96,7 +98,7 @@ describe('RecommendationsTable', () => {
         const queryClient = new QueryClient();
         render(
             <QueryClientProvider client={queryClient}>
-                <RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="user1" playlistId="playlist1"/>
+                <RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="owner1" playlistId="playlist1"/>
             </QueryClientProvider>
         );
         mockTracks.forEach(track => {
@@ -158,7 +160,7 @@ describe('RecommendationsTable', () => {
         const queryClient = new QueryClient();
         render(
             <QueryClientProvider client={queryClient}>
-                <RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="user1" playlistId="playlist1"/>
+                <RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="owner1" playlistId="playlist1"/>
             </QueryClientProvider>
         );
         expect(screen.getByText('Test Artist 3')).toBeInTheDocument();
