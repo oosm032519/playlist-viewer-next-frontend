@@ -1,5 +1,3 @@
-// app/components/RecommendationsTable.test.tsx
-
 import React from 'react';
 import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom';
@@ -8,6 +6,7 @@ import {Track} from '../types/track';
 import {axe, toHaveNoViolations} from 'jest-axe';
 import * as utils from '../lib/utils';
 import {expect} from '@jest/globals';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query'; // react-queryのインポートを追加
 
 expect.extend(toHaveNoViolations);
 
@@ -69,15 +68,23 @@ describe('RecommendationsTable', () => {
     });
     
     it('should not have any accessibility violations', async () => {
+        const queryClient = new QueryClient(); // 新しいQueryClientを作成
         const {container} = render(
-            <RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="user1" playlistId="playlist1"/>
+            <QueryClientProvider client={queryClient}>
+                <RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="user1" playlistId="playlist1"/>
+            </QueryClientProvider>
         );
         const results = await axe(container);
         expect(results).toHaveNoViolations();
     });
     
     it('renders the table with correct headers', () => {
-        render(<RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="user1" playlistId="playlist1"/>);
+        const queryClient = new QueryClient();
+        render(
+            <QueryClientProvider client={queryClient}>
+                <RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="user1" playlistId="playlist1"/>
+            </QueryClientProvider>
+        );
         expect(screen.getByText('Album')).toBeInTheDocument();
         expect(screen.getByText('Title')).toBeInTheDocument();
         expect(screen.getByText('Artist')).toBeInTheDocument();
@@ -86,7 +93,12 @@ describe('RecommendationsTable', () => {
     });
     
     it('displays track data correctly', () => {
-        render(<RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="user1" playlistId="playlist1"/>);
+        const queryClient = new QueryClient();
+        render(
+            <QueryClientProvider client={queryClient}>
+                <RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="user1" playlistId="playlist1"/>
+            </QueryClientProvider>
+        );
         mockTracks.forEach(track => {
             expect(screen.getByText(track.name)).toBeInTheDocument();
             expect(screen.getByText(track.artists[0].name)).toBeInTheDocument();
@@ -94,20 +106,32 @@ describe('RecommendationsTable', () => {
     });
     
     it('shows add and remove buttons only for the owner', () => {
+        const queryClient = new QueryClient();
         const {rerender} = render(
-            <RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="owner1" playlistId="playlist1"/>
+            <QueryClientProvider client={queryClient}>
+                <RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="owner1" playlistId="playlist1"/>
+            </QueryClientProvider>
         );
         expect(screen.getAllByText('追加')).toHaveLength(mockTracks.length);
         expect(screen.getAllByText('削除')).toHaveLength(mockTracks.length);
         
-        rerender(<RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="user2" playlistId="playlist1"/>);
+        rerender(
+            <QueryClientProvider client={queryClient}>
+                <RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="user2" playlistId="playlist1"/>
+            </QueryClientProvider>
+        );
         expect(screen.queryByText('追加')).not.toBeInTheDocument();
         expect(screen.queryByText('削除')).not.toBeInTheDocument();
     });
     
     it('handles add track button click correctly', async () => {
+        const queryClient = new QueryClient();
         mockedUtils.addTrackToPlaylist.mockResolvedValue(true);
-        render(<RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="owner1" playlistId="playlist1"/>);
+        render(
+            <QueryClientProvider client={queryClient}>
+                <RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="owner1" playlistId="playlist1"/>
+            </QueryClientProvider>
+        );
         const addButtons = screen.getAllByText('追加');
         fireEvent.click(addButtons[0]);
         await waitFor(() => {
@@ -116,8 +140,13 @@ describe('RecommendationsTable', () => {
     });
     
     it('handles remove track button click correctly', async () => {
+        const queryClient = new QueryClient();
         mockedUtils.removeTrackFromPlaylist.mockResolvedValue(true);
-        render(<RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="owner1" playlistId="playlist1"/>);
+        render(
+            <QueryClientProvider client={queryClient}>
+                <RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="owner1" playlistId="playlist1"/>
+            </QueryClientProvider>
+        );
         const removeButtons = screen.getAllByText('削除');
         fireEvent.click(removeButtons[0]);
         await waitFor(() => {
@@ -126,7 +155,12 @@ describe('RecommendationsTable', () => {
     });
     
     it('displays only the first artist for tracks with multiple artists', () => {
-        render(<RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="user1" playlistId="playlist1"/>);
+        const queryClient = new QueryClient();
+        render(
+            <QueryClientProvider client={queryClient}>
+                <RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="user1" playlistId="playlist1"/>
+            </QueryClientProvider>
+        );
         expect(screen.getByText('Test Artist 3')).toBeInTheDocument();
         expect(screen.queryByText('Test Artist 4')).not.toBeInTheDocument();
     });
