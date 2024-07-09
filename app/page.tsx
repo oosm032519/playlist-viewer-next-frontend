@@ -2,77 +2,29 @@
 
 "use client";
 
-import {useState, useEffect} from "react";
-import {
-    Card,
-    CardHeader,
-    CardTitle,
-    CardContent,
-} from "./components/ui/card";
-import {
-    Alert,
-    AlertDescription,
-    AlertTitle,
-} from "./components/ui/alert";
+import {useState} from "react";
+import {Card, CardHeader, CardTitle, CardContent} from "./components/ui/card";
 import PlaylistSearchForm from "./components/PlaylistSearchForm";
 import PlaylistIdForm from "./components/PlaylistIdForm";
 import LoginButton from "./components/LoginButton";
-import FollowedPlaylists from "./components/FollowedPlaylists";
-import PlaylistTable from "./components/PlaylistTable";
-import PlaylistDetailsLoader from "./components/PlaylistDetailsLoader";
-import {Playlist} from "./types/playlist";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
-import {checkSession} from "./lib/checkSession"; // セッションチェック関数をインポート
+import {useSession} from "./hooks/useSession";
+import ErrorAlert from "./components/ErrorAlert";
+import PlaylistDisplay from "./components/PlaylistDisplay";
+import {Playlist} from "./types/playlist";
 
 export default function Home() {
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
-    const [error, setError] = useState<string | null>(null);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [selectedPlaylistId, setSelectedPlaylistId] = useState<string | null>(null);
-    const [userId, setUserId] = useState<string | null>(null); // userId を状態として保持
-    
     const queryClient = new QueryClient();
-    
-    useEffect(() => {
-        const initializeSession = async () => {
-            const sessionStatus = await checkSession();
-            setIsLoggedIn(sessionStatus);
-            
-            if (sessionStatus) {
-                try {
-                    const response = await fetch("/api/session/check", {
-                        credentials: "include",
-                    });
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
-                    if (data.userId) {
-                        setUserId(data.userId);
-                    }
-                } catch (error) {
-                    if (error instanceof Error) {
-                        console.error("ユーザーIDの取得中にエラーが発生しました:", error.message, (error as any).code);
-                        setError("ユーザーIDの取得中にエラーが発生しました。");
-                    } else {
-                        console.error("ユーザーIDの取得中にエラーが発生しました:", error);
-                        setError("ユーザーIDの取得中にエラーが発生しました。");
-                    }
-                }
-            }
-        };
-        initializeSession();
-    }, []);
+    const {isLoggedIn, userId, error} = useSession(); // useSessionからisLoggedInを取得
     
     const handleSearch = (playlists: Playlist[]) => {
         setPlaylists(playlists);
-        setError(null);
         setSelectedPlaylistId(null);
     };
     
-    const handleLoginSuccess = () => {
-        setIsLoggedIn(true);
-    };
+    // handleLoginSuccessは不要になる
     
     const handlePlaylistClick = async (playlistId: string): Promise<void> => {
         setSelectedPlaylistId(playlistId);
@@ -89,29 +41,18 @@ export default function Home() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-6">
-                            <LoginButton onLoginSuccess={handleLoginSuccess}/>
+                            {/* LoginButtonにisLoggedInを渡す */}
+                            <LoginButton isLoggedIn={isLoggedIn}/>
                             <PlaylistIdForm onPlaylistSelect={handlePlaylistClick}/>
                             <PlaylistSearchForm onSearch={handleSearch}/>
-                            
-                            {error && (
-                                <Alert variant="destructive">
-                                    <AlertTitle>Error</AlertTitle>
-                                    <AlertDescription>{error}</AlertDescription>
-                                </Alert>
-                            )}
-                            
-                            {playlists.length > 0 && !selectedPlaylistId && (
-                                <PlaylistTable playlists={playlists} onPlaylistClick={handlePlaylistClick} totalPlaylists={playlists.length} currentPage={1}/>
-                            )}
-                            
-                            {selectedPlaylistId && (
-                                <PlaylistDetailsLoader
-                                    playlistId={selectedPlaylistId}
-                                    userId={userId || undefined} // userIdがnullの場合はundefinedを渡す
-                                />
-                            )}
-                            
-                            {isLoggedIn && <FollowedPlaylists onPlaylistClick={handlePlaylistClick}/>}
+                            {error && <ErrorAlert error={error}/>}
+                            <PlaylistDisplay
+                                playlists={playlists}
+                                selectedPlaylistId={selectedPlaylistId}
+                                userId={userId || undefined}
+                                onPlaylistClick={handlePlaylistClick}
+                                isLoggedIn={isLoggedIn}
+                            />
                         </div>
                     </CardContent>
                 </Card>
