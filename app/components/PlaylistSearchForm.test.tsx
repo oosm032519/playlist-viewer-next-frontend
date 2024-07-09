@@ -1,16 +1,17 @@
+import React from 'react';
 import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
-import PlaylistSearch from './PlaylistSearch';
-import axios from 'axios';
+import PlaylistSearchForm from '../components/PlaylistSearchForm';
+import {useSearchPlaylists} from '../hooks/useSearchPlaylists';
 import {axe, toHaveNoViolations} from 'jest-axe';
 import {expect} from '@jest/globals';
 
 expect.extend(toHaveNoViolations);
 
-// モックの設定
-jest.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+jest.mock('../hooks/useSearchPlaylists');
+
+const mockUseSearchPlaylists = useSearchPlaylists as jest.Mock;
 
 const queryClient = new QueryClient();
 
@@ -22,64 +23,57 @@ const renderWithQueryClient = (ui: React.ReactElement) => {
     );
 };
 
-describe('PlaylistSearch Component', () => {
+describe('PlaylistSearchForm', () => {
+    const mockOnSearch = jest.fn();
+    
     beforeEach(() => {
-        queryClient.clear();
+        mockUseSearchPlaylists.mockReturnValue({
+            mutate: jest.fn(),
+            isPending: false,
+        });
     });
     
-    it('renders the form and table correctly', () => {
-        renderWithQueryClient(<PlaylistSearch/>);
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+    
+    test('renders the form and submit button', () => {
+        renderWithQueryClient(<PlaylistSearchForm onSearch={mockOnSearch}/>);
+        
         expect(screen.getByPlaceholderText('Enter playlist name')).toBeInTheDocument();
-        expect(screen.getByRole('button', {name: /search/i})).toBeInTheDocument();
+        expect(screen.getByText('Search')).toBeInTheDocument();
     });
     
-    it('displays validation error when query is empty', async () => {
-        renderWithQueryClient(<PlaylistSearch/>);
-        fireEvent.click(screen.getByRole('button', {name: /search/i}));
-        await waitFor(() => {
-            expect(screen.getByText('検索クエリを入力してください')).toBeInTheDocument();
+    test('calls search mutation on form submit', async () => {
+        const mockMutate = jest.fn();
+        mockUseSearchPlaylists.mockReturnValue({
+            mutate: mockMutate,
+            isPending: false,
         });
-    });
-    
-    it('displays validation error when query is less than 2 characters', async () => {
-        renderWithQueryClient(<PlaylistSearch/>);
-        fireEvent.input(screen.getByPlaceholderText('Enter playlist name'), {target: {value: 'a'}});
-        fireEvent.click(screen.getByRole('button', {name: /search/i}));
-        await waitFor(() => {
-            expect(screen.getByText('最低2文字以上入力してください')).toBeInTheDocument();
-        });
-    });
-    
-    it('fetches and displays playlists on valid query', async () => {
-        const mockPlaylists = [
-            {
-                id: '1',
-                name: 'Playlist 1',
-                description: 'Description 1',
-                images: [{url: 'http://example.com/image1.jpg'}]
-            },
-            {
-                id: '2',
-                name: 'Playlist 2',
-                description: 'Description 2',
-                images: [{url: 'http://example.com/image2.jpg'}]
-            },
-        ];
-        mockedAxios.get.mockResolvedValueOnce({data: mockPlaylists});
         
-        renderWithQueryClient(<PlaylistSearch/>);
-        fireEvent.input(screen.getByPlaceholderText('Enter playlist name'), {target: {value: 'test'}});
-        fireEvent.click(screen.getByRole('button', {name: /search/i}));
+        renderWithQueryClient(<PlaylistSearchForm onSearch={mockOnSearch}/>);
+        
+        fireEvent.change(screen.getByPlaceholderText('Enter playlist name'), {target: {value: 'test playlist'}});
+        fireEvent.click(screen.getByText('Search'));
         
         await waitFor(() => {
-            expect(screen.getByText('Playlist 1')).toBeInTheDocument();
-            expect(screen.getByText('Playlist 2')).toBeInTheDocument();
-            expect(screen.getAllByRole('img')).toHaveLength(2);
+            expect(mockMutate).toHaveBeenCalledWith({query: 'test playlist', page: 1, limit: 20});
         });
     });
     
-    it('should have no accessibility violations', async () => {
-        const {container} = renderWithQueryClient(<PlaylistSearch/>);
+    test('displays loading spinner when search is pending', () => {
+        mockUseSearchPlaylists.mockReturnValue({
+            mutate: jest.fn(),
+            isPending: true,
+        });
+        
+        renderWithQueryClient(<PlaylistSearchForm onSearch={mockOnSearch}/>);
+        
+        expect(screen.getByText('Searching...')).toBeInTheDocument();
+    });
+    
+    test('is accessible', async () => {
+        const {container} = renderWithQueryClient(<PlaylistSearchForm onSearch={mockOnSearch}/>);
         const results = await axe(container);
         expect(results).toHaveNoViolations();
     });
