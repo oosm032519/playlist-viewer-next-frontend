@@ -1,71 +1,92 @@
 // app/api/playlists/remove-track/route.test.ts
 
-import {POST} from './route';
-import axios from 'axios';
-import MockAdapter from 'axios-mock-adapter';
 import {NextRequest} from 'next/server';
+import {POST} from './route';
 import {expect} from '@jest/globals';
 
-// axios のモックを作成
-const mock = new MockAdapter(axios);
-
-// 環境変数のモック
-process.env.BACKEND_URL = 'http://mockbackend.com';
+// モックの設定
+global.fetch = jest.fn();
 
 describe('POST /api/playlists/remove-track', () => {
-    afterEach(() => {
-        mock.reset();
+    beforeEach(() => {
+        jest.clearAllMocks();
     });
     
-    it('正常にトラックをプレイリストから削除できること', async () => {
-        const mockResponse = {message: 'Track removed successfully'};
-        mock.onPost('http://mockbackend.com/api/playlist/remove-track').reply(200, mockResponse);
+    it('should remove track from playlist successfully', async () => {
+        const mockRequest = new NextRequest('http://localhost/api/playlists/remove-track', {
+            method: 'POST',
+            headers: new Headers({
+                'Content-Type': 'application/json',
+                'cookie': 'test-cookie',
+            }),
+            body: JSON.stringify({playlistId: '123', trackId: '456'}),
+        });
         
-        const mockRequest = {
-            json: jest.fn().mockResolvedValue({playlistId: '123', trackId: '456'}),
-            headers: {
-                get: jest.fn().mockReturnValue('mock-cookie'),
-            },
-        } as unknown as NextRequest;
+        const mockResponse = {
+            ok: true,
+            status: 200,
+            json: jest.fn().mockResolvedValue({success: true}),
+        };
+        
+        (global.fetch as jest.Mock).mockResolvedValue(mockResponse);
         
         const response = await POST(mockRequest);
-        const responseData = await response.json();
+        
+        expect(global.fetch).toHaveBeenCalledWith(
+            'http://localhost:8080/api/playlist/remove-track',
+            expect.objectContaining({
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cookie': 'test-cookie',
+                },
+                body: JSON.stringify({playlistId: '123', trackId: '456'}),
+                credentials: 'include',
+            })
+        );
         
         expect(response.status).toBe(200);
-        expect(responseData).toEqual(mockResponse);
+        const responseData = await response.json();
+        expect(responseData).toEqual({success: true});
     });
     
-    it('バックエンドAPIがエラーを返した場合、適切にエラーハンドリングされること', async () => {
-        mock.onPost('http://mockbackend.com/api/playlist/remove-track').reply(500, {error: 'Internal Server Error'});
+    it('should handle errors correctly', async () => {
+        const mockRequest = new NextRequest('http://localhost/api/playlists/remove-track', {
+            method: 'POST',
+            headers: new Headers({
+                'Content-Type': 'application/json',
+            }),
+            body: JSON.stringify({playlistId: '123', trackId: '456'}),
+        });
         
-        const mockRequest = {
-            json: jest.fn().mockResolvedValue({playlistId: '123', trackId: '456'}),
-            headers: {
-                get: jest.fn().mockReturnValue('mock-cookie'),
-            },
-        } as unknown as NextRequest;
+        const mockErrorResponse = {
+            ok: false,
+            status: 500,
+            json: jest.fn().mockResolvedValue({error: 'Internal Server Error'}),
+        };
         
-        const response = await POST(mockRequest);
-        const responseData = await response.json();
-        
-        expect(response.status).toBe(500);
-        expect(responseData).toHaveProperty('error');
-        expect(responseData.error).toBe('Failed to remove track from playlist');
-    });
-    
-    it('リクエストのJSONパースに失敗した場合、適切にエラーハンドリングされること', async () => {
-        const mockRequest = {
-            json: jest.fn().mockRejectedValue(new Error('Invalid JSON')),
-            headers: {
-                get: jest.fn().mockReturnValue('mock-cookie'),
-            },
-        } as unknown as NextRequest;
+        (global.fetch as jest.Mock).mockResolvedValue(mockErrorResponse);
         
         const response = await POST(mockRequest);
-        const responseData = await response.json();
+        
+        expect(global.fetch).toHaveBeenCalledWith(
+            'http://localhost:8080/api/playlist/remove-track',
+            expect.objectContaining({
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cookie': '',
+                },
+                body: JSON.stringify({playlistId: '123', trackId: '456'}),
+                credentials: 'include',
+            })
+        );
         
         expect(response.status).toBe(500);
-        expect(responseData).toHaveProperty('error');
-        expect(responseData.error).toBe('Failed to remove track from playlist');
+        const responseData = await response.json();
+        expect(responseData).toEqual({
+            error: 'Failed to remove track from playlist',
+            details: '{"error":"Internal Server Error"}',
+        });
     });
 });

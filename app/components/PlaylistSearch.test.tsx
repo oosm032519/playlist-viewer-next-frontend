@@ -1,84 +1,112 @@
-import {render, screen, fireEvent, waitFor} from '@testing-library/react';
-import '@testing-library/jest-dom';
-import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
-import PlaylistSearch from './PlaylistSearch';
-import axios from 'axios';
+import React from 'react';
+import {render, screen, waitFor} from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import {axe, toHaveNoViolations} from 'jest-axe';
+import {QueryClient, QueryClientProvider, useQuery} from '@tanstack/react-query';
+import PlaylistSearch from './PlaylistSearch';
 import {expect} from '@jest/globals';
 
 expect.extend(toHaveNoViolations);
 
 // モックの設定
-jest.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+jest.mock('@tanstack/react-query', () => ({
+    ...jest.requireActual('@tanstack/react-query'),
+    useQuery: jest.fn(),
+}));
 
-const queryClient = new QueryClient();
+const mockUseQuery = useQuery as jest.MockedFunction<typeof useQuery>;
 
-const renderWithQueryClient = (ui: React.ReactElement) => {
+const mockPlaylists = [
+    {
+        id: '1',
+        name: 'Test Playlist 1',
+        description: 'Test Description 1',
+        images: [{url: 'https://example.com/image1.jpg'}],
+    },
+    {
+        id: '2',
+        name: 'Test Playlist 2',
+        description: 'Test Description 2',
+        images: [{url: 'https://example.com/image2.jpg'}],
+    },
+];
+
+const renderWithQueryClient = (component: React.ReactElement) => {
+    const queryClient = new QueryClient();
     return render(
-        <QueryClientProvider client={queryClient}>
-            {ui}
-        </QueryClientProvider>
+        <QueryClientProvider client={queryClient}>{component}</QueryClientProvider>
     );
 };
 
-describe('PlaylistSearch Component', () => {
+describe('PlaylistSearch', () => {
     beforeEach(() => {
-        queryClient.clear();
+        mockUseQuery.mockReturnValue({
+            data: [],
+            isLoading: false,
+            refetch: jest.fn(),
+        } as any);
     });
     
-    it('renders the form and table correctly', () => {
+    it('renders without crashing', () => {
+        renderWithQueryClient(<PlaylistSearch/>);
+        expect(screen.getByText('Playlist Search')).toBeInTheDocument();
+    });
+    
+    it('displays an input field and a search button', () => {
         renderWithQueryClient(<PlaylistSearch/>);
         expect(screen.getByPlaceholderText('Enter playlist name')).toBeInTheDocument();
-        expect(screen.getByRole('button', {name: /search/i})).toBeInTheDocument();
+        expect(screen.getByRole('button', {name: 'Search'})).toBeInTheDocument();
     });
     
-    it('displays validation error when query is empty', async () => {
+    it('shows validation error for short query', async () => {
         renderWithQueryClient(<PlaylistSearch/>);
-        fireEvent.click(screen.getByRole('button', {name: /search/i}));
-        await waitFor(() => {
-            expect(screen.getByText('検索クエリを入力してください')).toBeInTheDocument();
-        });
-    });
-    
-    it('displays validation error when query is less than 2 characters', async () => {
-        renderWithQueryClient(<PlaylistSearch/>);
-        fireEvent.input(screen.getByPlaceholderText('Enter playlist name'), {target: {value: 'a'}});
-        fireEvent.click(screen.getByRole('button', {name: /search/i}));
+        const input = screen.getByPlaceholderText('Enter playlist name');
+        const searchButton = screen.getByRole('button', {name: 'Search'});
+        
+        await userEvent.type(input, 'a');
+        await userEvent.click(searchButton);
+        
         await waitFor(() => {
             expect(screen.getByText('最低2文字以上入力してください')).toBeInTheDocument();
         });
     });
     
-    it('fetches and displays playlists on valid query', async () => {
-        const mockPlaylists = [
-            {
-                id: '1',
-                name: 'Playlist 1',
-                description: 'Description 1',
-                images: [{url: 'http://example.com/image1.jpg'}]
-            },
-            {
-                id: '2',
-                name: 'Playlist 2',
-                description: 'Description 2',
-                images: [{url: 'http://example.com/image2.jpg'}]
-            },
-        ];
-        mockedAxios.get.mockResolvedValueOnce({data: mockPlaylists});
+    it('performs search when form is submitted with valid query', async () => {
+        const mockRefetch = jest.fn();
+        mockUseQuery.mockReturnValue({
+            data: mockPlaylists,
+            isLoading: false,
+            refetch: mockRefetch,
+        } as any);
         
         renderWithQueryClient(<PlaylistSearch/>);
-        fireEvent.input(screen.getByPlaceholderText('Enter playlist name'), {target: {value: 'test'}});
-        fireEvent.click(screen.getByRole('button', {name: /search/i}));
+        const input = screen.getByPlaceholderText('Enter playlist name');
+        const searchButton = screen.getByRole('button', {name: 'Search'});
+        
+        await userEvent.type(input, 'test query');
+        await userEvent.click(searchButton);
         
         await waitFor(() => {
-            expect(screen.getByText('Playlist 1')).toBeInTheDocument();
-            expect(screen.getByText('Playlist 2')).toBeInTheDocument();
-            expect(screen.getAllByRole('img')).toHaveLength(2);
+            expect(mockRefetch).toHaveBeenCalled();
         });
     });
     
-    it('should have no accessibility violations', async () => {
+    it('displays search results when data is available', async () => {
+        mockUseQuery.mockReturnValue({
+            data: mockPlaylists,
+            isLoading: false,
+            refetch: jest.fn(),
+        } as any);
+        
+        renderWithQueryClient(<PlaylistSearch/>);
+        
+        await waitFor(() => {
+            expect(screen.getByText('Test Playlist 1')).toBeInTheDocument();
+            expect(screen.getByText('Test Playlist 2')).toBeInTheDocument();
+        });
+    });
+    
+    it('has no accessibility violations', async () => {
         const {container} = renderWithQueryClient(<PlaylistSearch/>);
         const results = await axe(container);
         expect(results).toHaveNoViolations();

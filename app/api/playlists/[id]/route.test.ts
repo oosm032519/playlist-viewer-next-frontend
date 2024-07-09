@@ -1,65 +1,77 @@
 // app/api/playlists/[id]/route.test.ts
 
 import {GET} from './route';
-import axios from 'axios';
-import MockAdapter from 'axios-mock-adapter';
-import {expect} from '@jest/globals';
+import fetchMock from 'jest-fetch-mock';
+import {expect} from '@jest/globals'
+
+fetchMock.enableMocks();
 
 jest.mock('next/server', () => ({
     NextResponse: {
-        json: jest.fn((data, init) => ({
-            status: init?.status || 200,
-            json: async () => data,
-        })),
+        json: jest.fn((data, init) => {
+            return {
+                json: async () => data,
+                status: init.status,
+            };
+        }),
     },
 }));
 
-const mock = new MockAdapter(axios);
-
-const mockPlaylistData = {
-    id: '1',
-    name: 'テストプレイリスト',
-    songs: [
-        {id: '1', title: 'テスト曲1'},
-        {id: '2', title: 'テスト曲2'},
-    ],
-};
-
 describe('GET /api/playlists/[id]', () => {
     beforeEach(() => {
-        mock.reset();
+        fetchMock.resetMocks();
     });
     
-    it('正常にプレイリストデータを取得できる', async () => {
-        const playlistId = '1';
-        mock.onGet(`http://localhost:8080/api/playlists/${playlistId}`).reply(200, mockPlaylistData);
+    it('should return playlist data when the request is successful', async () => {
+        const mockData = {id: '1', name: 'My Playlist'};
+        fetchMock.mockResponseOnce(JSON.stringify(mockData), {status: 200});
         
-        const response = await GET({} as Request, {params: {id: playlistId}});
-        const responseData = await response.json();
+        const request = new Request('http://localhost:3000/api/playlists/1');
+        const params = {params: {id: '1'}};
+        
+        const response = await GET(request, params);
+        const json = await response.json();
         
         expect(response.status).toBe(200);
-        expect(responseData).toEqual(mockPlaylistData);
+        expect(json).toEqual(mockData);
     });
     
-    it('プレイリストが見つからない場合は404エラーを返す', async () => {
-        const playlistId = 'nonexistent';
-        mock.onGet(`http://localhost:8080/api/playlists/${playlistId}`).reply(404, {error: 'プレイリストが見つかりません'});
+    it('should return 404 when the playlist is not found', async () => {
+        fetchMock.mockResponseOnce(JSON.stringify({error: 'Not Found'}), {status: 404});
         
-        const response = await GET({} as Request, {params: {id: playlistId}});
-        const responseData = await response.json();
+        const request = new Request('http://localhost:3000/api/playlists/1');
+        const params = {params: {id: '1'}};
+        
+        const response = await GET(request, params);
+        const json = await response.json();
         
         expect(response.status).toBe(404);
-        expect(responseData).toEqual({error: 'プレイリストが見つかりません'});
+        expect(json).toEqual({error: 'プレイリストが見つかりません'});
     });
     
-    it('サーバーエラーの場合は500エラーを返す', async () => {
-        const playlistId = '1';
-        mock.onGet(`http://localhost:8080/api/playlists/${playlistId}`).reply(500, {error: 'サーバーエラー'});
+    it('should return 500 when there is a server error', async () => {
+        fetchMock.mockResponseOnce(JSON.stringify({error: 'Server Error'}), {status: 500});
         
-        const response = await GET({} as Request, {params: {id: playlistId}});
-        const responseData = await response.json();
+        const request = new Request('http://localhost:3000/api/playlists/1');
+        const params = {params: {id: '1'}};
+        
+        const response = await GET(request, params);
+        const json = await response.json();
         
         expect(response.status).toBe(500);
-        expect(responseData).toEqual({error: 'プレイリストの取得中にサーバーエラーが発生しました'});
+        expect(json).toEqual({error: 'プレイリストの取得中にサーバーエラーが発生しました'});
+    });
+    
+    it('should return 500 for unexpected errors', async () => {
+        fetchMock.mockRejectOnce(new Error('Unexpected Error'));
+        
+        const request = new Request('http://localhost:3000/api/playlists/1');
+        const params = {params: {id: '1'}};
+        
+        const response = await GET(request, params);
+        const json = await response.json();
+        
+        expect(response.status).toBe(500);
+        expect(json).toEqual({error: 'プレイリストの取得中に予期せぬエラーが発生しました'});
     });
 });

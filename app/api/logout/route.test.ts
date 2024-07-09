@@ -1,11 +1,7 @@
 // app/api/logout/route.test.ts
 
-import axios, {AxiosError} from 'axios';
 import {POST} from './route';
 import {expect} from '@jest/globals';
-
-jest.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 // NextResponseをモックする
 jest.mock('next/server', () => ({
@@ -34,15 +30,19 @@ describe('Session API Route', () => {
     });
     
     it('正常にログアウトできること', async () => {
-        mockedAxios.post.mockResolvedValueOnce({data: {}});
+        global.fetch = jest.fn().mockResolvedValueOnce({
+            ok: true,
+            status: 200,
+            json: async () => ({}),
+        });
         
         const response = await POST(req as Request);
         
-        expect(mockedAxios.post).toHaveBeenCalledWith(
+        expect(global.fetch).toHaveBeenCalledWith(
             'http://localhost:8080/api/logout',
-            {},
             {
-                withCredentials: true,
+                method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                     'Cookie': 'test-cookie',
@@ -54,14 +54,13 @@ describe('Session API Route', () => {
     });
     
     it('ログアウト中にエラーが発生した場合、500エラーを返すこと', async () => {
-        const axiosError = new AxiosError('ログアウトエラー');
-        mockedAxios.post.mockRejectedValueOnce(axiosError);
+        global.fetch = jest.fn().mockRejectedValueOnce(new Error('ログアウトエラー'));
         
         const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
         
         const response = await POST(req as Request);
         
-        expect(consoleSpy).toHaveBeenNthCalledWith(1, 'APIリクエスト中にエラーが発生しました:', axiosError);
+        expect(consoleSpy).toHaveBeenNthCalledWith(1, 'APIリクエスト中にエラーが発生しました:', new Error('ログアウトエラー'));
         expect(response.status).toBe(500);
         expect(await response.json()).toEqual({error: 'ログアウト失敗: ログアウトエラー'});
         
@@ -69,7 +68,6 @@ describe('Session API Route', () => {
     });
     
     it('POSTメソッド以外のリクエストに対して405エラーを返すこと', async () => {
-        // 新しいRequestオブジェクトを作成して、methodを設定
         const getReq = new Request('http://localhost:3000/api/logout', {
             method: 'GET',
             headers: new Headers({
@@ -83,16 +81,20 @@ describe('Session API Route', () => {
         expect(await response.json()).toEqual({error: 'Method GET Not Allowed'});
     });
     
-    it('axiosのPOSTリクエストが正しいパラメータで呼び出されること', async () => {
-        mockedAxios.post.mockResolvedValueOnce({data: {}});
+    it('fetchのPOSTリクエストが正しいパラメータで呼び出されること', async () => {
+        global.fetch = jest.fn().mockResolvedValueOnce({
+            ok: true,
+            status: 200,
+            json: async () => ({}),
+        });
         
         const response = await POST(req as Request);
         
-        expect(mockedAxios.post).toHaveBeenCalledWith(
+        expect(global.fetch).toHaveBeenCalledWith(
             'http://localhost:8080/api/logout',
-            {},
             {
-                withCredentials: true,
+                method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                     'Cookie': 'test-cookie',
@@ -102,7 +104,6 @@ describe('Session API Route', () => {
     });
     
     it('レスポンスヘッダーが正しく設定されること', async () => {
-        // 新しいRequestオブジェクトを作成して、methodを設定
         const putReq = new Request('http://localhost:3000/api/logout', {
             method: 'PUT',
             headers: new Headers({

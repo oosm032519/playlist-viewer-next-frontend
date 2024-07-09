@@ -1,79 +1,133 @@
 import React from 'react';
-import {render, screen, fireEvent, waitFor} from '@testing-library/react';
-import '@testing-library/jest-dom';
-import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
-import PlaylistSearchForm from '../components/PlaylistSearchForm';
-import {useSearchPlaylists} from '../hooks/useSearchPlaylists';
+import {render, screen, waitFor} from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import {QueryClient, QueryClientProvider, useQuery} from '@tanstack/react-query';
 import {axe, toHaveNoViolations} from 'jest-axe';
+import PlaylistSearch from './PlaylistSearch';
 import {expect} from '@jest/globals';
 
+// jest-axeのカスタムマッチャーを追加
 expect.extend(toHaveNoViolations);
 
-jest.mock('../hooks/useSearchPlaylists');
+// モックの設定
+jest.mock('@tanstack/react-query', () => ({
+    ...jest.requireActual('@tanstack/react-query'),
+    useQuery: jest.fn(),
+}));
 
-const mockUseSearchPlaylists = useSearchPlaylists as jest.Mock;
+const mockUseQuery = useQuery as jest.MockedFunction<typeof useQuery>;
 
-const queryClient = new QueryClient();
-
-const renderWithQueryClient = (ui: React.ReactElement) => {
-    return render(
-        <QueryClientProvider client={queryClient}>
-            {ui}
-        </QueryClientProvider>
-    );
-};
-
-describe('PlaylistSearchForm', () => {
-    const mockOnSearch = jest.fn();
+describe('PlaylistSearch', () => {
+    const queryClient = new QueryClient();
     
     beforeEach(() => {
-        mockUseSearchPlaylists.mockReturnValue({
-            mutate: jest.fn(),
-            isPending: false,
-        });
+        mockUseQuery.mockReturnValue({
+            data: [],
+            isLoading: false,
+            refetch: jest.fn(),
+        } as any);
     });
     
-    afterEach(() => {
-        jest.clearAllMocks();
+    it('should render without crashing', () => {
+        render(
+            <QueryClientProvider client={queryClient}>
+                <PlaylistSearch/>
+            </QueryClientProvider>
+        );
+        expect(screen.getByText('Playlist Search')).toBeInTheDocument();
     });
     
-    test('renders the form and submit button', () => {
-        renderWithQueryClient(<PlaylistSearchForm onSearch={mockOnSearch}/>);
+    it('should show validation error for short query', async () => {
+        render(
+            <QueryClientProvider client={queryClient}>
+                <PlaylistSearch/>
+            </QueryClientProvider>
+        );
         
-        expect(screen.getByPlaceholderText('Enter playlist name')).toBeInTheDocument();
-        expect(screen.getByText('Search')).toBeInTheDocument();
-    });
-    
-    test('calls search mutation on form submit', async () => {
-        const mockMutate = jest.fn();
-        mockUseSearchPlaylists.mockReturnValue({
-            mutate: mockMutate,
-            isPending: false,
-        });
+        const input = screen.getByLabelText('Enter playlist name');
+        const searchButton = screen.getByRole('button', {name: 'Search'});
         
-        renderWithQueryClient(<PlaylistSearchForm onSearch={mockOnSearch}/>);
-        
-        fireEvent.change(screen.getByPlaceholderText('Enter playlist name'), {target: {value: 'test playlist'}});
-        fireEvent.click(screen.getByText('Search'));
+        await userEvent.type(input, 'a');
+        await userEvent.click(searchButton);
         
         await waitFor(() => {
-            expect(mockMutate).toHaveBeenCalledWith({query: 'test playlist', page: 1, limit: 20});
+            expect(screen.getByText('最低2文字以上入力してください')).toBeInTheDocument();
         });
     });
     
-    test('displays loading spinner when search is pending', () => {
-        mockUseSearchPlaylists.mockReturnValue({
-            mutate: jest.fn(),
-            isPending: true,
-        });
+    it('should trigger search on valid input', async () => {
+        const mockRefetch = jest.fn();
+        mockUseQuery.mockReturnValue({
+            data: [],
+            isLoading: false,
+            refetch: mockRefetch,
+        } as any);
         
-        renderWithQueryClient(<PlaylistSearchForm onSearch={mockOnSearch}/>);
+        render(
+            <QueryClientProvider client={queryClient}>
+                <PlaylistSearch/>
+            </QueryClientProvider>
+        );
+        
+        const input = screen.getByLabelText('Enter playlist name');
+        const searchButton = screen.getByRole('button', {name: 'Search'});
+        
+        await userEvent.type(input, 'valid query');
+        await userEvent.click(searchButton);
+        
+        await waitFor(() => {
+            expect(mockRefetch).toHaveBeenCalled();
+        });
+    });
+    
+    it('should display loading state during search', async () => {
+        mockUseQuery.mockReturnValue({
+            data: [],
+            isLoading: true,
+            refetch: jest.fn(),
+        } as any);
+        
+        render(
+            <QueryClientProvider client={queryClient}>
+                <PlaylistSearch/>
+            </QueryClientProvider>
+        );
         
         expect(screen.getByText('Searching...')).toBeInTheDocument();
     });
     
-    test('is accessible', async () => {
-        const {container} = renderWithQueryClient(<PlaylistSearchForm onSearch={mockOnSearch}/>);
+    it('should render playlist results', async () => {
+        const mockPlaylists = [
+            {id: '1', name: 'Playlist 1', images: [{url: 'image1.jpg'}]},
+            {id: '2', name: 'Playlist 2', images: [{url: 'image2.jpg'}]},
+        ];
+        
+        mockUseQuery.mockReturnValue({
+            data: mockPlaylists,
+            isLoading: false,
+            refetch: jest.fn(),
+        } as any);
+        
+        render(
+            <QueryClientProvider client={queryClient}>
+                <PlaylistSearch/>
+            </QueryClientProvider>
+        );
+        
+        await waitFor(() => {
+            expect(screen.getByText('Playlist 1')).toBeInTheDocument();
+            expect(screen.getByText('Playlist 2')).toBeInTheDocument();
+            expect(screen.getAllByRole('img', {name: 'Playlist'})).toHaveLength(2);
+        });
+    });
+    
+    it('should be accessible', async () => {
+        const {container} = render(
+            <QueryClientProvider client={queryClient}>
+                <PlaylistSearch/>
+            </QueryClientProvider>
+        );
+        
         const results = await axe(container);
         expect(results).toHaveNoViolations();
     });

@@ -27,10 +27,16 @@ export async function POST(request: NextRequest) {
         const responseData = await response.json();
         console.log("Backend API response data:", responseData);
         
-        return new Response(JSON.stringify(responseData), {
-            status: response.status,
-            headers: {'Content-Type': 'application/json'}
-        });
+        // 成功レスポンスの場合はそのまま返す
+        if (response.ok) {
+            return new Response(JSON.stringify(responseData), {
+                status: response.status,
+                headers: {'Content-Type': 'application/json'}
+            });
+        }
+        
+        // エラーレスポンスの場合
+        throw new Error(JSON.stringify(responseData));
     } catch (error) {
         console.error("Error removing track from playlist:", error);
         let errorMessage = "Failed to remove track from playlist";
@@ -38,21 +44,15 @@ export async function POST(request: NextRequest) {
         let statusCode = 500;
         
         if (error instanceof Error) {
-            errorDetails = error.message;
-        }
-        
-        if (error instanceof Response) {
-            statusCode = error.status;
             try {
-                const errorData = await error.json();
-                errorDetails = JSON.stringify(errorData);
+                errorDetails = JSON.parse(error.message);
             } catch {
-                // エラーレスポンスのJSONパースに失敗した場合、詳細は変更しない
+                errorDetails = error.message;
             }
         }
         
         return new Response(
-            JSON.stringify({error: errorMessage, details: errorDetails}),
+            JSON.stringify({error: errorMessage, details: JSON.stringify(errorDetails)}),
             {status: statusCode, headers: {'Content-Type': 'application/json'}}
         );
     }

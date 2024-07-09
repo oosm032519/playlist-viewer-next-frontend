@@ -1,58 +1,100 @@
-// app/utils/utils.test.ts
+// utils.test.ts
 
-import {addTrackToPlaylist, removeTrackFromPlaylist} from './utils';
-import axios from 'axios';
+import {cn, addTrackToPlaylist, removeTrackFromPlaylist} from './utils';
+import fetchMock from 'jest-fetch-mock';
 import {expect} from '@jest/globals';
 
-jest.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+// fetchのモックを有効化
+fetchMock.enableMocks();
 
-describe('Playlist Utility Functions', () => {
+describe('cn function', () => {
+    it('should merge class names correctly', () => {
+        expect(cn('class1', 'class2')).toBe('class1 class2');
+        expect(cn('class1', {class2: true, class3: false})).toBe('class1 class2');
+        expect(cn('class1', ['class2', 'class3'])).toBe('class1 class2 class3');
+    });
+});
+
+describe('addTrackToPlaylist function', () => {
     beforeEach(() => {
-        mockedAxios.post.mockClear();
+        fetchMock.resetMocks();
+        console.log = jest.fn();
+        console.error = jest.fn();
     });
     
-    describe('addTrackToPlaylist', () => {
-        it('successfully adds a track to the playlist', async () => {
-            mockedAxios.post.mockResolvedValue({status: 200});
-            const result = await addTrackToPlaylist('playlist1', 'track1');
-            expect(result).toBe(true);
-            expect(mockedAxios.post).toHaveBeenCalledWith('/api/playlist/add-track', {
-                playlistId: 'playlist1',
-                trackId: 'track1',
-            });
-        });
+    it('should add track successfully', async () => {
+        fetchMock.mockResponseOnce(JSON.stringify({}), {status: 200});
         
-        it('handles errors when adding a track', async () => {
-            mockedAxios.post.mockRejectedValue(new Error('API Error'));
-            const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {
-            });
-            const result = await addTrackToPlaylist('playlist1', 'track1');
-            expect(result).toBe(false);
-            expect(consoleErrorSpy).toHaveBeenCalledWith('エラーが発生しました:', expect.any(Error));
-            consoleErrorSpy.mockRestore();
+        const result = await addTrackToPlaylist('playlist1', 'track1');
+        
+        expect(result).toBe(true);
+        expect(console.log).toHaveBeenCalledWith('曲が正常に追加されました');
+        expect(fetchMock).toHaveBeenCalledWith('/api/playlist/add-track', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({playlistId: 'playlist1', trackId: 'track1'}),
         });
     });
     
-    describe('removeTrackFromPlaylist', () => {
-        it('successfully removes a track from the playlist', async () => {
-            mockedAxios.post.mockResolvedValue({status: 200});
-            const result = await removeTrackFromPlaylist('playlist1', 'track1');
-            expect(result).toBe(true);
-            expect(mockedAxios.post).toHaveBeenCalledWith('/api/playlists/remove-track', {
-                playlistId: 'playlist1',
-                trackId: 'track1',
-            });
-        });
+    it('should handle failure to add track', async () => {
+        fetchMock.mockResponseOnce(JSON.stringify({}), {status: 400});
         
-        it('handles errors when removing a track', async () => {
-            mockedAxios.post.mockRejectedValue(new Error('API Error'));
-            const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {
-            });
-            const result = await removeTrackFromPlaylist('playlist1', 'track1');
-            expect(result).toBe(false);
-            expect(consoleErrorSpy).toHaveBeenCalledWith('エラーが発生しました:', expect.any(Error));
-            consoleErrorSpy.mockRestore();
+        const result = await addTrackToPlaylist('playlist1', 'track1');
+        
+        expect(result).toBe(false);
+        expect(console.error).toHaveBeenCalledWith('曲の追加に失敗しました');
+    });
+    
+    it('should handle network error', async () => {
+        fetchMock.mockRejectOnce(new Error('Network error'));
+        
+        const result = await addTrackToPlaylist('playlist1', 'track1');
+        
+        expect(result).toBe(false);
+        expect(console.error).toHaveBeenCalledWith('エラーが発生しました:', expect.any(Error));
+    });
+});
+
+describe('removeTrackFromPlaylist function', () => {
+    beforeEach(() => {
+        fetchMock.resetMocks();
+        console.log = jest.fn();
+        console.error = jest.fn();
+    });
+    
+    it('should remove track successfully', async () => {
+        fetchMock.mockResponseOnce(JSON.stringify({}), {status: 200});
+        
+        const result = await removeTrackFromPlaylist('playlist1', 'track1');
+        
+        expect(result).toBe(true);
+        expect(console.log).toHaveBeenCalledWith('曲が正常に削除されました');
+        expect(fetchMock).toHaveBeenCalledWith('/api/playlists/remove-track', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({playlistId: 'playlist1', trackId: 'track1'}),
         });
+    });
+    
+    it('should handle failure to remove track', async () => {
+        fetchMock.mockResponseOnce(JSON.stringify({error: 'Failed to remove'}), {status: 400});
+        
+        const result = await removeTrackFromPlaylist('playlist1', 'track1');
+        
+        expect(result).toBe(false);
+        expect(console.error).toHaveBeenCalledWith('曲の削除に失敗しました', {error: 'Failed to remove'});
+    });
+    
+    it('should handle network error', async () => {
+        fetchMock.mockRejectOnce(new Error('Network error'));
+        
+        const result = await removeTrackFromPlaylist('playlist1', 'track1');
+        
+        expect(result).toBe(false);
+        expect(console.error).toHaveBeenCalledWith('エラーが発生しました:', expect.any(Error));
     });
 });
