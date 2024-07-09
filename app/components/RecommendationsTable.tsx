@@ -1,5 +1,3 @@
-"use client";
-
 import React, {useEffect, useState} from "react";
 import Image from "next/image";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "./ui/table";
@@ -8,6 +6,8 @@ import {TrackPlayer} from "./TrackPlayer";
 import {addTrackToPlaylist, removeTrackFromPlaylist} from "../lib/utils";
 import {RecommendationsTableProps} from '../types/recommendationsTableProps';
 import axios from 'axios';
+import {useMutation} from '@tanstack/react-query';
+import LoadingSpinner from './LoadingSpinner'; // LoadingSpinnerコンポーネントのインポート
 
 export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({
                                                                               tracks,
@@ -22,18 +22,27 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({
         console.log("userId:", userId);
     }, [ownerId, userId]);
     
-    const createPlaylist = async () => {
-        try {
-            const trackIds = tracks.map(track => track.id);
+    const createPlaylistMutation = useMutation({
+        mutationFn: async (trackIds: string[]) => {
             const response = await axios.post('/api/playlists/create', trackIds);
-            setCreatedPlaylistId(response.data);
-        } catch (error) {
+            return response.data;
+        },
+        onSuccess: (data: string) => {
+            setCreatedPlaylistId(data);
+        },
+        onError: (error) => {
             console.error("プレイリストの作成中にエラーが発生しました。", error);
-        }
+        },
+    });
+    
+    const createPlaylist = () => {
+        const trackIds = tracks.map(track => track.id as string);
+        createPlaylistMutation.mutate(trackIds);
     };
     
     return (
         <div className="w-full overflow-x-auto">
+            <LoadingSpinner loading={createPlaylistMutation.isPending}/> {/* ローディングスピナーの追加 */}
             <Table>
                 <TableHeader>
                     <TableRow>

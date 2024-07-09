@@ -47,7 +47,7 @@ describe('PlaylistTable', () => {
     });
     
     it('renders the table headers correctly', () => {
-        render(<PlaylistTable playlists={mockPlaylists} onPlaylistClick={mockOnPlaylistClick}/>);
+        render(<PlaylistTable playlists={mockPlaylists} onPlaylistClick={mockOnPlaylistClick} currentPage={1} totalPlaylists={20}/>);
         
         expect(screen.getByRole('columnheader', {name: 'Image'})).toBeInTheDocument();
         expect(screen.getByRole('columnheader', {name: 'Name'})).toBeInTheDocument();
@@ -55,14 +55,16 @@ describe('PlaylistTable', () => {
     });
     
     it('renders the correct number of playlists', () => {
-        render(<PlaylistTable playlists={mockPlaylists} onPlaylistClick={mockOnPlaylistClick}/>);
+        render(<PlaylistTable playlists={mockPlaylists} onPlaylistClick={mockOnPlaylistClick} currentPage={1}
+                              totalPlaylists={20}/>);
         
         const playlistRows = screen.getAllByRole('row').slice(1); // ヘッダー行を除外
         expect(playlistRows).toHaveLength(mockPlaylists.length);
     });
     
     it('displays playlist information correctly', () => {
-        render(<PlaylistTable playlists={mockPlaylists} onPlaylistClick={mockOnPlaylistClick}/>);
+        render(<PlaylistTable playlists={mockPlaylists} onPlaylistClick={mockOnPlaylistClick} currentPage={1}
+                              totalPlaylists={20}/>);
         
         mockPlaylists.forEach((playlist) => {
             const row = screen.getByRole('row', {name: new RegExp(playlist.name)});
@@ -75,7 +77,8 @@ describe('PlaylistTable', () => {
     });
     
     it('calls onPlaylistClick with correct playlist ID when a row is clicked', () => {
-        render(<PlaylistTable playlists={mockPlaylists} onPlaylistClick={mockOnPlaylistClick}/>);
+        render(<PlaylistTable playlists={mockPlaylists} onPlaylistClick={mockOnPlaylistClick} currentPage={1}
+                              totalPlaylists={20}/>);
         
         mockPlaylists.forEach((playlist, index) => {
             const row = screen.getByRole('row', {name: new RegExp(playlist.name)});
@@ -85,14 +88,15 @@ describe('PlaylistTable', () => {
     });
     
     it('renders empty table when no playlists are provided', () => {
-        render(<PlaylistTable playlists={[]} onPlaylistClick={mockOnPlaylistClick}/>);
+        render(<PlaylistTable playlists={[]} onPlaylistClick={mockOnPlaylistClick} currentPage={1} totalPlaylists={20}/>);
         
         const playlistRows = screen.getAllByRole('row').slice(1); // ヘッダー行を除外
         expect(playlistRows).toHaveLength(0);
     });
     
     it('applies correct CSS classes to table elements', () => {
-        render(<PlaylistTable playlists={mockPlaylists} onPlaylistClick={mockOnPlaylistClick}/>);
+        render(<PlaylistTable playlists={mockPlaylists} onPlaylistClick={mockOnPlaylistClick} currentPage={1}
+                              totalPlaylists={20}/>);
         
         const images = screen.getAllByRole('img');
         images.forEach((img) => {
@@ -101,7 +105,8 @@ describe('PlaylistTable', () => {
     });
     
     it('handles playlists without images correctly', () => {
-        render(<PlaylistTable playlists={[mockPlaylistWithoutImage]} onPlaylistClick={mockOnPlaylistClick}/>);
+        render(<PlaylistTable playlists={[mockPlaylistWithoutImage]} onPlaylistClick={mockOnPlaylistClick}
+                              currentPage={1} totalPlaylists={20}/>);
         
         const row = screen.getByRole('row', {name: /Playlist 3/});
         const image = within(row).queryByRole('img');
@@ -113,7 +118,8 @@ describe('PlaylistTable', () => {
     });
     
     it('is accessible', async () => {
-        const {container} = render(<PlaylistTable playlists={mockPlaylists} onPlaylistClick={mockOnPlaylistClick}/>);
+        const {container} = render(<PlaylistTable playlists={mockPlaylists} onPlaylistClick={mockOnPlaylistClick}
+                                                  currentPage={1} totalPlaylists={20}/>);
         const results = await axe(container);
         expect(results).toHaveNoViolations();
     });
@@ -127,14 +133,16 @@ describe('PlaylistTable', () => {
             description: `Description ${i + 1}`
         }));
         
-        render(<PlaylistTable playlists={manyPlaylists} onPlaylistClick={mockOnPlaylistClick}/>);
+        render(<PlaylistTable playlists={manyPlaylists} onPlaylistClick={mockOnPlaylistClick} currentPage={1}
+                              totalPlaylists={20}/>);
         
         const playlistRows = screen.getAllByRole('row').slice(1); // ヘッダー行を除外
         expect(playlistRows).toHaveLength(100);
     });
     
     it('matches snapshot', () => {
-        const {container} = render(<PlaylistTable playlists={mockPlaylists} onPlaylistClick={mockOnPlaylistClick}/>);
+        const {container} = render(<PlaylistTable playlists={mockPlaylists} onPlaylistClick={mockOnPlaylistClick}
+                                                  currentPage={1} totalPlaylists={20}/>);
         expect(container).toMatchSnapshot();
     });
 });
