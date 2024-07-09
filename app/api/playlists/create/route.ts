@@ -1,14 +1,16 @@
+// app/api/playlists/create/route.ts
+
 import {NextRequest} from "next/server";
 import axios from "axios";
 
 export async function POST(request: NextRequest) {
     try {
-        const trackIds = await request.json();
+        const trackIds: string[] = await request.json();
         
         // バックエンドAPIのエンドポイントURL
         const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
         
-        const response = await axios.post(
+        const response = await axios.post<{ playlistId: string; name: string }>(
             `${backendUrl}/api/playlists/create`,
             trackIds,
             {
