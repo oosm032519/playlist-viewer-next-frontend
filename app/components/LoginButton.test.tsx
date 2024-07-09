@@ -5,8 +5,19 @@ import axios from 'axios';
 import {axe, toHaveNoViolations} from 'jest-axe';
 import LoginButton from './LoginButton';
 import {expect} from '@jest/globals';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 
 expect.extend(toHaveNoViolations);
+
+const queryClient = new QueryClient();
+
+const renderWithQueryClient = (ui: string | number | bigint | boolean | Iterable<React.ReactNode> | Promise<React.AwaitedReactNode> | React.JSX.Element | null | undefined) => {
+    return render(
+        <QueryClientProvider client={queryClient}>
+            {ui}
+        </QueryClientProvider>
+    );
+};
 
 describe('LoginButton コンポーネント', () => {
     beforeAll(() => {
@@ -22,19 +33,19 @@ describe('LoginButton コンポーネント', () => {
     });
     
     test('ログインボタンが正しくレンダリングされる', () => {
-        render(<LoginButton isLoggedIn={false}/>);
+        renderWithQueryClient(<LoginButton isLoggedIn={false}/>);
         const button = screen.getByRole('button', {name: /Spotifyでログイン/i});
         expect(button).toBeInTheDocument();
     });
     
     test('ログアウトボタンが正しくレンダリングされる', () => {
-        render(<LoginButton isLoggedIn={true}/>);
+        renderWithQueryClient(<LoginButton isLoggedIn={true}/>);
         const button = screen.getByRole('button', {name: /ログアウト/i});
         expect(button).toBeInTheDocument();
     });
     
     test('ログインボタンをクリックするとリダイレクトされる', () => {
-        render(<LoginButton isLoggedIn={false}/>);
+        renderWithQueryClient(<LoginButton isLoggedIn={false}/>);
         const button = screen.getByRole('button', {name: /Spotifyでログイン/i});
         fireEvent.click(button);
         
@@ -44,7 +55,7 @@ describe('LoginButton コンポーネント', () => {
     test('ログアウトボタンをクリックするとログアウト処理が実行される', async () => {
         const postSpy = jest.spyOn(axios, 'post').mockResolvedValueOnce({});
         
-        render(<LoginButton isLoggedIn={true}/>);
+        renderWithQueryClient(<LoginButton isLoggedIn={true}/>);
         const button = screen.getByRole('button', {name: /ログアウト/i});
         fireEvent.click(button);
         
@@ -55,7 +66,7 @@ describe('LoginButton コンポーネント', () => {
     });
     
     test('アクセシビリティテスト', async () => {
-        const {container} = render(<LoginButton isLoggedIn={false}/>);
+        const {container} = renderWithQueryClient(<LoginButton isLoggedIn={false}/>);
         const results = await axe(container);
         expect(results).toHaveNoViolations();
     });
