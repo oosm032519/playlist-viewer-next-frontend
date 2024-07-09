@@ -1,16 +1,19 @@
+// app/components/PlaylistSearch.tsx
+
 "use client";
 
 import {useForm} from "react-hook-form";
 import {yupResolver} from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import axios from "axios";
-import {useMemo, useState} from "react";
+import {useMemo} from "react";
 import {
     useReactTable,
     getCoreRowModel,
     flexRender,
     createColumnHelper,
 } from "@tanstack/react-table";
+import {useQuery} from "@tanstack/react-query";
 
 import {Button} from "./ui/button";
 import {Input} from "./ui/input";
@@ -38,30 +41,25 @@ const schema = yup
     })
     .required();
 
-const searchPlaylists = async (query: string): Promise<Playlist[]> => {
-    try {
-        const response = await axios.get(`/api/playlists/search?query=${query}`);
-        return response.data;
-    } catch (error) {
-        console.error("プレイリスト検索中にエラーが発生しました:", error);
-        return [];
-    }
+const fetchPlaylists = async (query: string): Promise<Playlist[]> => {
+    const response = await axios.get(`/api/playlists/search?query=${query}`);
+    return response.data;
 };
 
 export default function PlaylistSearch() {
-    const [playlists, setPlaylists] = useState<Playlist[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
-    
     const form = useForm<SearchFormInputs>({
         resolver: yupResolver(schema),
         defaultValues: {query: ''},
     });
     
+    const {data: playlists = [], isLoading, refetch} = useQuery({
+        queryKey: ['playlists', form.watch('query')],
+        queryFn: () => fetchPlaylists(form.getValues('query')),
+        enabled: false, // クエリを手動でトリガーするために初期状態では無効化
+    });
+    
     const onSubmit = async (data: SearchFormInputs) => {
-        setIsLoading(true);
-        const results = await searchPlaylists(data.query);
-        setPlaylists(results);
-        setIsLoading(false);
+        refetch();
     };
     
     const columnHelper = createColumnHelper<Playlist>();
