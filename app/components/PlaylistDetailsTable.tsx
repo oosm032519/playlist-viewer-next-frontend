@@ -1,3 +1,5 @@
+// app/components/PlaylistDetailsTable.tsx
+
 "use client";
 
 import React, {useState} from "react";
