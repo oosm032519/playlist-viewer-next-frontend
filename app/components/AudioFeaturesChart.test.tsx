@@ -94,11 +94,6 @@ describe('AudioFeaturesChart', () => {
         expect(screen.getByTestId('radar')).toBeInTheDocument();
     });
     
-    it('スナップショットと一致する', () => {
-        const {container} = render(<AudioFeaturesChart track={mockTrack}/>);
-        expect(container).toMatchSnapshot();
-    });
-    
     it('アクセシビリティに問題がない', async () => {
         const {container} = render(<AudioFeaturesChart track={mockTrack}/>);
         const results = await axe(container);

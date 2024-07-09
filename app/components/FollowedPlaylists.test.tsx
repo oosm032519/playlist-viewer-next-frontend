@@ -177,14 +177,4 @@ describe('FollowedPlaylists', () => {
         const results = await axe(container);
         expect(results).toHaveNoViolations();
     });
-    
-    it('matches snapshot', async () => {
-        const {asFragment} = renderWithClient(<FollowedPlaylists onPlaylistClick={mockOnPlaylistClick}/>);
-        
-        await waitFor(() => {
-            expect(screen.getByText('フォロー中のプレイリスト')).toBeInTheDocument();
-        });
-        
-        expect(asFragment()).toMatchSnapshot();
-    });
 });

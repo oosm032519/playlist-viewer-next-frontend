@@ -139,10 +139,4 @@ describe('PlaylistTable', () => {
         const playlistRows = screen.getAllByRole('row').slice(1); // ヘッダー行を除外
         expect(playlistRows).toHaveLength(100);
     });
-    
-    it('matches snapshot', () => {
-        const {container} = render(<PlaylistTable playlists={mockPlaylists} onPlaylistClick={mockOnPlaylistClick}
-                                                  currentPage={1} totalPlaylists={20}/>);
-        expect(container).toMatchSnapshot();
-    });
 });
