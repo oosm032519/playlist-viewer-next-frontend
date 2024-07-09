@@ -1,11 +1,8 @@
-// app/components/PlaylistSearch.tsx
-
 "use client";
 
 import {useForm} from "react-hook-form";
 import {yupResolver} from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import axios from "axios";
 import {useMemo} from "react";
 import {
     useReactTable,
@@ -42,8 +39,11 @@ const schema = yup
     .required();
 
 const fetchPlaylists = async (query: string): Promise<Playlist[]> => {
-    const response = await axios.get(`/api/playlists/search?query=${query}`);
-    return response.data;
+    const response = await fetch(`/api/playlists/search?query=${query}`);
+    if (!response.ok) {
+        throw new Error('ネットワークの応答が正しくありません');
+    }
+    return response.json();
 };
 
 export default function PlaylistSearch() {

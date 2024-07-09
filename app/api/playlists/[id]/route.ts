@@ -1,7 +1,6 @@
 // app/api/playlists/[id]/route.ts
 
 import {NextResponse} from 'next/server';
-import axios from 'axios';
 
 const BACKEND_URL = 'http://localhost:8080';
 
@@ -11,20 +10,21 @@ const fetchPlaylistData = async (id: string) => {
     
     try {
         console.log(`リクエストを開始: ${fullUrl}`);
-        const response = await axios.get(fullUrl);
+        const response = await fetch(fullUrl);
         console.log(`レスポンスステータス: ${response.status}`);
-        console.log(`レスポンスデータ: ${JSON.stringify(response.data)}`);
-        return response.data;
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            console.error("プレイリストの取得中にAxiosエラーが発生しました:", error.message);
-            if (error.response) {
-                console.error(`エラーステータス: ${error.response.status}`);
-                console.error(`エラーデータ: ${JSON.stringify(error.response.data)}`);
-            }
-        } else {
-            console.error("プレイリストの取得中に予期せぬエラーが発生しました:", error);
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error(`エラーステータス: ${response.status}`);
+            console.error(`エラーデータ: ${JSON.stringify(errorData)}`);
+            throw new Error(`HTTPエラー: ${response.status}`);
         }
+        
+        const data = await response.json();
+        console.log(`レスポンスデータ: ${JSON.stringify(data)}`);
+        return data;
+    } catch (error) {
+        console.error("プレイリストの取得中にエラーが発生しました:", error);
         throw error;
     }
 };
@@ -48,13 +48,16 @@ export async function GET(
     } catch (error) {
         console.error("プレイリストの取得に失敗しました:", error);
         console.log('エラーレスポンスを作成中...');
-        if (axios.isAxiosError(error) && error.response) {
-            if (error.response.status === 404) {
+        
+        if (error instanceof Error && error.message.includes('HTTPエラー')) {
+            const status = parseInt(error.message.split(': ')[1], 10);
+            if (status === 404) {
                 return NextResponse.json({error: "プレイリストが見つかりません"}, {status: 404});
-            } else if (error.response.status === 500) {
+            } else if (status === 500) {
                 return NextResponse.json({error: "プレイリストの取得中にサーバーエラーが発生しました"}, {status: 500});
             }
         }
+        
         return NextResponse.json({error: "プレイリストの取得中に予期せぬエラーが発生しました"}, {status: 500});
     }
 }

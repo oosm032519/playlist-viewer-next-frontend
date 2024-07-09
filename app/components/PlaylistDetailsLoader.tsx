@@ -2,7 +2,6 @@
 "use client";
 
 import {useQuery} from '@tanstack/react-query';
-import axios from "axios";
 import {Track} from "../types/track";
 import PlaylistDetails from "./PlaylistDetails";
 import LoadingSpinner from "./LoadingSpinner";
@@ -21,19 +20,23 @@ interface PlaylistData {
 }
 
 const fetchPlaylistDetails = async (playlistId: string): Promise<PlaylistData> => {
-    const response = await axios.get(`/api/playlists/${playlistId}`);
-    if (response && response.data) {
-        console.log(response.data);
-        const tracks = response.data.tracks?.items?.map((item: any) => ({
+    const response = await fetch(`/api/playlists/${playlistId}`);
+    if (!response.ok) {
+        throw new Error('Network response was not ok');
+    }
+    const data = await response.json();
+    if (data) {
+        console.log(data);
+        const tracks = data.tracks?.items?.map((item: any) => ({
             ...item.track,
             audioFeatures: item.audioFeatures,
         })) || [];
         return {
             tracks: tracks,
-            genreCounts: response.data.genreCounts || {},
-            recommendations: response.data.recommendations || [],
-            playlistName: response.data.playlistName || null,
-            ownerId: response.data.ownerId || '',
+            genreCounts: data.genreCounts || {},
+            recommendations: data.recommendations || [],
+            playlistName: data.playlistName || null,
+            ownerId: data.ownerId || '',
         };
     }
     throw new Error('Invalid response data');

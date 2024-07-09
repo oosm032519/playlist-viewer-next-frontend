@@ -1,9 +1,6 @@
-// app/components/LoginButton.tsx
-
 "use client";
 
 import React from 'react';
-import axios from 'axios';
 import {useMutation} from '@tanstack/react-query';
 import {Button} from "./ui/button";
 
@@ -17,7 +14,13 @@ const LoginButton: React.FC<LoginButtonProps> = ({isLoggedIn}) => {
     const logoutMutation = useMutation({
         mutationFn: async () => {
             console.log('ログアウトを実行しています');
-            await axios.post('/api/logout', {}, {withCredentials: true});
+            const response = await fetch('/api/logout', {
+                method: 'POST',
+                credentials: 'include'
+            });
+            if (!response.ok) {
+                throw new Error('ログアウトに失敗しました');
+            }
         },
         onSuccess: () => {
             console.log('ログアウト成功');

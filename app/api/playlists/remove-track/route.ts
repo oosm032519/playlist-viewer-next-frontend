@@ -1,7 +1,6 @@
 // app/api/playlists/remove-track/route.ts
 
 import {NextRequest} from "next/server";
-import axios from "axios";
 
 export async function POST(request: NextRequest) {
     console.log("POST request received to remove track from playlist");
@@ -14,48 +13,47 @@ export async function POST(request: NextRequest) {
         console.log(`Using backend URL: ${backendUrl}`);
         
         console.log("Sending request to backend API");
-        const response = await axios.post(
-            `${backendUrl}/api/playlist/remove-track`,
-            {playlistId, trackId},
-            {
-                withCredentials: true,
-                headers: {
-                    'Cookie': request.headers.get('cookie') || '',
-                },
-            }
-        );
+        const response = await fetch(`${backendUrl}/api/playlist/remove-track`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Cookie': request.headers.get('cookie') || '',
+            },
+            body: JSON.stringify({playlistId, trackId}),
+            credentials: 'include',
+        });
         
         console.log(`Backend API response status: ${response.status}`);
-        console.log("Backend API response data:", response.data);
+        const responseData = await response.json();
+        console.log("Backend API response data:", responseData);
         
-        return new Response(JSON.stringify(response.data), {
+        return new Response(JSON.stringify(responseData), {
             status: response.status,
             headers: {'Content-Type': 'application/json'}
         });
     } catch (error) {
-        if (axios.isAxiosError(error)) {
-            console.error("Axios error removing track from playlist:", error.message);
-            console.error("Error response:", error.response?.data);
-            return new Response(
-                JSON.stringify({
-                    error: "Failed to remove track from playlist",
-                    details: error.message,
-                    response: error.response?.data
-                }),
-                {status: error.response?.status || 500, headers: {'Content-Type': 'application/json'}}
-            );
-        } else if (error instanceof Error) {
-            console.error("Error removing track from playlist:", error.message);
-            return new Response(
-                JSON.stringify({error: "Failed to remove track from playlist", details: error.message}),
-                {status: 500, headers: {'Content-Type': 'application/json'}}
-            );
-        } else {
-            console.error("Unknown error:", error);
-            return new Response(
-                JSON.stringify({error: "Failed to remove track from playlist", details: "Unknown error"}),
-                {status: 500, headers: {'Content-Type': 'application/json'}}
-            );
+        console.error("Error removing track from playlist:", error);
+        let errorMessage = "Failed to remove track from playlist";
+        let errorDetails = "Unknown error";
+        let statusCode = 500;
+        
+        if (error instanceof Error) {
+            errorDetails = error.message;
         }
+        
+        if (error instanceof Response) {
+            statusCode = error.status;
+            try {
+                const errorData = await error.json();
+                errorDetails = JSON.stringify(errorData);
+            } catch {
+                // エラーレスポンスのJSONパースに失敗した場合、詳細は変更しない
+            }
+        }
+        
+        return new Response(
+            JSON.stringify({error: errorMessage, details: errorDetails}),
+            {status: statusCode, headers: {'Content-Type': 'application/json'}}
+        );
     }
 }

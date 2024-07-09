@@ -1,5 +1,4 @@
 import {useMutation, useQueryClient} from "@tanstack/react-query";
-import axios from "axios";
 import {Playlist} from "../types/playlist";
 
 const searchPlaylists = async ({
@@ -10,13 +9,16 @@ const searchPlaylists = async ({
     query: string;
     page: number;
     limit: number;
-}) => {
-    const response = await axios.get<Playlist[]>(
+}): Promise<Playlist[]> => {
+    const response = await fetch(
         `/api/playlists/search?query=${query}&offset=${
             (page - 1) * limit
         }&limit=${limit}`
     );
-    return response.data;
+    if (!response.ok) {
+        throw new Error('Network response was not ok');
+    }
+    return response.json();
 };
 
 export const useSearchPlaylists = (

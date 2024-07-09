@@ -1,18 +1,17 @@
-import React, {useEffect, useState, useMemo} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import Image from "next/image";
 import {
-    useReactTable,
-    getCoreRowModel,
-    getSortedRowModel,
     ColumnDef,
     flexRender,
-    SortingState
+    getCoreRowModel,
+    getSortedRowModel,
+    SortingState,
+    useReactTable
 } from "@tanstack/react-table";
 import {Button} from "./ui/button";
 import {TrackPlayer} from "./TrackPlayer";
 import {addTrackToPlaylist, removeTrackFromPlaylist} from "../lib/utils";
 import {RecommendationsTableProps} from '../types/recommendationsTableProps';
-import axios from 'axios';
 import {useMutation} from '@tanstack/react-query';
 import LoadingSpinner from './LoadingSpinner';
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "./ui/table";
@@ -34,8 +33,20 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({
     
     const createPlaylistMutation = useMutation({
         mutationFn: async (trackIds: string[]) => {
-            const response = await axios.post('/api/playlists/create', trackIds);
-            return response.data;
+            const response = await fetch('/api/playlists/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(trackIds),
+                credentials: 'include',
+            });
+            
+            if (!response.ok) {
+                throw new Error('プレイリストの作成中にエラーが発生しました。');
+            }
+
+            return await response.json();
         },
         onSuccess: (data: string) => {
             setCreatedPlaylistId(data);

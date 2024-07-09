@@ -1,7 +1,6 @@
 // app/api/playlists/create/route.ts
 
 import {NextRequest} from "next/server";
-import axios from "axios";
 
 export async function POST(request: NextRequest) {
     try {
@@ -10,19 +9,23 @@ export async function POST(request: NextRequest) {
         // バックエンドAPIのエンドポイントURL
         const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
         
-        const response = await axios.post<{ playlistId: string; name: string }>(
-            `${backendUrl}/api/playlists/create`,
-            trackIds,
-            {
-                withCredentials: true,
-                headers: {
-                    'Cookie': request.headers.get('cookie') || '',
-                    'Content-Type': 'application/json'
-                },
-            }
-        );
+        const response = await fetch(`${backendUrl}/api/playlists/create`, {
+            method: 'POST',
+            headers: {
+                'Cookie': request.headers.get('cookie') || '',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(trackIds),
+            credentials: 'include'
+        });
         
-        return new Response(JSON.stringify(response.data), {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        return new Response(JSON.stringify(data), {
             status: response.status,
             headers: {'Content-Type': 'application/json'}
         });

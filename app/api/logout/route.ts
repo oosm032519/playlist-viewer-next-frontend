@@ -1,7 +1,6 @@
 // app/api/logout/route.ts
 
 import {NextResponse} from 'next/server';
-import axios, {AxiosError} from 'axios';
 
 export async function POST(request: Request) {
     console.log('logout関数が呼び出されました');
@@ -16,26 +15,28 @@ export async function POST(request: Request) {
         const cookies = request.headers.get('cookie') || '';
         console.log('リクエストヘッダー:', cookies);
         
-        const response = await axios.post('http://localhost:8080/api/logout', {}, {
-            withCredentials: true,
+        const response = await fetch('http://localhost:8080/api/logout', {
+            method: 'POST',
+            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
                 'Cookie': cookies,
             },
         });
         
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('APIレスポンスエラー:', errorData);
+            return NextResponse.json({error: `ログアウト失敗: ${response.statusText}`}, {status: response.status});
+        }
+        
+        const responseData = await response.json();
         console.log('APIレスポンスを受信しました:', response.status);
-        console.log('レスポンスデータ:', response.data);
+        console.log('レスポンスデータ:', responseData);
         
         return NextResponse.json({message: 'ログアウトしました'}, {status: 200});
     } catch (error) {
         console.error('APIリクエスト中にエラーが発生しました:', error);
-        
-        if (axios.isAxiosError(error)) {
-            const axiosError = error as AxiosError;
-            console.error('Axiosエラーの詳細:', axiosError.response?.data);
-            return NextResponse.json({error: `ログアウト失敗: ${axiosError.message}`}, {status: 500});
-        }
         return NextResponse.json({error: 'ログアウト失敗: ログアウトエラー'}, {status: 500});
     }
 }

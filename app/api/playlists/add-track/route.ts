@@ -1,5 +1,4 @@
 import {NextRequest} from "next/server";
-import axios from "axios";
 
 export async function POST(request: NextRequest) {
     try {
@@ -8,20 +7,21 @@ export async function POST(request: NextRequest) {
         // バックエンドAPIのエンドポイントURL
         const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
         
-        const response = await axios.post(
-            `${backendUrl}/api/playlist/add-track`,
-            {playlistId, trackId},
-            {
-                withCredentials: true,
-                headers: {
-                    'Cookie': request.headers.get('cookie') || '',
-                },
-            }
-        );
+        const response = await fetch(`${backendUrl}/api/playlist/add-track`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'Cookie': request.headers.get('cookie') || '',
+            },
+            body: JSON.stringify({playlistId, trackId}),
+        });
         
-        return new Response(JSON.stringify(response.data), {
+        const data = await response.json();
+        
+        return new Response(JSON.stringify(data), {
             status: response.status,
-            headers: {'Content-Type': 'application/json'}
+            headers: {'Content-Type': 'application/json'},
         });
     } catch (error) {
         if (error instanceof Error) {
