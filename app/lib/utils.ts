@@ -42,7 +42,8 @@ export const removeTrackFromPlaylist = async (playlistId: string, trackId: strin
             console.log("曲が正常に削除されました");
             return true;
         } else {
-            console.error("曲の削除に失敗しました", await response.json());
+            const errorData = await response.json();
+            console.error("曲の削除に失敗しました", errorData);
             return false;
         }
     } catch (error) {

@@ -8,11 +8,9 @@ export async function POST(request: NextRequest) {
         const {playlistId, trackId} = await request.json();
         console.log(`Received request to remove track ${trackId} from playlist ${playlistId}`);
         
-        // バックエンドAPIのエンドポイントURL
         const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
         console.log(`Using backend URL: ${backendUrl}`);
         
-        console.log("Sending request to backend API");
         const response = await fetch(`${backendUrl}/api/playlist/remove-track`, {
             method: 'POST',
             headers: {
@@ -23,11 +21,8 @@ export async function POST(request: NextRequest) {
             credentials: 'include',
         });
         
-        console.log(`Backend API response status: ${response.status}`);
         const responseData = await response.json();
-        console.log("Backend API response data:", responseData);
         
-        // 成功レスポンスの場合はそのまま返す
         if (response.ok) {
             return new Response(JSON.stringify(responseData), {
                 status: response.status,
@@ -52,7 +47,7 @@ export async function POST(request: NextRequest) {
         }
         
         return new Response(
-            JSON.stringify({error: errorMessage, details: JSON.stringify(errorDetails)}),
+            JSON.stringify({error: errorMessage, details: errorDetails}),
             {status: statusCode, headers: {'Content-Type': 'application/json'}}
         );
     }
