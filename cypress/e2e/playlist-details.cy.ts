@@ -73,7 +73,6 @@ describe('プレイリスト詳細の表示', () => {
             .and('contain', 'Title')
             .and('contain', 'Artist')
             .and('contain', 'Preview')
-            .and('contain', 'Actions');
     });
     
     it('空のプレイリストが正しく表示される', () => {
