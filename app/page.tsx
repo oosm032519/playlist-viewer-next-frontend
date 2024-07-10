@@ -14,7 +14,7 @@ import {Playlist} from "./types/playlist";
 export default function Home() {
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
     const [selectedPlaylistId, setSelectedPlaylistId] = useState<string | null>(null);
-    const {isLoggedIn, userId, error} = useUser(); // useUserからisLoggedInなどを取得
+    const {isLoggedIn, userId, error} = useUser();
     
     const handleSearch = (playlists: Playlist[]) => {
         setPlaylists(playlists);

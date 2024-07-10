@@ -4,13 +4,13 @@ import '@testing-library/jest-dom';
 import {RecommendationsTable} from './RecommendationsTable';
 import {Track} from '../types/track';
 import {axe, toHaveNoViolations} from 'jest-axe';
-import * as utils from '../lib/utils';
+import * as utils from '../lib/trackUtils';
 import {expect} from '@jest/globals';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 
 expect.extend(toHaveNoViolations);
 
-jest.mock('@/app/lib/utils');
+jest.mock('@/app/lib/trackUtils');
 const mockedUtils = utils as jest.Mocked<typeof utils>;
 
 // モックデータ

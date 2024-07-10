@@ -1,3 +1,4 @@
+// app/api/playlists/followed/route.ts
 import {NextRequest, NextResponse} from 'next/server';
 
 const getFollowedPlaylists = async (req: NextRequest) => {

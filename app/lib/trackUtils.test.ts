@@ -1,6 +1,6 @@
-// utils.test.ts
+// trackUtils.test.ts
 
-import {cn, addTrackToPlaylist, removeTrackFromPlaylist} from './utils';
+import {cn, addTrackToPlaylist, removeTrackFromPlaylist} from './trackUtils';
 import fetchMock from 'jest-fetch-mock';
 import {expect} from '@jest/globals';
 

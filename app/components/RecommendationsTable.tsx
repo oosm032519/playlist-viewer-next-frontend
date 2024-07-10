@@ -10,7 +10,7 @@ import {
 } from "@tanstack/react-table";
 import {Button} from "./ui/button";
 import {TrackPlayer} from "./TrackPlayer";
-import {addTrackToPlaylist, removeTrackFromPlaylist} from "../lib/utils";
+import {addTrackToPlaylist, removeTrackFromPlaylist} from "../lib/trackUtils";
 import {RecommendationsTableProps} from '../types/recommendationsTableProps';
 import {useMutation} from '@tanstack/react-query';
 import LoadingSpinner from './LoadingSpinner';
