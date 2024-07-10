@@ -43,10 +43,12 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({
             });
             
             if (!response.ok) {
-                throw new Error('プレイリストの作成中にエラーが発生しました。');
+                const errorData = await response.json();
+                throw new Error(`プレイリストの作成中にエラーが発生しました: ${errorData.details}`);
             }
-
-            return await response.json();
+            
+            const data = await response.json();
+            return data.playlistId;
         },
         onSuccess: (data: string) => {
             setCreatedPlaylistId(data);
