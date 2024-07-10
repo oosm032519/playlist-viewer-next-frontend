@@ -1,74 +1,121 @@
-// LoginButton.test.tsx
-
 import React from 'react';
 import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
-import {axe, toHaveNoViolations} from 'jest-axe';
+import {axe} from 'jest-axe';
+import 'jest-axe/extend-expect'; // これを追加
 import LoginButton from './LoginButton';
+import {UserContextProvider, useUser} from '../context/UserContext';
 import {expect} from '@jest/globals';
 
-expect.extend(toHaveNoViolations);
-
-// モックの設定
-jest.mock('next/navigation', () => ({
-    useRouter: () => ({
-        push: jest.fn(),
-    }),
+// モックの作成
+jest.mock('../context/UserContext', () => ({
+    ...jest.requireActual('../context/UserContext'),
+    useUser: jest.fn(),
 }));
 
-const mockMutate = jest.fn();
-jest.mock('@tanstack/react-query', () => ({
-    ...jest.requireActual('@tanstack/react-query'),
-    useMutation: () => ({
-        mutate: mockMutate,
-    }),
-}));
+const mockUseUser = useUser as jest.MockedFunction<typeof useUser>;
+
+// グローバルオブジェクトのモック
+const mockReload = jest.fn();
+Object.defineProperty(window, 'location', {
+    value: {reload: mockReload, href: ''},
+    writable: true,
+});
+
+// フェッチのモック
+global.fetch = jest.fn(() =>
+    Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({status: 'success'}), // ここを追加
+    } as Response)
+);
 
 describe('LoginButton', () => {
-    const queryClient = new QueryClient();
-    
-    const renderComponent = (isLoggedIn: boolean) => {
-        return render(
-            <QueryClientProvider client={queryClient}>
-                <LoginButton isLoggedIn={isLoggedIn}/>
-            </QueryClientProvider>
-        );
-    };
+    let queryClient: QueryClient;
     
     beforeEach(() => {
+        queryClient = new QueryClient();
         jest.clearAllMocks();
-        Object.defineProperty(window, 'location', {
-            value: {href: '', reload: jest.fn()},
-            writable: true,
-        });
     });
     
-    it('ログインしていない場合、"Spotifyでログイン"ボタンを表示する', () => {
-        renderComponent(false);
-        expect(screen.getByRole('button', {name: 'Spotifyでログイン'})).toBeInTheDocument();
+    it('ログインしていない状態で正しく表示される', () => {
+        mockUseUser.mockReturnValue({isLoggedIn: false, userId: null, error: null});
+        
+        render(
+            <QueryClientProvider client={queryClient}>
+                <UserContextProvider>
+                    <LoginButton/>
+                </UserContextProvider>
+            </QueryClientProvider>
+        );
+        
+        expect(screen.getByText('Spotifyでログイン')).toBeInTheDocument();
     });
     
-    it('ログインしている場合、"ログアウト"ボタンを表示する', () => {
-        renderComponent(true);
-        expect(screen.getByRole('button', {name: 'ログアウト'})).toBeInTheDocument();
+    it('ログイン状態で正しく表示される', () => {
+        mockUseUser.mockReturnValue({isLoggedIn: true, userId: 'test-user-id', error: null});
+        
+        render(
+            <QueryClientProvider client={queryClient}>
+                <UserContextProvider>
+                    <LoginButton/>
+                </UserContextProvider>
+            </QueryClientProvider>
+        );
+        
+        expect(screen.getByText('ログアウト')).toBeInTheDocument();
     });
     
-    it('ログインボタンをクリックすると、Spotify認証URLにリダイレクトする', () => {
-        renderComponent(false);
-        fireEvent.click(screen.getByRole('button', {name: 'Spotifyでログイン'}));
-        expect(window.location.href).toBe('http://localhost:8080/oauth2/authorization/spotify');
+    it('ログインボタンをクリックするとSpotify認証URLにリダイレクトする', () => {
+        mockUseUser.mockReturnValue({isLoggedIn: false, userId: null, error: null});
+        process.env.NEXT_PUBLIC_SPOTIFY_AUTH_URL = 'http://test-spotify-auth-url.com';
+        
+        render(
+            <QueryClientProvider client={queryClient}>
+                <UserContextProvider>
+                    <LoginButton/>
+                </UserContextProvider>
+            </QueryClientProvider>
+        );
+        
+        fireEvent.click(screen.getByText('Spotifyでログイン'));
+        
+        expect(window.location.href).toBe('http://test-spotify-auth-url.com');
     });
     
-    it('ログアウトボタンをクリックすると、ログアウトミューテーションを実行する', async () => {
-        renderComponent(true);
-        fireEvent.click(screen.getByRole('button', {name: 'ログアウト'}));
+    it('ログアウトボタンをクリックするとログアウト処理が実行される', async () => {
+        mockUseUser.mockReturnValue({isLoggedIn: true, userId: 'test-user-id', error: null});
+        
+        render(
+            <QueryClientProvider client={queryClient}>
+                <UserContextProvider>
+                    <LoginButton/>
+                </UserContextProvider>
+            </QueryClientProvider>
+        );
+        
+        fireEvent.click(screen.getByText('ログアウト'));
+        
         await waitFor(() => {
-            expect(mockMutate).toHaveBeenCalled();
+            expect(global.fetch).toHaveBeenCalledWith('/api/logout', {
+                method: 'POST',
+                credentials: 'include',
+            });
+            expect(mockReload).toHaveBeenCalled();
         });
     });
     
     it('アクセシビリティ違反がないこと', async () => {
-        const {container} = renderComponent(false);
+        mockUseUser.mockReturnValue({isLoggedIn: false, userId: null, error: null});
+        
+        const {container} = render(
+            <QueryClientProvider client={queryClient}>
+                <UserContextProvider>
+                    <LoginButton/>
+                </UserContextProvider>
+            </QueryClientProvider>
+        );
+        
         const results = await axe(container);
         expect(results).toHaveNoViolations();
     });

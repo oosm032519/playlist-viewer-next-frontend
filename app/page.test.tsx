@@ -4,6 +4,7 @@ import '@testing-library/jest-dom';
 import {axe, toHaveNoViolations} from 'jest-axe';
 import Home from './page';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import {UserContextProvider} from './context/UserContext'; // UserContextProviderをインポート
 import {expect} from '@jest/globals';
 
 expect.extend(toHaveNoViolations);
@@ -89,7 +90,9 @@ describe('Home Component', () => {
     it('renders without crashing', () => {
         render(
             <QueryClientProvider client={queryClient}>
-                <Home/>
+                <UserContextProvider> {/* UserContextProviderでラップ */}
+                    <Home/>
+                </UserContextProvider>
             </QueryClientProvider>
         );
         expect(screen.getByText('Playlist Viewer')).toBeInTheDocument();
@@ -98,7 +101,9 @@ describe('Home Component', () => {
     it('handles login success', async () => {
         render(
             <QueryClientProvider client={queryClient}>
-                <Home/>
+                <UserContextProvider> {/* UserContextProviderでラップ */}
+                    <Home/>
+                </UserContextProvider>
             </QueryClientProvider>
         );
         
@@ -112,7 +117,9 @@ describe('Home Component', () => {
     it('handles playlist search', async () => {
         render(
             <QueryClientProvider client={queryClient}>
-                <Home/>
+                <UserContextProvider> {/* UserContextProviderでラップ */}
+                    <Home/>
+                </UserContextProvider>
             </QueryClientProvider>
         );
         
@@ -126,7 +133,9 @@ describe('Home Component', () => {
     it('handles playlist selection', async () => {
         render(
             <QueryClientProvider client={queryClient}>
-                <Home/>
+                <UserContextProvider> {/* UserContextProviderでラップ */}
+                    <Home/>
+                </UserContextProvider>
             </QueryClientProvider>
         );
         
@@ -140,7 +149,9 @@ describe('Home Component', () => {
     it('is accessible', async () => {
         const {container} = render(
             <QueryClientProvider client={queryClient}>
-                <Home/>
+                <UserContextProvider> {/* UserContextProviderでラップ */}
+                    <Home/>
+                </UserContextProvider>
             </QueryClientProvider>
         );
         const results = await axe(container);
