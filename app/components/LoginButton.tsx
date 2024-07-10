@@ -1,14 +1,13 @@
+// app/components/LoginButton.tsx
 "use client";
 
 import React from 'react';
 import {useMutation} from '@tanstack/react-query';
 import {Button} from "./ui/button";
+import {useUser} from "../context/UserContext"; // useUserフックをインポート
 
-interface LoginButtonProps {
-    isLoggedIn: boolean;
-}
-
-const LoginButton: React.FC<LoginButtonProps> = ({isLoggedIn}) => {
+const LoginButton: React.FC = () => {
+    const {isLoggedIn} = useUser(); // UserContextからisLoggedInを取得
     console.log('LoginButton コンポーネントがレンダリングされました', isLoggedIn);
     
     const logoutMutation = useMutation({

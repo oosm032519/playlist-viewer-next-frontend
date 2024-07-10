@@ -4,6 +4,7 @@
 import './globals.css';
 import {Inter} from 'next/font/google';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import {UserContextProvider} from "./context/UserContext"; // 新しいコンテキストプロバイダをインポート
 
 const inter = Inter({subsets: ['latin']});
 
@@ -15,7 +16,9 @@ export default function RootLayout({children}: { children: React.ReactNode }) {
         <html lang="en">
         <body className={`${inter.className} bg-gray-dark text-gray-100`}>
         <QueryClientProvider client={queryClient}>
-            {children}
+            <UserContextProvider> {/* UserContextProviderでラップ */}
+                {children}
+            </UserContextProvider>
         </QueryClientProvider>
         </body>
         </html>
