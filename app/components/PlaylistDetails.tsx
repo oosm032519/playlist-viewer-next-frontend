@@ -8,21 +8,21 @@ import GenreChart from "./GenreChart";
 import {RecommendationsTable} from "./RecommendationsTable";
 
 interface PlaylistDetailsProps {
-    tracks: Track[];
-    genreCounts: { [genre: string]: number };
-    recommendations: Track[];
-    playlistName: string | null;
-    ownerId: string; // ownerId を props として受け取る
-    userId: string; // userId を props として受け取る
-    playlistId: string; // プレイリストIDを追加
+    tracks: Track[]; // プレイリスト内のトラックの配列
+    genreCounts: { [genre: string]: number }; // ジャンルごとのトラック数を保持するオブジェクト
+    recommendations: Track[]; // おすすめのトラックの配列
+    playlistName: string | null; // プレイリストの名前
+    ownerId: string; // プレイリストの所有者のID
+    userId: string; // 現在のユーザーのID
+    playlistId: string; // プレイリストのID
 }
 
 /**
  * ジャンル分布チャートを表示するコンポーネント
  */
 const GenreDistributionChart: React.FC<{
-    genreCounts: { [genre: string]: number };
-    playlistName: string | null;
+    genreCounts: { [genre: string]: number }; // ジャンルごとのトラック数を保持するオブジェクト
+    playlistName: string | null; // プレイリストの名前
 }> = ({genreCounts, playlistName}) => {
     // genreCounts が空でない場合のみチャートを表示
     if (Object.keys(genreCounts).length > 0) {
@@ -33,9 +33,12 @@ const GenreDistributionChart: React.FC<{
             </div>
         );
     }
-    return null;
+    return null; // genreCounts が空の場合は何も表示しない
 };
 
+/**
+ * プレイリストの詳細情報を表示するコンポーネント
+ */
 const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                                                              tracks,
                                                              genreCounts = {},
@@ -47,6 +50,7 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                                                          }) => {
     return (
         <>
+            {/* プレイリストのトラック一覧を表示 */}
             <PlaylistDetailsTable tracks={tracks}/>
             
             {/* ジャンル分布チャートの表示 */}

@@ -1,3 +1,5 @@
+// app/page.test.tsx
+
 import React from 'react';
 import {render, screen, fireEvent, waitFor, act} from '@testing-library/react';
 import '@testing-library/jest-dom';
@@ -7,8 +9,10 @@ import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {UserContextProvider} from './context/UserContext'; // UserContextProviderをインポート
 import {expect} from '@jest/globals';
 
+// jest-axeのカスタムマッチャーを追加
 expect.extend(toHaveNoViolations);
 
+// QueryClientのインスタンスを作成
 const queryClient = new QueryClient();
 
 // fetchをモック
@@ -32,10 +36,12 @@ global.fetch = jest.fn(() =>
     } as Response)
 );
 
+// checkSession関数をモック
 jest.mock('./lib/checkSession', () => ({
     checkSession: jest.fn().mockResolvedValue(true),
 }));
 
+// PlaylistSearchFormコンポーネントをモック
 jest.mock('./components/PlaylistSearchForm', () => ({
     __esModule: true,
     default: ({onSearch}: { onSearch: (playlists: any[]) => void }) => (
@@ -45,6 +51,7 @@ jest.mock('./components/PlaylistSearchForm', () => ({
     ),
 }));
 
+// LoginButtonコンポーネントをモック
 jest.mock('./components/LoginButton', () => ({
     __esModule: true,
     default: ({onLoginSuccess}: { onLoginSuccess: () => void }) => (
@@ -52,6 +59,7 @@ jest.mock('./components/LoginButton', () => ({
     ),
 }));
 
+// PlaylistIdFormコンポーネントをモック
 jest.mock('./components/PlaylistIdForm', () => ({
     __esModule: true,
     default: ({onPlaylistSelect}: { onPlaylistSelect: (id: string) => void }) => (
@@ -59,6 +67,7 @@ jest.mock('./components/PlaylistIdForm', () => ({
     ),
 }));
 
+// FollowedPlaylistsコンポーネントをモック
 jest.mock('./components/FollowedPlaylists', () => ({
     __esModule: true,
     default: ({onPlaylistClick}: { onPlaylistClick: (id: string) => void }) => (
@@ -66,6 +75,7 @@ jest.mock('./components/FollowedPlaylists', () => ({
     ),
 }));
 
+// PlaylistTableコンポーネントをモック
 jest.mock('./components/PlaylistTable', () => ({
     __esModule: true,
     default: ({playlists, onPlaylistClick}: { playlists: any[], onPlaylistClick: (id: string) => void }) => (
@@ -79,6 +89,7 @@ jest.mock('./components/PlaylistTable', () => ({
     ),
 }));
 
+// PlaylistDetailsLoaderコンポーネントをモック
 jest.mock('./components/PlaylistDetailsLoader', () => ({
     __esModule: true,
     default: ({playlistId, userId}: { playlistId: string, userId: string }) => (
@@ -87,6 +98,9 @@ jest.mock('./components/PlaylistDetailsLoader', () => ({
 }));
 
 describe('Home Component', () => {
+    /**
+     * Homeコンポーネントがクラッシュせずにレンダリングされることを確認するテスト
+     */
     it('renders without crashing', () => {
         render(
             <QueryClientProvider client={queryClient}>
@@ -98,6 +112,9 @@ describe('Home Component', () => {
         expect(screen.getByText('Playlist Viewer')).toBeInTheDocument();
     });
     
+    /**
+     * ログイン成功時の処理を確認するテスト
+     */
     it('handles login success', async () => {
         render(
             <QueryClientProvider client={queryClient}>
@@ -114,6 +131,9 @@ describe('Home Component', () => {
         await waitFor(() => expect(screen.getByText('Followed Playlist')).toBeInTheDocument());
     });
     
+    /**
+     * プレイリスト検索の処理を確認するテスト
+     */
     it('handles playlist search', async () => {
         render(
             <QueryClientProvider client={queryClient}>
@@ -130,6 +150,9 @@ describe('Home Component', () => {
         await waitFor(() => expect(screen.getByText('Test Playlist')).toBeInTheDocument());
     });
     
+    /**
+     * プレイリスト選択の処理を確認するテスト
+     */
     it('handles playlist selection', async () => {
         render(
             <QueryClientProvider client={queryClient}>
@@ -146,6 +169,9 @@ describe('Home Component', () => {
         await waitFor(() => expect(screen.getByText('Loading details for 1 by mockUserId')).toBeInTheDocument());
     });
     
+    /**
+     * アクセシビリティのテスト
+     */
     it('is accessible', async () => {
         const {container} = render(
             <QueryClientProvider client={queryClient}>

@@ -29,6 +29,11 @@ describe('Session API Route', () => {
         jest.clearAllMocks();
     });
     
+    /**
+     * 正常なレスポンスを返すべき
+     * - モックデータを使用してAPIレスポンスをシミュレート
+     * - GET関数を呼び出し、レスポンスとデータを検証
+     */
     it('正常なレスポンスを返すべき', async () => {
         const mockData = {status: 'active', userId: '123'};
         fetchMock.mockResponseOnce(JSON.stringify(mockData));
@@ -47,6 +52,11 @@ describe('Session API Route', () => {
         });
     });
     
+    /**
+     * 外部APIがエラーを返した場合、エラーレスポンスを返すべき
+     * - ネットワークエラーをシミュレート
+     * - GET関数を呼び出し、エラーレスポンスとデータを検証
+     */
     it('外部APIがエラーを返した場合、エラーレスポンスを返すべき', async () => {
         fetchMock.mockRejectOnce(new Error('Network error'));
         
@@ -61,6 +71,11 @@ describe('Session API Route', () => {
         });
     });
     
+    /**
+     * 外部APIからの無効なJSONレスポンスを処理すべき
+     * - 無効なJSONレスポンスをシミュレート
+     * - GET関数を呼び出し、エラーレスポンスとデータを検証
+     */
     it('外部APIからの無効なJSONレスポンスを処理すべき', async () => {
         fetchMock.mockResponseOnce('Invalid JSON');
         
@@ -75,6 +90,11 @@ describe('Session API Route', () => {
         });
     });
     
+    /**
+     * 外部APIからの予期しないステータスコードを処理すべき
+     * - 401ステータスコードをシミュレート
+     * - GET関数を呼び出し、レスポンスとデータを検証
+     */
     it('外部APIからの予期しないステータスコードを処理すべき', async () => {
         fetchMock.mockResponseOnce(JSON.stringify({error: 'Unauthorized'}), {status: 401});
         
@@ -86,6 +106,11 @@ describe('Session API Route', () => {
         expect(data).toEqual({error: 'Unauthorized'});
     });
     
+    /**
+     * クレデンシャルが正しく設定されているか確認すべき
+     * - 正常なレスポンスをシミュレート
+     * - GET関数を呼び出し、fetchMockの呼び出しを検証
+     */
     it('クレデンシャルが正しく設定されているか確認すべき', async () => {
         fetchMock.mockResponseOnce(JSON.stringify({}));
         
@@ -100,6 +125,11 @@ describe('Session API Route', () => {
         });
     });
     
+    /**
+     * コンソールにエラーがログされるべき
+     * - ネットワークエラーをシミュレート
+     * - GET関数を呼び出し、コンソールエラーログを検証
+     */
     it('コンソールにエラーがログされるべき', async () => {
         const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
         fetchMock.mockRejectOnce(new Error('Network error'));

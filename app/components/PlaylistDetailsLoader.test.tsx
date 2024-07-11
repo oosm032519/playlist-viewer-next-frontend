@@ -10,25 +10,27 @@ import {expect} from '@jest/globals';
 // jest-axeのマッチャーを追加
 expect.extend(toHaveNoViolations);
 
-// モックコンポーネント
+// PlaylistDetailsコンポーネントのモック
 jest.mock('./PlaylistDetails', () => {
     return function MockPlaylistDetails() {
         return <div data-testid="playlist-details">Playlist Details</div>;
     };
 });
 
+// LoadingSpinnerコンポーネントのモック
 jest.mock('./LoadingSpinner', () => {
     return function MockLoadingSpinner({loading}: { loading: boolean }) {
         return loading ? <div data-testid="loading-spinner">Loading...</div> : null;
     };
 });
 
-// フェッチのモック
+// グローバルフェッチ関数のモック
 global.fetch = jest.fn();
 
 describe('PlaylistDetailsLoader', () => {
     let queryClient: QueryClient;
     
+    // 各テストの前にQueryClientを初期化し、フェッチのモックをクリア
     beforeEach(() => {
         queryClient = new QueryClient({
             defaultOptions: {
@@ -40,22 +42,25 @@ describe('PlaylistDetailsLoader', () => {
         (global.fetch as jest.Mock).mockClear();
     });
     
-    it('renders loading spinner when fetching data', async () => {
+    it('データ取得中にローディングスピナーを表示する', async () => {
+        // フェッチが完了しないモックを設定
         (global.fetch as jest.Mock).mockImplementationOnce(() =>
             new Promise(() => {
             })
         );
         
+        // コンポーネントをレンダリング
         render(
             <QueryClientProvider client={queryClient}>
                 <PlaylistDetailsLoader playlistId="123"/>
             </QueryClientProvider>
         );
         
+        // ローディングスピナーが表示されていることを確認
         expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
     });
     
-    it('renders playlist details when data is fetched successfully', async () => {
+    it('データ取得成功時にプレイリスト詳細を表示する', async () => {
         const mockData = {
             tracks: {items: []},
             genreCounts: {},
@@ -64,6 +69,7 @@ describe('PlaylistDetailsLoader', () => {
             ownerId: 'owner123',
         };
         
+        // フェッチが成功するモックを設定
         (global.fetch as jest.Mock).mockImplementationOnce(() =>
             Promise.resolve({
                 ok: true,
@@ -71,36 +77,41 @@ describe('PlaylistDetailsLoader', () => {
             })
         );
         
+        // コンポーネントをレンダリング
         render(
             <QueryClientProvider client={queryClient}>
                 <PlaylistDetailsLoader playlistId="123"/>
             </QueryClientProvider>
         );
         
+        // プレイリスト詳細が表示されていることを確認
         await waitFor(() => {
             expect(screen.getByTestId('playlist-details')).toBeInTheDocument();
         });
     });
     
-    it('renders error message when fetch fails', async () => {
+    it('データ取得失敗時にエラーメッセージを表示する', async () => {
+        // フェッチが失敗するモックを設定
         (global.fetch as jest.Mock).mockImplementationOnce(() =>
             Promise.resolve({
                 ok: false,
             })
         );
         
+        // コンポーネントをレンダリング
         render(
             <QueryClientProvider client={queryClient}>
                 <PlaylistDetailsLoader playlistId="123"/>
             </QueryClientProvider>
         );
         
+        // エラーメッセージが表示されていることを確認
         await waitFor(() => {
             expect(screen.getByText('プレイリスト取得中にエラーが発生しました')).toBeInTheDocument();
         });
     });
     
-    it('has no accessibility violations', async () => {
+    it('アクセシビリティ違反がないことを確認する', async () => {
         const mockData = {
             tracks: {items: []},
             genreCounts: {},
@@ -109,6 +120,7 @@ describe('PlaylistDetailsLoader', () => {
             ownerId: 'owner123',
         };
         
+        // フェッチが成功するモックを設定
         (global.fetch as jest.Mock).mockImplementationOnce(() =>
             Promise.resolve({
                 ok: true,
@@ -116,16 +128,19 @@ describe('PlaylistDetailsLoader', () => {
             })
         );
         
+        // コンテナをレンダリング
         const {container} = render(
             <QueryClientProvider client={queryClient}>
                 <PlaylistDetailsLoader playlistId="123"/>
             </QueryClientProvider>
         );
         
+        // プレイリスト詳細が表示されていることを確認
         await waitFor(() => {
             expect(screen.getByTestId('playlist-details')).toBeInTheDocument();
         });
         
+        // アクセシビリティ違反がないことを確認
         const results = await axe(container);
         expect(results).toHaveNoViolations();
     });

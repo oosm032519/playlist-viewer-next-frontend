@@ -14,10 +14,18 @@ interface PlaylistDetailsTableProps {
     tracks: Track[];
 }
 
+/**
+ * プレイリストの詳細テーブルを表示するコンポーネント
+ * @param {PlaylistDetailsTableProps} props - トラックの配列を含むプロパティ
+ * @returns {JSX.Element} プレイリストの詳細テーブル
+ */
 export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({tracks}) => {
+    // 選択されたトラックを管理するための状態
     const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
+    // テーブルのソート状態を管理するための状態
     const [sorting, setSorting] = useState<SortingState>([]);
     
+    // React Tableの設定
     const table = useReactTable({
         data: tracks,
         columns: playlistDetailsTableColumns,
@@ -29,8 +37,13 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({track
         getSortedRowModel: getSortedRowModel(),
     });
     
+    /**
+     * 行がクリックされたときに選択されたトラックを設定するハンドラ
+     * @param {Track} row - クリックされた行のトラックデータ
+     */
     const handleRowClick = (row: Track) => setSelectedTrack(row);
     
+    // トラックが存在しない場合の表示
     if (tracks.length === 0) {
         return (
             <div className="text-center text-gray-500 my-4">

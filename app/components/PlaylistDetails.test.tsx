@@ -45,9 +45,11 @@ jest.mock('./RecommendationsTable', () => ({
     ),
 }));
 
+// jest-axeの拡張機能を追加
 expect.extend(toHaveNoViolations);
 
 describe('PlaylistDetails', () => {
+    // テスト用のモックデータを定義
     const mockTracks: Track[] = [
         {
             id: '1',
@@ -89,6 +91,7 @@ describe('PlaylistDetails', () => {
         },
     ];
     
+    // デフォルトのプロパティを定義
     const defaultProps = {
         tracks: mockTracks,
         genreCounts: mockGenreCounts,
@@ -100,55 +103,78 @@ describe('PlaylistDetails', () => {
     };
     
     it('renders PlaylistDetailsTable with correct number of tracks', () => {
+        // PlaylistDetailsコンポーネントをレンダリング
         render(<PlaylistDetails {...defaultProps} />);
         const playlistDetailsTable = screen.getByTestId('playlist-details-table');
+        // PlaylistDetailsTableが正しくレンダリングされているか確認
         expect(playlistDetailsTable).toBeInTheDocument();
+        // トラックの数が正しいか確認
         expect(within(playlistDetailsTable).getByTestId('track-count')).toHaveTextContent('1');
     });
     
     it('renders GenreDistributionChart when genreCounts is not empty', () => {
+        // PlaylistDetailsコンポーネントをレンダリング
         render(<PlaylistDetails {...defaultProps} />);
         const genreChart = screen.getByTestId('genre-chart');
+        // GenreChartが正しくレンダリングされているか確認
         expect(genreChart).toBeInTheDocument();
+        // ジャンルの数が正しいか確認
         expect(within(genreChart).getByTestId('genre-count')).toHaveTextContent('2');
     });
     
     it('does not render GenreDistributionChart when genreCounts is empty', () => {
+        // genreCountsが空の場合にPlaylistDetailsコンポーネントをレンダリング
         render(<PlaylistDetails {...defaultProps} genreCounts={{}}/>);
+        // GenreChartがレンダリングされていないことを確認
         expect(screen.queryByTestId('genre-chart')).not.toBeInTheDocument();
     });
     
     it('renders RecommendationsTable with correct props', () => {
+        // PlaylistDetailsコンポーネントをレンダリング
         render(<PlaylistDetails {...defaultProps} />);
         const recommendationsTable = screen.getByTestId('recommendations-table');
+        // RecommendationsTableが正しくレンダリングされているか確認
         expect(recommendationsTable).toBeInTheDocument();
+        // 推奨トラックの数が正しいか確認
         expect(within(recommendationsTable).getByTestId('recommendation-count')).toHaveTextContent('1');
+        // オーナーIDが正しいか確認
         expect(within(recommendationsTable).getByTestId('owner-id')).toHaveTextContent('owner123');
+        // ユーザーIDが正しいか確認
         expect(within(recommendationsTable).getByTestId('user-id')).toHaveTextContent('user123');
+        // プレイリストIDが正しいか確認
         expect(within(recommendationsTable).getByTestId('playlist-id')).toHaveTextContent('playlist123');
     });
     
     it('renders correct headings', () => {
+        // PlaylistDetailsコンポーネントをレンダリング
         render(<PlaylistDetails {...defaultProps} />);
+        // 正しい見出しがレンダリングされているか確認
         expect(screen.getByText('Genre Distribution:')).toBeInTheDocument();
         expect(screen.getByText('Recommendations:')).toBeInTheDocument();
     });
     
     it('handles empty tracks array', () => {
+        // トラックが空の場合にPlaylistDetailsコンポーネントをレンダリング
         render(<PlaylistDetails {...defaultProps} tracks={[]}/>);
         const playlistDetailsTable = screen.getByTestId('playlist-details-table');
+        // トラックの数が0であることを確認
         expect(within(playlistDetailsTable).getByTestId('track-count')).toHaveTextContent('0');
     });
     
     it('handles empty recommendations array', () => {
+        // 推奨トラックが空の場合にPlaylistDetailsコンポーネントをレンダリング
         render(<PlaylistDetails {...defaultProps} recommendations={[]}/>);
         const recommendationsTable = screen.getByTestId('recommendations-table');
+        // 推奨トラックの数が0であることを確認
         expect(within(recommendationsTable).getByTestId('recommendation-count')).toHaveTextContent('0');
     });
     
     it('passes accessibility test', async () => {
+        // PlaylistDetailsコンポーネントをレンダリング
         const {container} = render(<PlaylistDetails {...defaultProps} />);
+        // アクセシビリティテストを実行
         const results = await axe(container);
+        // アクセシビリティ違反がないことを確認
         expect(results).toHaveNoViolations();
     });
 });

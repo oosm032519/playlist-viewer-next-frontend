@@ -11,7 +11,11 @@ interface FollowedPlaylistsProps {
     onPlaylistClick: (playlistId: string) => void;
 }
 
-// プレイリストデータを取得する処理をfetchFollowedPlaylists関数として抽出
+/**
+ * フォロー中のプレイリストデータをAPIから取得する非同期関数
+ * @returns {Promise<Playlist[]>} プレイリストの配列を返す
+ * @throws {Error} APIリクエストが失敗した場合にエラーを投げる
+ */
 const fetchFollowedPlaylists = async (): Promise<Playlist[]> => {
     const response = await fetch('/api/playlists/followed', {
         credentials: 'include'
@@ -25,16 +29,24 @@ const fetchFollowedPlaylists = async (): Promise<Playlist[]> => {
     return Array.isArray(data) ? data : data.items || [];
 };
 
+/**
+ * フォロー中のプレイリストを表示するコンポーネント
+ * @param {FollowedPlaylistsProps} props - コンポーネントのプロパティ
+ * @returns {JSX.Element} フォロー中のプレイリストを表示するJSX要素
+ */
 const FollowedPlaylists: React.FC<FollowedPlaylistsProps> = ({onPlaylistClick}) => {
+    // React Queryを使用してフォロー中のプレイリストデータを取得
     const {data: playlists, isLoading, error} = useQuery<Playlist[], Error>({
         queryKey: ['followedPlaylists'],
         queryFn: fetchFollowedPlaylists,
     });
     
+    // データがロード中の場合、ローディングスピナーを表示
     if (isLoading) {
         return <LoadingSpinner loading={isLoading}/>;
     }
     
+    // エラーが発生した場合、エラーメッセージを表示
     if (error) {
         return (
             <Alert variant="destructive">
@@ -44,6 +56,7 @@ const FollowedPlaylists: React.FC<FollowedPlaylistsProps> = ({onPlaylistClick}) 
         );
     }
     
+    // フォロー中のプレイリストを表示
     return (
         <div className="mt-8">
             <h2 className="text-2xl font-bold mb-4">フォロー中のプレイリスト</h2>

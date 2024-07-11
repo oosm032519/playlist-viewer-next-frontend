@@ -1,4 +1,5 @@
 // app/components/FollowedPlaylists.test.tsx
+
 import React from 'react';
 import {render, screen, waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -10,7 +11,10 @@ import {expect} from '@jest/globals';
 
 expect.extend(toHaveNoViolations);
 
-// モックデータ
+/**
+ * モックデータ
+ * テスト用のプレイリストデータを定義
+ */
 const mockPlaylists: Playlist[] = [
     {
         id: '1',
@@ -35,14 +39,23 @@ const mockPlaylists: Playlist[] = [
     },
 ];
 
-// fetchのモック
+/**
+ * fetchのモック
+ * グローバルなfetch関数をモックに置き換える
+ */
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
-// onPlaylistClickのモック関数
+/**
+ * onPlaylistClickのモック関数
+ * プレイリストがクリックされたときのハンドラをモックに置き換える
+ */
 const mockOnPlaylistClick = jest.fn();
 
-// テスト用のQueryClientを作成
+/**
+ * テスト用のQueryClientを作成
+ * @returns {QueryClient} テスト用のQueryClientインスタンス
+ */
 const createTestQueryClient = () => new QueryClient({
     defaultOptions: {
         queries: {
@@ -51,7 +64,11 @@ const createTestQueryClient = () => new QueryClient({
     },
 });
 
-// テスト用のラッパーコンポーネント
+/**
+ * テスト用のラッパーコンポーネント
+ * @param {React.ReactElement} ui - テスト対象のReactコンポーネント
+ * @returns {Object} テスト用のレンダリング結果と再レンダリング関数
+ */
 const renderWithClient = (ui: React.ReactElement) => {
     const testQueryClient = createTestQueryClient();
     const {rerender, ...result} = render(

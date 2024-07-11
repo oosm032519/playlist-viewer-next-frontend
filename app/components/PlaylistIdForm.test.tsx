@@ -18,11 +18,17 @@ const wrapper = ({children}: { children: React.ReactNode }) => (
 );
 
 describe('PlaylistIdForm', () => {
-    // モック関数の型を明示的に定義
+    /**
+     * モック関数の型を明示的に定義
+     * @returns {jest.Mock<Promise<void>, [string]>} - プレイリストIDを受け取り、Promiseを返すモック関数
+     */
     const createMockOnPlaylistSelect = (): jest.Mock<Promise<void>, [string]> =>
         jest.fn((playlistId: string) => Promise.resolve());
     
-    // アクセシビリティテスト
+    /**
+     * アクセシビリティテスト
+     * @description コンポーネントがアクセシビリティ違反を持たないことを確認する
+     */
     it('should not have any accessibility violations', async () => {
         const mockOnPlaylistSelect = createMockOnPlaylistSelect();
         const {container} = render(
@@ -35,6 +41,9 @@ describe('PlaylistIdForm', () => {
     
     // 入力フィールドのテスト
     describe('Input field', () => {
+        /**
+         * 入力フィールドが表示され、有効であることを確認するテスト
+         */
         it('should be visible and enabled', () => {
             const mockOnPlaylistSelect = createMockOnPlaylistSelect();
             render(<PlaylistIdForm onPlaylistSelect={mockOnPlaylistSelect}/>, {
@@ -45,6 +54,9 @@ describe('PlaylistIdForm', () => {
             expect(inputElement).toBeEnabled();
         });
         
+        /**
+         * ユーザーが入力したときに値が更新されることを確認するテスト
+         */
         it('should update value when user types', () => {
             const mockOnPlaylistSelect = createMockOnPlaylistSelect();
             render(<PlaylistIdForm onPlaylistSelect={mockOnPlaylistSelect}/>, {
@@ -64,6 +76,9 @@ describe('PlaylistIdForm', () => {
     
     // 送信ボタンのテスト
     describe('Submit button', () => {
+        /**
+         * 送信ボタンが初期状態で表示され、有効であることを確認するテスト
+         */
         it('should be visible and enabled initially', () => {
             const mockOnPlaylistSelect = createMockOnPlaylistSelect();
             render(<PlaylistIdForm onPlaylistSelect={mockOnPlaylistSelect}/>, {
@@ -74,6 +89,9 @@ describe('PlaylistIdForm', () => {
             expect(submitButton).toBeEnabled();
         });
         
+        /**
+         * フォーム送信中に送信ボタンが無効化されることを確認するテスト
+         */
         it('should be disabled during form submission', async () => {
             const mockOnPlaylistSelect = jest.fn(
                 (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 1000))
@@ -104,6 +122,9 @@ describe('PlaylistIdForm', () => {
         
         // フォーム送信のテスト
         describe('Form submission', () => {
+            /**
+             * 有効なURLの場合、onPlaylistSelectが正しいIDで呼び出されることを確認するテスト
+             */
             it('should call onPlaylistSelect with correct ID for valid URL', async () => {
                 const mockOnPlaylistSelect = createMockOnPlaylistSelect();
                 render(<PlaylistIdForm onPlaylistSelect={mockOnPlaylistSelect}/>, {
@@ -124,6 +145,9 @@ describe('PlaylistIdForm', () => {
                 });
             });
             
+            /**
+             * 無効なURLの場合、onPlaylistSelectが呼び出されないことを確認するテスト
+             */
             it('should not call onPlaylistSelect for invalid URL', async () => {
                 const mockOnPlaylistSelect = createMockOnPlaylistSelect();
                 render(<PlaylistIdForm onPlaylistSelect={mockOnPlaylistSelect}/>, {
@@ -138,6 +162,9 @@ describe('PlaylistIdForm', () => {
                 });
             });
             
+            /**
+             * 送信中にローディングスピナーが表示され、完了後に非表示になることを確認するテスト
+             */
             it('should show loading spinner during submission and hide it after completion', async () => {
                 const mockOnPlaylistSelect = jest.fn(
                     (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 1000))
@@ -173,35 +200,38 @@ describe('PlaylistIdForm', () => {
             });
         });
     });
-        
-        // エラーハンドリングのテスト
-        describe('Error handling', () => {
-            it('should handle errors during submission', async () => {
-                const mockOnPlaylistSelect = jest.fn(
-                    (): Promise<void> => Promise.reject(new Error('API Error'))
-                );
-                const consoleSpy = jest
-                    .spyOn(console, 'error')
-                    .mockImplementation(() => {
-                    });
-                render(<PlaylistIdForm onPlaylistSelect={mockOnPlaylistSelect}/>, {
-                    wrapper,
+    
+    // エラーハンドリングのテスト
+    describe('Error handling', () => {
+        /**
+         * 送信中にエラーが発生した場合の処理を確認するテスト
+         */
+        it('should handle errors during submission', async () => {
+            const mockOnPlaylistSelect = jest.fn(
+                (): Promise<void> => Promise.reject(new Error('API Error'))
+            );
+            const consoleSpy = jest
+                .spyOn(console, 'error')
+                .mockImplementation(() => {
                 });
-                const inputElement = screen.getByPlaceholderText('Enter playlist URL');
-                const submitButton = screen.getByRole('button', {name: /Submit/i});
-                fireEvent.change(inputElement, {
-                    target: {
-                        value: 'https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M',
-                    },
-                });
-                fireEvent.click(submitButton);
-                await waitFor(() => {
-                    expect(consoleSpy).toHaveBeenCalledWith(
-                        'Error sending playlist ID:',
-                        expect.any(Error)
-                    );
-                });
-                consoleSpy.mockRestore();
+            render(<PlaylistIdForm onPlaylistSelect={mockOnPlaylistSelect}/>, {
+                wrapper,
             });
+            const inputElement = screen.getByPlaceholderText('Enter playlist URL');
+            const submitButton = screen.getByRole('button', {name: /Submit/i});
+            fireEvent.change(inputElement, {
+                target: {
+                    value: 'https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M',
+                },
+            });
+            fireEvent.click(submitButton);
+            await waitFor(() => {
+                expect(consoleSpy).toHaveBeenCalledWith(
+                    'Error sending playlist ID:',
+                    expect.any(Error)
+                );
+            });
+            consoleSpy.mockRestore();
         });
     });
+});

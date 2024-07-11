@@ -1,24 +1,23 @@
 // app/components/PlaylistIdForm.tsx
 "use client";
+
 import {useState} from "react";
 import {useMutation} from "@tanstack/react-query";
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from "./ui/card";
+import {Card, CardContent, CardHeader, CardTitle} from "./ui/card";
 import {Button} from "./ui/button";
 import {Input} from "./ui/input";
 import LoadingSpinner from "./LoadingSpinner";
-
-// Alertコンポーネントをインポート
 import {Alert, AlertDescription, AlertTitle} from "./ui/alert";
 
 interface PlaylistIdFormProps {
     onPlaylistSelect: (playlistId: string) => Promise<void>;
 }
 
+/**
+ * URLからプレイリストIDを抽出する関数
+ * @param {string} url - プレイリストのURL
+ * @returns {string | null} - 抽出されたプレイリストID、またはnull
+ */
 const extractPlaylistIdFromUrl = (url: string): string | null => {
     const regex = /\/playlist\/([^?#]+)/;
     const match = url.match(regex);
@@ -26,27 +25,34 @@ const extractPlaylistIdFromUrl = (url: string): string | null => {
 };
 
 export default ({onPlaylistSelect}: PlaylistIdFormProps) => {
+    // プレイリストIDの状態管理
     const [playlistId, setPlaylistId] = useState("");
-    const [errorMessage, setErrorMessage] = useState<string | null>(null); // エラーメッセージの状態
+    // エラーメッセージの状態管理
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
     
+    // プレイリストID送信のためのMutation設定
     const mutation = useMutation({
         mutationFn: (extractedId: string) => onPlaylistSelect(extractedId),
         onError: (error) => {
             console.error("Error sending playlist ID:", error);
-            // エラーメッセージを設定
             setErrorMessage("プレイリストの取得中にエラーが発生しました");
         },
     });
     
+    /**
+     * フォーム送信時のハンドラー
+     * @param {React.FormEvent} event - フォームイベント
+     */
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
         
+        // URLからプレイリストIDを抽出
         const extractedId = extractPlaylistIdFromUrl(playlistId);
         console.log("Extracted Playlist ID:", extractedId);
         
         if (!extractedId) {
             console.error("Invalid Playlist URL:", playlistId);
-            setErrorMessage("無効なプレイリストURLです"); // エラーメッセージを設定
+            setErrorMessage("無効なプレイリストURLです");
             return;
         }
         
@@ -69,6 +75,7 @@ export default ({onPlaylistSelect}: PlaylistIdFormProps) => {
                         </Alert>
                     )}
                     
+                    {/* プレイリストURL入力フォーム */}
                     <form onSubmit={handleSubmit} className="flex space-x-2">
                         <Input
                             type="text"

@@ -1,4 +1,4 @@
-// PlaylistTableRow.test.tsx
+// app/components/PlaylistTableRow.test.tsx
 import React from 'react';
 import {render, screen, fireEvent} from '@testing-library/react';
 import '@testing-library/jest-dom';
@@ -7,8 +7,10 @@ import PlaylistTableRow from './PlaylistTableRow';
 import {Playlist} from '../types/playlist';
 import {expect} from '@jest/globals';
 
+// jest-axeのカスタムマッチャーを追加
 expect.extend(toHaveNoViolations);
 
+// テスト用のモックデータ: 画像ありのプレイリスト
 const mockPlaylist: Playlist = {
     id: '1',
     name: 'Test Playlist',
@@ -23,6 +25,7 @@ const mockPlaylist: Playlist = {
     },
 };
 
+// テスト用のモックデータ: 画像なしのプレイリスト
 const mockEmptyImagePlaylist: Playlist = {
     id: '2',
     name: 'Empty Image Playlist',
@@ -34,6 +37,10 @@ const mockEmptyImagePlaylist: Playlist = {
 };
 
 describe('PlaylistTableRow', () => {
+    /**
+     * テーブル内にコンポーネントをレンダリングするヘルパー関数
+     * @param component - レンダリングするReactコンポーネント
+     */
     const renderWithTable = (component: React.ReactElement) => {
         return render(
             <table>
@@ -45,6 +52,7 @@ describe('PlaylistTableRow', () => {
     };
     
     it('renders playlist information correctly', () => {
+        // プレイリストの情報が正しく表示されるかテスト
         renderWithTable(<PlaylistTableRow playlist={mockPlaylist} onClick={jest.fn()}/>);
         
         expect(screen.getByAltText('Test Playlist')).toBeInTheDocument();
@@ -53,6 +61,7 @@ describe('PlaylistTableRow', () => {
     });
     
     it('renders placeholder when image is not available', () => {
+        // 画像がない場合にプレースホルダーが表示されるかテスト
         renderWithTable(<PlaylistTableRow playlist={mockEmptyImagePlaylist} onClick={jest.fn()}/>);
         
         expect(screen.getByTestId('image-placeholder')).toBeInTheDocument();
@@ -61,6 +70,7 @@ describe('PlaylistTableRow', () => {
     });
     
     it('calls onClick when row is clicked', () => {
+        // 行がクリックされたときにonClickが呼ばれるかテスト
         const handleClick = jest.fn();
         renderWithTable(<PlaylistTableRow playlist={mockPlaylist} onClick={handleClick}/>);
         
@@ -69,6 +79,7 @@ describe('PlaylistTableRow', () => {
     });
     
     it('is accessible', async () => {
+        // コンポーネントがアクセシブルであるかテスト
         const {container} = renderWithTable(<PlaylistTableRow playlist={mockPlaylist} onClick={jest.fn()}/>);
         const results = await axe(container);
         expect(results).toHaveNoViolations();

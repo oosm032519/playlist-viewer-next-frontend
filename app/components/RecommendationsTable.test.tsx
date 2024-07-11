@@ -1,3 +1,5 @@
+// app/components/RecommendationsTable.test.tsx
+
 import React from 'react';
 import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom';
@@ -8,8 +10,10 @@ import * as utils from '../lib/trackUtils';
 import {expect} from '@jest/globals';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 
+// jest-axeのカスタムマッチャーを追加
 expect.extend(toHaveNoViolations);
 
+// trackUtilsモジュールをモック化
 jest.mock('@/app/lib/trackUtils');
 const mockedUtils = utils as jest.Mocked<typeof utils>;
 
@@ -63,12 +67,16 @@ const mockTracks: Track[] = [
 ];
 
 describe('RecommendationsTable', () => {
+    // 各テストの前にモックをクリアし、console.logをモック化
     beforeEach(() => {
         jest.clearAllMocks();
         jest.spyOn(console, 'log').mockImplementation(() => {
-        }); // console.logをモック
+        });
     });
     
+    /**
+     * アクセシビリティ違反がないことを確認するテスト
+     */
     it('should not have any accessibility violations', async () => {
         const queryClient = new QueryClient();
         const {container} = render(
@@ -80,6 +88,9 @@ describe('RecommendationsTable', () => {
         expect(results).toHaveNoViolations();
     });
     
+    /**
+     * テーブルが正しいヘッダーを持っていることを確認するテスト
+     */
     it('renders the table with correct headers', () => {
         const queryClient = new QueryClient();
         render(
@@ -94,6 +105,9 @@ describe('RecommendationsTable', () => {
         expect(screen.getByText('Actions')).toBeInTheDocument();
     });
     
+    /**
+     * トラックデータが正しく表示されることを確認するテスト
+     */
     it('displays track data correctly', () => {
         const queryClient = new QueryClient();
         render(
@@ -107,6 +121,9 @@ describe('RecommendationsTable', () => {
         });
     });
     
+    /**
+     * オーナーのみが追加と削除ボタンを表示することを確認するテスト
+     */
     it('shows add and remove buttons only for the owner', () => {
         const queryClient = new QueryClient();
         const {rerender} = render(
@@ -126,6 +143,9 @@ describe('RecommendationsTable', () => {
         expect(screen.queryByText('削除')).not.toBeInTheDocument();
     });
     
+    /**
+     * トラック追加ボタンのクリックが正しく処理されることを確認するテスト
+     */
     it('handles add track button click correctly', async () => {
         const queryClient = new QueryClient();
         mockedUtils.addTrackToPlaylist.mockResolvedValue(true);
@@ -141,6 +161,9 @@ describe('RecommendationsTable', () => {
         });
     });
     
+    /**
+     * トラック削除ボタンのクリックが正しく処理されることを確認するテスト
+     */
     it('handles remove track button click correctly', async () => {
         const queryClient = new QueryClient();
         mockedUtils.removeTrackFromPlaylist.mockResolvedValue(true);
@@ -156,6 +179,9 @@ describe('RecommendationsTable', () => {
         });
     });
     
+    /**
+     * 複数のアーティストがいるトラックでは最初のアーティストのみ表示することを確認するテスト
+     */
     it('displays only the first artist for tracks with multiple artists', () => {
         const queryClient = new QueryClient();
         render(

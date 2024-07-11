@@ -1,4 +1,4 @@
-// trackUtils.test.ts
+// app/lib/trackUtils.test.ts
 
 import {cn, addTrackToPlaylist, removeTrackFromPlaylist} from './trackUtils';
 import fetchMock from 'jest-fetch-mock';
@@ -8,6 +8,10 @@ import {expect} from '@jest/globals';
 fetchMock.enableMocks();
 
 describe('cn function', () => {
+    /**
+     * `cn`関数のテスト
+     * クラス名を正しくマージできるかを確認する
+     */
     it('should merge class names correctly', () => {
         expect(cn('class1', 'class2')).toBe('class1 class2');
         expect(cn('class1', {class2: true, class3: false})).toBe('class1 class2');
@@ -16,12 +20,19 @@ describe('cn function', () => {
 });
 
 describe('addTrackToPlaylist function', () => {
+    /**
+     * 各テストの前にモックとコンソール関数をリセット
+     */
     beforeEach(() => {
         fetchMock.resetMocks();
         console.log = jest.fn();
         console.error = jest.fn();
     });
     
+    /**
+     * `addTrackToPlaylist`関数の成功ケースをテスト
+     * 正常にトラックを追加できるかを確認する
+     */
     it('should add track successfully', async () => {
         fetchMock.mockResponseOnce(JSON.stringify({}), {status: 200});
         
@@ -38,6 +49,10 @@ describe('addTrackToPlaylist function', () => {
         });
     });
     
+    /**
+     * `addTrackToPlaylist`関数の失敗ケースをテスト
+     * トラックの追加に失敗した場合の処理を確認する
+     */
     it('should handle failure to add track', async () => {
         fetchMock.mockResponseOnce(JSON.stringify({}), {status: 400});
         
@@ -47,6 +62,10 @@ describe('addTrackToPlaylist function', () => {
         expect(console.error).toHaveBeenCalledWith('曲の追加に失敗しました');
     });
     
+    /**
+     * `addTrackToPlaylist`関数のネットワークエラーケースをテスト
+     * ネットワークエラーが発生した場合の処理を確認する
+     */
     it('should handle network error', async () => {
         fetchMock.mockRejectOnce(new Error('Network error'));
         
@@ -58,12 +77,19 @@ describe('addTrackToPlaylist function', () => {
 });
 
 describe('removeTrackFromPlaylist function', () => {
+    /**
+     * 各テストの前にモックとコンソール関数をリセット
+     */
     beforeEach(() => {
         fetchMock.resetMocks();
         console.log = jest.fn();
         console.error = jest.fn();
     });
     
+    /**
+     * `removeTrackFromPlaylist`関数の成功ケースをテスト
+     * 正常にトラックを削除できるかを確認する
+     */
     it('should remove track successfully', async () => {
         fetchMock.mockResponseOnce(JSON.stringify({}), {status: 200});
         
@@ -80,6 +106,10 @@ describe('removeTrackFromPlaylist function', () => {
         });
     });
     
+    /**
+     * `removeTrackFromPlaylist`関数の失敗ケースをテスト
+     * トラックの削除に失敗した場合の処理を確認する
+     */
     it('should handle failure to remove track', async () => {
         fetchMock.mockResponseOnce(JSON.stringify({error: 'Failed to remove'}), {status: 400});
         
@@ -89,6 +119,10 @@ describe('removeTrackFromPlaylist function', () => {
         expect(console.error).toHaveBeenCalledWith('曲の削除に失敗しました', {error: 'Failed to remove'});
     });
     
+    /**
+     * `removeTrackFromPlaylist`関数のネットワークエラーケースをテスト
+     * ネットワークエラーが発生した場合の処理を確認する
+     */
     it('should handle network error', async () => {
         fetchMock.mockRejectOnce(new Error('Network error'));
         

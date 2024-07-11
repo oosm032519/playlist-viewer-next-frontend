@@ -1,3 +1,5 @@
+// app/components/PlaylistSearch.tsx
+
 "use client";
 
 import {useForm} from "react-hook-form";
@@ -18,6 +20,7 @@ import {Form, FormControl, FormField, FormItem, FormMessage} from "./ui/form";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "./ui/table";
 import {Card, CardContent, CardHeader, CardTitle} from "./ui/card";
 
+// プレイリストのインターフェース定義
 interface Playlist {
     id: string;
     name: string;
@@ -25,10 +28,12 @@ interface Playlist {
     images: { url: string }[];
 }
 
+// 検索フォームの入力データのインターフェース定義
 interface SearchFormInputs {
     query: string;
 }
 
+// バリデーションスキーマの定義
 const schema = yup
     .object({
         query: yup
@@ -38,6 +43,11 @@ const schema = yup
     })
     .required();
 
+/**
+ * プレイリストを検索する非同期関数
+ * @param query - 検索クエリ
+ * @returns プレイリストの配列
+ */
 const fetchPlaylists = async (query: string): Promise<Playlist[]> => {
     const response = await fetch(`/api/playlists/search?query=${query}`);
     if (!response.ok) {
@@ -46,22 +56,30 @@ const fetchPlaylists = async (query: string): Promise<Playlist[]> => {
     return response.json();
 };
 
+/**
+ * プレイリスト検索コンポーネント
+ * @returns プレイリスト検索フォームと結果表示テーブル
+ */
 export default function PlaylistSearch() {
+    // フォームの設定
     const form = useForm<SearchFormInputs>({
         resolver: yupResolver(schema),
         defaultValues: {query: ''},
     });
     
+    // プレイリストデータの取得と状態管理
     const {data: playlists = [], isLoading, refetch} = useQuery({
         queryKey: ['playlists', form.watch('query')],
         queryFn: () => fetchPlaylists(form.getValues('query')),
         enabled: false, // クエリを手動でトリガーするために初期状態では無効化
     });
     
+    // フォーム送信時の処理
     const onSubmit = async (data: SearchFormInputs) => {
         refetch();
     };
     
+    // テーブルのカラム設定
     const columnHelper = createColumnHelper<Playlist>();
     
     const columns = useMemo(
@@ -83,6 +101,7 @@ export default function PlaylistSearch() {
         []
     );
     
+    // テーブルの設定
     const table = useReactTable({
         data: playlists,
         columns,

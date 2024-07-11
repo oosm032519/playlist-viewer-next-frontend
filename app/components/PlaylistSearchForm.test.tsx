@@ -1,3 +1,5 @@
+// app/components/PlaylistSearch.test.tsx
+
 import React from 'react';
 import {render, screen, waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -20,6 +22,7 @@ const mockUseQuery = useQuery as jest.MockedFunction<typeof useQuery>;
 describe('PlaylistSearch', () => {
     const queryClient = new QueryClient();
     
+    // 各テストの前にモックの初期設定を行う
     beforeEach(() => {
         mockUseQuery.mockReturnValue({
             data: [],
@@ -28,6 +31,7 @@ describe('PlaylistSearch', () => {
         } as any);
     });
     
+    // コンポーネントがクラッシュせずにレンダリングされることを確認するテスト
     it('should render without crashing', () => {
         render(
             <QueryClientProvider client={queryClient}>
@@ -37,6 +41,7 @@ describe('PlaylistSearch', () => {
         expect(screen.getByText('Playlist Search')).toBeInTheDocument();
     });
     
+    // 短すぎるクエリに対してバリデーションエラーが表示されることを確認するテスト
     it('should show validation error for short query', async () => {
         render(
             <QueryClientProvider client={queryClient}>
@@ -55,6 +60,7 @@ describe('PlaylistSearch', () => {
         });
     });
     
+    // 有効な入力に対して検索がトリガーされることを確認するテスト
     it('should trigger search on valid input', async () => {
         const mockRefetch = jest.fn();
         mockUseQuery.mockReturnValue({
@@ -80,6 +86,7 @@ describe('PlaylistSearch', () => {
         });
     });
     
+    // 検索中にローディング状態が表示されることを確認するテスト
     it('should display loading state during search', async () => {
         mockUseQuery.mockReturnValue({
             data: [],
@@ -96,6 +103,7 @@ describe('PlaylistSearch', () => {
         expect(screen.getByText('Searching...')).toBeInTheDocument();
     });
     
+    // プレイリストの結果が表示されることを確認するテスト
     it('should render playlist results', async () => {
         const mockPlaylists = [
             {id: '1', name: 'Playlist 1', images: [{url: 'image1.jpg'}]},
@@ -121,6 +129,7 @@ describe('PlaylistSearch', () => {
         });
     });
     
+    // コンポーネントがアクセシブルであることを確認するテスト
     it('should be accessible', async () => {
         const {container} = render(
             <QueryClientProvider client={queryClient}>

@@ -7,6 +7,7 @@ import {TrackPlayer} from './TrackPlayer';
 import {expect} from '@jest/globals';
 import {Track} from '../types/track'
 
+// モック用のトラックデータを定義
 const mockTrack: Track = {
     id: '1',
     name: 'Test Track 1',
@@ -23,18 +24,22 @@ const mockTrack: Track = {
     durationMs: 180000,
 };
 
+// TrackPlayerコンポーネントのテストスイート
 describe('TrackPlayer', () => {
+    // previewUrlが存在する場合、再生ボタンが表示されることをテスト
     it('renders play button when previewUrl is available', () => {
         render(<TrackPlayer track={mockTrack}/>);
         expect(screen.getByText('試聴する')).toBeInTheDocument();
     });
     
+    // previewUrlが存在しない場合、再生ボタンが表示されないことをテスト
     it('does not render play button when previewUrl is not available', () => {
         const trackWithoutPreview = {...mockTrack, previewUrl: undefined};
         render(<TrackPlayer track={trackWithoutPreview}/>);
         expect(screen.queryByText('試聴する')).not.toBeInTheDocument();
     });
     
+    // 再生ボタンがクリックされたときに、再生と停止がトグルされることをテスト
     it('toggles between play and stop when button is clicked', () => {
         render(<TrackPlayer track={mockTrack}/>);
         const button = screen.getByText('試聴する');

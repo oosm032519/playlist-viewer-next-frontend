@@ -1,4 +1,5 @@
 // app/components/GenreChart.tsx
+
 import React from 'react';
 import {
     PieChart,
@@ -17,17 +18,25 @@ interface GenreChartProps {
     playlistName: string | null;
 }
 
+/**
+ * GenreChartコンポーネント
+ * @param {GenreChartProps} props - ジャンルのカウントとプレイリスト名を含むプロパティ
+ * @returns {JSX.Element} - ジャンルごとのカウントを表示する円グラフ
+ */
 const GenreChart: React.FC<GenreChartProps> = ({
                                                    genreCounts,
                                                    playlistName,
                                                }) => {
+    // ジャンルのカウントの合計を計算
     const total = Object.values(genreCounts).reduce(
         (sum, count) => sum + count,
         0
     );
     
+    // グラフ用のデータを準備
     const data = prepareChartData(genreCounts, total);
     
+    // グラフの各セクションの色を定義
     const COLORS = [
         '#FF8C9E', '#7FD8A6', '#7FBFFF', '#FFE066', '#FFAF7A',
         '#C490D1', '#66E0E0', '#FF9EFF', '#B8D86B', '#FF6B6B',
@@ -36,6 +45,7 @@ const GenreChart: React.FC<GenreChartProps> = ({
     return (
         <ResponsiveContainer width='100%' height={300}>
             <PieChart>
+                {/* プレイリスト名を中央に表示 */}
                 <RechartsText
                     x={125}
                     y={150}
@@ -55,11 +65,14 @@ const GenreChart: React.FC<GenreChartProps> = ({
                     fill='#8884d8'
                     dataKey='value'
                 >
+                    {/* 各セクションに色を適用 */}
                     {data.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]}/>
                     ))}
                 </Pie>
+                {/* カスタムツールチップを表示 */}
                 <Tooltip content={<CustomTooltip/>}/>
+                {/* 凡例を表示 */}
                 <Legend/>
             </PieChart>
         </ResponsiveContainer>

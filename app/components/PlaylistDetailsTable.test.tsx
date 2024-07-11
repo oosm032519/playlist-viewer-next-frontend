@@ -1,4 +1,4 @@
-// PlaylistDetailsTableColumns.test.tsx
+// app/components/PlaylistDetailsTable.test.tsx
 
 import React from 'react';
 import {render, screen, fireEvent, within} from '@testing-library/react';
@@ -87,17 +87,26 @@ jest.mock('./AudioFeaturesChart', () => ({
 }));
 
 describe('PlaylistDetailsTable', () => {
+    /**
+     * コンポーネントがクラッシュせずにレンダリングされることを確認するテスト
+     */
     it('renders without crashing', () => {
         render(<PlaylistDetailsTable tracks={mockTracks}/>);
         expect(screen.getByRole('table')).toBeInTheDocument();
     });
     
+    /**
+     * テーブルに正しい行数が表示されることを確認するテスト
+     */
     it('displays correct number of rows', () => {
         render(<PlaylistDetailsTable tracks={mockTracks}/>);
         const rows = screen.getAllByRole('row');
-        expect(rows.length).toBe(mockTracks.length + 1); // +1 for header row
+        expect(rows.length).toBe(mockTracks.length + 1); // +1 はヘッダー行のため
     });
     
+    /**
+     * 各トラックの情報が正しく表示されることを確認するテスト
+     */
     it('displays correct track information', () => {
         render(<PlaylistDetailsTable tracks={mockTracks}/>);
         mockTracks.forEach((track) => {
@@ -107,6 +116,9 @@ describe('PlaylistDetailsTable', () => {
         });
     });
     
+    /**
+     * アルバム画像が正しくレンダリングされることを確認するテスト
+     */
     it('renders album images correctly', () => {
         render(<PlaylistDetailsTable tracks={mockTracks}/>);
         const images = screen.getAllByRole('img');
@@ -117,6 +129,9 @@ describe('PlaylistDetailsTable', () => {
         });
     });
     
+    /**
+     * オーディオ特徴が正しく表示されることを確認するテスト
+     */
     it('displays audio features correctly', () => {
         render(<PlaylistDetailsTable tracks={mockTracks}/>);
         mockTracks.forEach((track) => {
@@ -143,6 +158,9 @@ describe('PlaylistDetailsTable', () => {
         });
     });
     
+    /**
+     * カラムのソートが可能であることを確認するテスト
+     */
     it('allows sorting of columns', () => {
         render(<PlaylistDetailsTable tracks={mockTracks}/>);
         const titleHeader = screen.getByText('Title');
@@ -154,6 +172,9 @@ describe('PlaylistDetailsTable', () => {
         expect(within(rows[1]).getByText(/Track \d+/)).toBeInTheDocument();
     });
     
+    /**
+     * トラックが選択されたときにAudioFeaturesChartが表示されることを確認するテスト
+     */
     it('shows AudioFeaturesChart when a track is selected', () => {
         render(<PlaylistDetailsTable tracks={mockTracks}/>);
         const firstTrackRow = screen.getByText('Track 1').closest('tr');
@@ -164,6 +185,9 @@ describe('PlaylistDetailsTable', () => {
         expect(screen.getByText(/Audio Features: Track \d+/)).toBeInTheDocument();
     });
     
+    /**
+     * アクセシビリティ違反がないことを確認するテスト
+     */
     it('has no accessibility violations', async () => {
         const {container} = render(<PlaylistDetailsTable tracks={mockTracks}/>);
         const results = await axe(container);

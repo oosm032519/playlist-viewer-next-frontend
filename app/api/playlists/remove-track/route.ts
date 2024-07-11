@@ -2,15 +2,24 @@
 
 import {NextRequest} from "next/server";
 
-export async function POST(request: NextRequest) {
+/**
+ * POSTリクエストを処理し、プレイリストからトラックを削除します。
+ *
+ * @param {NextRequest} request - クライアントからのリクエストオブジェクト
+ * @returns {Promise<Response>} - 処理結果のレスポンスオブジェクト
+ */
+export async function POST(request: NextRequest): Promise<Response> {
     console.log("POST request received to remove track from playlist");
     try {
+        // リクエストボディからプレイリストIDとトラックIDを取得
         const {playlistId, trackId} = await request.json();
         console.log(`Received request to remove track ${trackId} from playlist ${playlistId}`);
         
+        // バックエンドのURLを環境変数から取得（デフォルトはローカルホスト）
         const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
         console.log(`Using backend URL: ${backendUrl}`);
         
+        // バックエンドAPIに対してトラック削除リクエストを送信
         const response = await fetch(`${backendUrl}/api/playlist/remove-track`, {
             method: 'POST',
             headers: {
@@ -21,8 +30,10 @@ export async function POST(request: NextRequest) {
             credentials: 'include',
         });
         
+        // バックエンドからのレスポンスデータを取得
         const responseData = await response.json();
         
+        // レスポンスが成功した場合
         if (response.ok) {
             return new Response(JSON.stringify(responseData), {
                 status: response.status,
@@ -46,6 +57,7 @@ export async function POST(request: NextRequest) {
             }
         }
         
+        // エラーレスポンスを返す
         return new Response(
             JSON.stringify({error: errorMessage, details: errorDetails}),
             {status: statusCode, headers: {'Content-Type': 'application/json'}}

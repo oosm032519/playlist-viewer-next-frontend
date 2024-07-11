@@ -1,4 +1,3 @@
-// C:\Users\IdeaProjects\playlist-viewer-next-frontend\app\types\track.ts
 export interface TrackArtist {
     externalUrls: any;
     name: string;

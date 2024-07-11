@@ -1,8 +1,13 @@
 // app/utils/prepareChartData.test.ts
+
 import prepareChartData from './prepareChartData';
 import {expect} from '@jest/globals';
 
 describe('prepareChartData', () => {
+    
+    /**
+     * ジャンルが10未満の場合、ジャンルをソートして返すテストケース
+     */
     it('should return sorted genres when there are less than 10 genres', () => {
         const genreCounts = {
             'Action': 10,
@@ -20,6 +25,9 @@ describe('prepareChartData', () => {
         ]);
     });
     
+    /**
+     * ジャンルが9以上の場合、トップ9のジャンルと「その他」を返すテストケース
+     */
     it('should return top 9 genres and "その他" when there are more than 9 genres', () => {
         const genreCounts = {
             'Action': 10,
@@ -52,6 +60,9 @@ describe('prepareChartData', () => {
         ]);
     });
     
+    /**
+     * genreCountsが空の場合の処理をテストするケース
+     */
     it('should handle empty genreCounts', () => {
         const genreCounts = {};
         const total = 0;
@@ -61,6 +72,9 @@ describe('prepareChartData', () => {
         expect(result).toEqual([]);
     });
     
+    /**
+     * totalがゼロの場合の処理をテストするケース
+     */
     it('should handle total being zero', () => {
         const genreCounts = {
             'Action': 0,

@@ -6,11 +6,17 @@ import {Track} from "../types/track";
 import PlaylistDetails from "./PlaylistDetails";
 import LoadingSpinner from "./LoadingSpinner";
 
+/**
+ * PlaylistDetailsLoaderコンポーネントのプロパティの型定義
+ */
 interface PlaylistDetailsLoaderProps {
     playlistId: string;
-    userId?: string; // userIdをオプションのプロパティにする
+    userId?: string;
 }
 
+/**
+ * プレイリストデータの型定義
+ */
 interface PlaylistData {
     tracks: Track[];
     genreCounts: { [genre: string]: number };
@@ -19,6 +25,12 @@ interface PlaylistData {
     ownerId: string;
 }
 
+/**
+ * プレイリストの詳細情報を取得する非同期関数
+ * @param playlistId - 取得するプレイリストのID
+ * @returns プレイリストデータを含むPromise
+ * @throws ネットワークエラーまたは無効なデータの場合にエラーをスロー
+ */
 const fetchPlaylistDetails = async (playlistId: string): Promise<PlaylistData> => {
     const response = await fetch(`/api/playlists/${playlistId}`);
     if (!response.ok) {
@@ -42,23 +54,33 @@ const fetchPlaylistDetails = async (playlistId: string): Promise<PlaylistData> =
     throw new Error('Invalid response data');
 };
 
+/**
+ * プレイリストの詳細情報をロードし、表示するコンポーネント
+ * @param playlistId - 表示するプレイリストのID
+ * @param userId - オプションのユーザーID
+ * @returns プレイリストの詳細情報を表示するコンポーネント
+ */
 const PlaylistDetailsLoader: React.FC<PlaylistDetailsLoaderProps> = ({
                                                                          playlistId,
                                                                          userId,
                                                                      }) => {
+    // useQueryフックを使用してプレイリストデータを取得
     const {data: playlistData, isLoading, error} = useQuery<PlaylistData, Error>({
         queryKey: ['playlistDetails', playlistId],
         queryFn: () => fetchPlaylistDetails(playlistId),
     });
     
+    // ローディング中の場合、ローディングスピナーを表示
     if (isLoading) {
         return <LoadingSpinner loading={isLoading}/>;
     }
     
+    // エラーが発生した場合、エラーメッセージを表示
     if (error || !playlistData) {
         return <div>プレイリスト取得中にエラーが発生しました</div>;
     }
     
+    // プレイリストの詳細情報を表示
     return (
         <PlaylistDetails
             tracks={playlistData.tracks}

@@ -1,3 +1,5 @@
+// app/components/GenreChart.test.tsx
+
 import React from 'react';
 import {render, screen} from '@testing-library/react';
 import '@testing-library/jest-dom';
@@ -5,7 +7,7 @@ import GenreChart from './GenreChart';
 import prepareChartData from '../utils/prepareChartData';
 import {expect} from '@jest/globals';
 
-// Rechartsのモックを修正
+// Rechartsのモックを設定
 jest.mock('recharts', () => {
     const OriginalModule = jest.requireActual('recharts');
     return {
@@ -31,6 +33,7 @@ jest.mock('recharts', () => {
     };
 });
 
+// テスト用のモックデータ
 const mockGenreCounts = {
     'Rock': 10,
     'Pop': 8,
@@ -51,34 +54,52 @@ const mockGenreCountsLessThanNine = {
 };
 
 describe('GenreChart', () => {
+    /**
+     * GenreChartコンポーネントがクラッシュせずに正しいプレイリスト名を表示するかテスト
+     */
     it('renders without crashing and displays the correct playlist name', () => {
         render(<GenreChart genreCounts={mockGenreCounts} playlistName="Test Playlist"/>);
         expect(screen.getByTestId('text')).toHaveTextContent('Test Playlist');
     });
     
+    /**
+     * プレイリスト名がnullの場合でも正しく処理されるかテスト
+     */
     it('handles null playlist name gracefully', () => {
         render(<GenreChart genreCounts={mockGenreCounts} playlistName={null}/>);
         expect(screen.getByTestId('text')).toHaveTextContent('');
     });
     
+    /**
+     * 9つ以上のジャンルがある場合に正しい数のCellコンポーネントがレンダリングされるかテスト
+     */
     it('renders the correct number of Cells for more than 9 genres', () => {
         const {container} = render(<GenreChart genreCounts={mockGenreCounts} playlistName="Test"/>);
         const cells = container.querySelectorAll('[data-testid="cell"]');
         expect(cells).toHaveLength(10); // 9 top genres + 'その他'
     });
     
+    /**
+     * 9つ未満のジャンルがある場合に正しい数のCellコンポーネントがレンダリングされるかテスト
+     */
     it('renders the correct number of Cells for less than 9 genres', () => {
         const {container} = render(<GenreChart genreCounts={mockGenreCountsLessThanNine} playlistName="Test"/>);
         const cells = container.querySelectorAll('[data-testid="cell"]');
         expect(cells).toHaveLength(3);
     });
     
+    /**
+     * LegendとTooltipコンポーネントが正しくレンダリングされるかテスト
+     */
     it('renders Legend and Tooltip components', () => {
         render(<GenreChart genreCounts={mockGenreCounts} playlistName="Test"/>);
         expect(screen.getByTestId('legend')).toBeInTheDocument();
         expect(screen.getByTestId('tooltip')).toBeInTheDocument();
     });
     
+    /**
+     * 各Cellコンポーネントが正しい色でレンダリングされるかテスト
+     */
     it('renders the correct colors for each Cell', () => {
         const {container} = render(<GenreChart genreCounts={mockGenreCounts} playlistName="Test"/>);
         const cells = container.querySelectorAll('[data-testid="cell"]');
@@ -93,6 +114,9 @@ describe('GenreChart', () => {
 });
 
 describe('prepareChartData', () => {
+    /**
+     * 9つ以上のジャンルがある場合に正しくチャートデータが準備されるかテスト
+     */
     it('correctly prepares chart data for more than 9 genres', () => {
         const total = Object.values(mockGenreCounts).reduce((sum, count) => sum + count, 0);
         const result = prepareChartData(mockGenreCounts, total);
@@ -103,6 +127,9 @@ describe('prepareChartData', () => {
         expect(result[9]).toEqual({name: 'その他', value: 1, total}); // 'Reggae' is in 'その他'
     });
     
+    /**
+     * 9つ未満のジャンルがある場合に「その他」カテゴリが作成されないかテスト
+     */
     it('handles less than 9 genres without creating "その他" category', () => {
         const total = Object.values(mockGenreCountsLessThanNine).reduce((sum, count) => sum + count, 0);
         const result = prepareChartData(mockGenreCountsLessThanNine, total);

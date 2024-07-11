@@ -1,8 +1,11 @@
+// app/lib/audioFeaturesUtils.test.ts
+
 import {prepareAudioFeaturesData} from './audioFeaturesUtils';
 import {Track} from '../types/track';
 import {expect, it} from '@jest/globals';
 
 describe('prepareAudioFeaturesData', () => {
+    // モックデータ: テスト用のオーディオ特徴データ
     const mockAudioFeatures: Track['audioFeatures'] = {
         danceability: 0.8,
         energy: 0.6,
@@ -18,6 +21,9 @@ describe('prepareAudioFeaturesData', () => {
         timeSignature: 4,
     };
     
+    /**
+     * prepareAudioFeaturesData関数が正しくデータを変換するかテストする
+     */
     it('正しくデータを変換する', () => {
         const result = prepareAudioFeaturesData(mockAudioFeatures);
         expect(result).toEqual([
@@ -30,6 +36,9 @@ describe('prepareAudioFeaturesData', () => {
         ]);
     });
     
+    /**
+     * prepareAudioFeaturesData関数にundefinedが渡された場合、空の配列を返すかテストする
+     */
     it('undefined が渡された場合、空の配列を返す', () => {
         const result = prepareAudioFeaturesData(undefined);
         expect(result).toEqual([]);

@@ -1,23 +1,25 @@
-// __tests__/app/api/playlists/create/route.test.ts
+// app/api/playlists/create/route.test.ts
 
 import {NextRequest} from 'next/server';
 import {POST} from './route';
 import fetchMock from 'jest-fetch-mock';
 import {expect} from '@jest/globals';
 
+// fetchMockを有効化する
 fetchMock.enableMocks();
 
 describe('POST /api/playlists/create', () => {
+    // 各テストの前にモックをリセットする
     beforeEach(() => {
         fetchMock.resetMocks();
     });
     
     it('should create a playlist successfully', async () => {
-        // モックレスポンスの設定
+        // 成功レスポンスのモック設定
         const mockResponse = {success: true, playlistId: '12345'};
         fetchMock.mockResponseOnce(JSON.stringify(mockResponse), {status: 200});
         
-        // モックリクエストの設定
+        // リクエストデータの設定
         const trackIds = ['track1', 'track2', 'track3'];
         const request = new NextRequest('http://localhost:3000/api/playlists/create', {
             method: 'POST',
@@ -28,20 +30,21 @@ describe('POST /api/playlists/create', () => {
             }
         });
         
-        // POST関数の呼び出し
+        // POST関数の呼び出しとレスポンスの取得
         const response = await POST(request);
         
-        // レスポンスの検証
+        // レスポンスのステータスコードを検証
         expect(response.status).toBe(200);
+        // レスポンスデータの検証
         const responseData = await response.json();
         expect(responseData).toEqual(mockResponse);
     });
     
     it('should handle backend errors gracefully', async () => {
-        // モックレスポンスの設定
+        // エラーレスポンスのモック設定
         fetchMock.mockResponseOnce('Internal Server Error', {status: 500});
         
-        // モックリクエストの設定
+        // リクエストデータの設定
         const trackIds = ['track1', 'track2', 'track3'];
         const request = new NextRequest('http://localhost:3000/api/playlists/create', {
             method: 'POST',
@@ -52,11 +55,12 @@ describe('POST /api/playlists/create', () => {
             }
         });
         
-        // POST関数の呼び出し
+        // POST関数の呼び出しとレスポンスの取得
         const response = await POST(request);
         
-        // エラーレスポンスの検証
+        // エラーレスポンスのステータスコードを検証
         expect(response.status).toBe(500);
+        // エラーレスポンスデータの検証
         const responseData = await response.json();
         expect(responseData).toEqual({
             error: 'Failed to create playlist',
@@ -65,10 +69,10 @@ describe('POST /api/playlists/create', () => {
     });
     
     it('should handle unexpected errors gracefully', async () => {
-        // モックレスポンスの設定
+        // 予期しないエラーレスポンスのモック設定
         fetchMock.mockRejectOnce(new Error('Unexpected error'));
         
-        // モックリクエストの設定
+        // リクエストデータの設定
         const trackIds = ['track1', 'track2', 'track3'];
         const request = new NextRequest('http://localhost:3000/api/playlists/create', {
             method: 'POST',
@@ -79,11 +83,12 @@ describe('POST /api/playlists/create', () => {
             }
         });
         
-        // POST関数の呼び出し
+        // POST関数の呼び出しとレスポンスの取得
         const response = await POST(request);
         
-        // エラーレスポンスの検証
+        // エラーレスポンスのステータスコードを検証
         expect(response.status).toBe(500);
+        // エラーレスポンスデータの検証
         const responseData = await response.json();
         expect(responseData).toEqual({
             error: 'Failed to create playlist',

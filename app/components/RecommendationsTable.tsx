@@ -1,3 +1,5 @@
+// app/components/RecommendationsTable.tsx
+
 import React, {useEffect, useMemo, useState} from "react";
 import Image from "next/image";
 import {
@@ -17,20 +19,29 @@ import LoadingSpinner from './LoadingSpinner';
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "./ui/table";
 import {ArrowUpDown} from "lucide-react";
 
+/**
+ * おすすめ楽曲のテーブルコンポーネント
+ * @param {RecommendationsTableProps} props - コンポーネントのプロパティ
+ * @returns {JSX.Element} - おすすめ楽曲のテーブル
+ */
 export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({
                                                                               tracks,
                                                                               ownerId,
                                                                               userId,
                                                                               playlistId,
                                                                           }) => {
+    // プレイリストのIDを保持する状態変数
     const [createdPlaylistId, setCreatedPlaylistId] = useState<string | null>(null);
+    // テーブルのソート状態を保持する状態変数
     const [sorting, setSorting] = useState<SortingState>([]);
     
+    // ownerIdとuserIdの変更を監視し、コンソールに出力する
     useEffect(() => {
         console.log("ownerId:", ownerId);
         console.log("userId:", userId);
     }, [ownerId, userId]);
     
+    // プレイリスト作成のためのMutationを定義
     const createPlaylistMutation = useMutation({
         mutationFn: async (trackIds: string[]) => {
             const response = await fetch('/api/playlists/create', {
@@ -58,11 +69,13 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({
         },
     });
     
+    // プレイリストを作成する関数
     const createPlaylist = () => {
         const trackIds = tracks.map(track => track.id as string);
         createPlaylistMutation.mutate(trackIds);
     };
     
+    // テーブルのカラム定義をメモ化
     const columns = useMemo<ColumnDef<typeof tracks[0]>[]>(() => {
         const baseColumns: ColumnDef<typeof tracks[0]>[] = [
             {
@@ -91,6 +104,7 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({
             },
         ];
         
+        // オーナーがユーザーと同じ場合にアクションカラムを追加
         if (ownerId === userId) {
             baseColumns.push({
                 header: 'Actions',
@@ -110,6 +124,7 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({
         return baseColumns;
     }, [ownerId, userId, playlistId]);
     
+    // テーブルの設定を定義
     const table = useReactTable({
         data: tracks,
         columns,

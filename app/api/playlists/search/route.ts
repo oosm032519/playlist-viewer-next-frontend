@@ -1,9 +1,19 @@
 // app/api/playlists/search/route.ts
+
 import {NextResponse} from 'next/server';
 
 const apiUrl = 'http://localhost:8080/api'; // APIのベースURLを定数化
 
-async function searchPlaylists(query: string, offset: number, limit: number) { // プレイリスト検索を行う関数を定義
+/**
+ * プレイリスト検索を行う関数
+ *
+ * @param {string} query - 検索クエリ
+ * @param {number} offset - 結果のオフセット
+ * @param {number} limit - 取得する結果の数
+ * @returns {Promise<any>} - 検索結果のJSONデータ
+ * @throws {Error} - ネットワークエラーやAPIエラーが発生した場合
+ */
+async function searchPlaylists(query: string, offset: number, limit: number): Promise<any> {
     try {
         const response = await fetch(`${apiUrl}/playlists/search?query=${query}&offset=${offset}&limit=${limit}`, {
             method: 'GET',
@@ -23,7 +33,13 @@ async function searchPlaylists(query: string, offset: number, limit: number) { /
     }
 }
 
-export async function GET(request: Request) {
+/**
+ * GETリクエストを処理する関数
+ *
+ * @param {Request} request - リクエストオブジェクト
+ * @returns {Promise<Response>} - レスポンスオブジェクト
+ */
+export async function GET(request: Request): Promise<Response> {
     console.log('GET リクエストを受信しました');
     
     const {searchParams} = new URL(request.url);

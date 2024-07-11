@@ -1,3 +1,5 @@
+// app/components/PlaylistSearchForm.tsx
+
 "use client";
 
 import {useState} from "react";
@@ -28,28 +30,45 @@ interface PlaylistSearchFormProps {
     onSearch(playlists: Playlist[]): void;
 }
 
+/**
+ * プレイリスト検索フォームコンポーネント
+ * @param {PlaylistSearchFormProps} props - コンポーネントのプロパティ
+ * @returns {JSX.Element} プレイリスト検索フォーム
+ */
 export default function PlaylistSearchForm({
                                                onSearch,
                                            }: PlaylistSearchFormProps) {
+    // 現在のページ番号を管理するステート
     const [currentPage, setCurrentPage] = useState(1);
+    // 現在のプレイリストデータを管理するステート
     const [currentPlaylists, setCurrentPlaylists] = useState<Playlist[]>([]);
+    // React Queryのクライアントを取得
     const queryClient = useQueryClient();
     
+    // フォームの設定
     const form = useForm<SearchFormInputs>({
         resolver: yupResolver(schema),
         defaultValues: {query: ""},
     });
     
+    // プレイリスト検索のミューテーションを設定
     const searchMutation = useSearchPlaylists((data) => {
         onSearch(data);
         setCurrentPlaylists(data);
     });
     
+    /**
+     * フォーム送信時の処理
+     * @param {SearchFormInputs} data - フォームの入力データ
+     */
     const onSubmit = async (data: SearchFormInputs) => {
         setCurrentPage(1);
         searchMutation.mutate({query: data.query, page: 1, limit: 20});
     };
     
+    /**
+     * 次のページボタン押下時の処理
+     */
     const handleNextPage = () => {
         setCurrentPage(currentPage + 1);
         searchMutation.mutate({
@@ -59,6 +78,9 @@ export default function PlaylistSearchForm({
         });
     };
     
+    /**
+     * 前のページボタン押下時の処理
+     */
     const handlePrevPage = () => {
         const prevPage = currentPage - 1;
         setCurrentPage(prevPage);
