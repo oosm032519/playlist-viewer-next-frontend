@@ -22,7 +22,6 @@ export default function PlaylistTableRow({playlist, onClick}: PlaylistTableRowPr
                     <img
                         src={playlist.images[0].url}
                         alt={playlist.name}
-                        className="w-12 h-12 object-cover rounded-full"
                         width={48}
                         height={48}
                     />

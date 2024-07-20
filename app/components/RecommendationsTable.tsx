@@ -88,7 +88,6 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({
                         alt={info.row.original.album.name}
                         width={50}
                         height={50}
-                        className="object-cover rounded-full"
                     />
                 ),
             },
