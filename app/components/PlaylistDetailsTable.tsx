@@ -9,9 +9,12 @@ import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "./u
 import {ArrowUpDown} from "lucide-react";
 import AudioFeaturesChart from "./AudioFeaturesChart";
 import {playlistDetailsTableColumns} from "../lib/PlaylistDetailsTableColumns";
+import AverageAudioFeaturesChart from '@/app/components/AverageAudioFeaturesChart'
+import {AudioFeatures} from '@/app/types/audioFeaturesTypes'
 
 interface PlaylistDetailsTableProps {
     tracks: Track[];
+    averageAudioFeatures: AudioFeatures;
 }
 
 /**
@@ -19,7 +22,7 @@ interface PlaylistDetailsTableProps {
  * @param {PlaylistDetailsTableProps} props - トラックの配列を含むプロパティ
  * @returns {JSX.Element} プレイリストの詳細テーブル
  */
-export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({tracks}) => {
+export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({tracks, averageAudioFeatures}) => {
     // 選択されたトラックを管理するための状態
     const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
     // テーブルのソート状態を管理するための状態
@@ -84,6 +87,10 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({track
                         ))}
                     </TableBody>
                 </Table>
+            </div>
+            <div className="w-full max-w-2xl mx-auto mb-8">
+                <h3 className="text-lg font-semibold mb-4">プレイリストの平均 Audio Features</h3>
+                <AverageAudioFeaturesChart averageAudioFeatures={averageAudioFeatures}/>
             </div>
             {selectedTrack && (
                 <div className="mt-8 w-full max-w-2xl mx-auto">
