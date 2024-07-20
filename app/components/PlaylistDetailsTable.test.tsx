@@ -75,16 +75,11 @@ const mockTracks: Track[] = [
 const mockAverageAudioFeatures: AudioFeatures = {
     danceability: 0.7,
     energy: 0.75,
-    key: 4,
-    loudness: -4.85,
     speechiness: 0.075,
     acousticness: 0.25,
     instrumentalness: 0.015,
     liveness: 0.175,
     valence: 0.65,
-    tempo: 125,
-    mode: 'Major',
-    timeSignature: 3.5,
 };
 
 // Next.jsのImage componentをモック
@@ -92,37 +87,28 @@ jest.mock('next/image', () => ({
     __esModule: true,
     default: (props: any) => {
         // eslint-disable-next-line @next/next/no-img-element
-        return <img {...props} src={props.src}/>
+        return <img {...props} src={props.src} alt={props.alt}/>
     },
 }));
 
-// モックコンポーネント
+// CombinedAudioFeaturesChartコンポーネントをモック
 jest.mock('./CombinedAudioFeaturesChart', () => ({
     __esModule: true,
     default: () => <div data-testid="combined-audio-features-chart"/>,
 }));
 
 describe('PlaylistDetailsTable', () => {
-    /**
-     * コンポーネントがクラッシュせずにレンダリングされることを確認するテスト
-     */
     it('renders without crashing', () => {
         render(<PlaylistDetailsTable tracks={mockTracks} averageAudioFeatures={mockAverageAudioFeatures}/>);
         expect(screen.getByRole('table')).toBeInTheDocument();
     });
     
-    /**
-     * テーブルに正しい行数が表示されることを確認するテスト
-     */
     it('displays correct number of rows', () => {
         render(<PlaylistDetailsTable tracks={mockTracks} averageAudioFeatures={mockAverageAudioFeatures}/>);
         const rows = screen.getAllByRole('row');
         expect(rows.length).toBe(mockTracks.length + 1); // +1 はヘッダー行のため
     });
     
-    /**
-     * 各トラックの情報が正しく表示されることを確認するテスト
-     */
     it('displays correct track information', () => {
         render(<PlaylistDetailsTable tracks={mockTracks} averageAudioFeatures={mockAverageAudioFeatures}/>);
         mockTracks.forEach((track) => {
@@ -132,9 +118,6 @@ describe('PlaylistDetailsTable', () => {
         });
     });
     
-    /**
-     * アルバム画像が正しくレンダリングされることを確認するテスト
-     */
     it('renders album images correctly', () => {
         render(<PlaylistDetailsTable tracks={mockTracks} averageAudioFeatures={mockAverageAudioFeatures}/>);
         const images = screen.getAllByRole('img');
@@ -145,9 +128,6 @@ describe('PlaylistDetailsTable', () => {
         });
     });
     
-    /**
-     * オーディオ特徴が正しく表示されることを確認するテスト
-     */
     it('displays audio features correctly', () => {
         render(<PlaylistDetailsTable tracks={mockTracks} averageAudioFeatures={mockAverageAudioFeatures}/>);
         mockTracks.forEach((track) => {
@@ -155,7 +135,6 @@ describe('PlaylistDetailsTable', () => {
             if (row && track.audioFeatures) {
                 const withinRow = within(row);
                 
-                // 大文字小文字を区別せずにマッチング
                 expect(withinRow.getByTestId(/danceability/i)).toHaveTextContent(track.audioFeatures.danceability.toFixed(3));
                 expect(withinRow.getByTestId(/energy/i)).toHaveTextContent(track.audioFeatures.energy.toFixed(3));
                 expect(withinRow.getByTestId(/key/i)).toHaveTextContent(track.audioFeatures.key.toString());
@@ -163,7 +142,6 @@ describe('PlaylistDetailsTable', () => {
                 expect(withinRow.getByTestId(/mode/i)).toHaveTextContent(track.audioFeatures.mode);
                 expect(withinRow.getByTestId(/timeSignature/i)).toHaveTextContent(track.audioFeatures.timeSignature.toString());
                 
-                // 追加のオーディオ特徴のテスト
                 expect(withinRow.getByTestId(/speechiness/i)).toHaveTextContent(track.audioFeatures.speechiness.toFixed(3));
                 expect(withinRow.getByTestId(/acousticness/i)).toHaveTextContent(track.audioFeatures.acousticness.toFixed(3));
                 expect(withinRow.getByTestId(/instrumentalness/i)).toHaveTextContent(track.audioFeatures.instrumentalness.toFixed(3));
@@ -174,9 +152,6 @@ describe('PlaylistDetailsTable', () => {
         });
     });
     
-    /**
-     * カラムのソートが可能であることを確認するテスト
-     */
     it('allows sorting of columns', () => {
         render(<PlaylistDetailsTable tracks={mockTracks} averageAudioFeatures={mockAverageAudioFeatures}/>);
         const titleHeader = screen.getByText('Title');
@@ -188,9 +163,6 @@ describe('PlaylistDetailsTable', () => {
         expect(within(rows[1]).getByText(/Track \d+/)).toBeInTheDocument();
     });
     
-    /**
-     * トラックが選択されたときにCombinedAudioFeaturesChartが表示されることを確認するテスト
-     */
     it('shows CombinedAudioFeaturesChart when a track is selected', () => {
         render(<PlaylistDetailsTable tracks={mockTracks} averageAudioFeatures={mockAverageAudioFeatures}/>);
         const firstTrackRow = screen.getByText('Track 1').closest('tr');
@@ -200,9 +172,6 @@ describe('PlaylistDetailsTable', () => {
         expect(screen.getByTestId('combined-audio-features-chart')).toBeInTheDocument();
     });
     
-    /**
-     * アクセシビリティ違反がないことを確認するテスト
-     */
     it('has no accessibility violations', async () => {
         const {container} = render(<PlaylistDetailsTable tracks={mockTracks}
                                                          averageAudioFeatures={mockAverageAudioFeatures}/>);
