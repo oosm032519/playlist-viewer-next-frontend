@@ -70,13 +70,30 @@ export default function PlaylistSearchForm({
      * 次のページボタン押下時の処理
      */
     const handleNextPage = () => {
-        setCurrentPage(currentPage + 1);
-        searchMutation.mutate({
-            query: form.getValues("query"),
-            page: currentPage + 1,
-            limit: 20,
-        });
+        const nextPage = currentPage + 1;
+        setCurrentPage(nextPage);
+        
+        // キャッシュからデータを取得
+        const cachedData = queryClient.getQueryData([
+            "playlists",
+            form.getValues("query"),
+            nextPage,
+        ]) as Playlist[] | undefined;
+        
+        if (cachedData) {
+            // キャッシュがある場合はキャッシュからデータを設定し、親コンポーネントに通知
+            setCurrentPlaylists(cachedData);
+            onSearch(cachedData);
+        } else {
+            // キャッシュがない場合はAPIリクエストを送信
+            searchMutation.mutate({
+                query: form.getValues("query"),
+                page: nextPage,
+                limit: 20,
+            });
+        }
     };
+    
     
     /**
      * 前のページボタン押下時の処理
@@ -93,8 +110,9 @@ export default function PlaylistSearchForm({
         ]) as Playlist[] | undefined;
         
         if (cachedData) {
-            // キャッシュがある場合はキャッシュからデータを設定
+            // キャッシュがある場合はキャッシュからデータを設定し、親コンポーネントに通知
             setCurrentPlaylists(cachedData);
+            onSearch(cachedData);
         } else {
             // キャッシュがない場合はAPIリクエストを送信
             searchMutation.mutate({
