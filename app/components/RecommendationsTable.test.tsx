@@ -171,4 +171,93 @@ describe('RecommendationsTable', () => {
         expect(screen.getByText('Test Artist 3')).toBeInTheDocument();
         expect(screen.queryByText('Test Artist 4')).not.toBeInTheDocument();
     });
+    
+    /**
+     * トラック削除ボタンのクリックが正しく処理されることを確認するテスト
+     */
+    it('handles remove track button click correctly', async () => {
+        const queryClient = new QueryClient();
+        mockedUtils.addTrackToPlaylist.mockResolvedValue(true);
+        mockedUtils.removeTrackFromPlaylist.mockResolvedValue(true);
+        render(
+            <QueryClientProvider client={queryClient}>
+                <RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="owner1" playlistId="playlist1"/>
+            </QueryClientProvider>
+        );
+        const addButtons = screen.getAllByText('追加');
+        fireEvent.click(addButtons[0]);
+        await waitFor(() => {
+            expect(screen.getByText('削除')).toBeInTheDocument();
+        });
+        fireEvent.click(screen.getByText('削除'));
+        await waitFor(() => {
+            expect(mockedUtils.removeTrackFromPlaylist).toHaveBeenCalledWith('playlist1', '1');
+        });
+    });
+    
+    /**
+     * プレイリスト作成ボタンのクリックが正しく処理されることを確認するテスト
+     */
+    it('handles create playlist button click correctly', async () => {
+        const queryClient = new QueryClient();
+        global.fetch = jest.fn().mockResolvedValue({
+            ok: true,
+            json: () => Promise.resolve({playlistId: 'newPlaylist1'}),
+        });
+        render(
+            <QueryClientProvider client={queryClient}>
+                <RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="owner1" playlistId="playlist1"/>
+            </QueryClientProvider>
+        );
+        fireEvent.click(screen.getByText('おすすめ楽曲をもとにプレイリストを作成する'));
+        await waitFor(() => {
+            expect(screen.getByText('作成したプレイリストを表示')).toBeInTheDocument();
+        });
+    });
+    
+    /**
+     * プレイリスト作成エラーが正しく処理されることを確認するテスト
+     */
+    it('handles create playlist error correctly', async () => {
+        const queryClient = new QueryClient();
+        global.fetch = jest.fn().mockResolvedValue({
+            ok: false,
+            json: () => Promise.resolve({details: 'Error creating playlist'}),
+        });
+        const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {
+        });
+        render(
+            <QueryClientProvider client={queryClient}>
+                <RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="owner1" playlistId="playlist1"/>
+            </QueryClientProvider>
+        );
+        fireEvent.click(screen.getByText('おすすめ楽曲をもとにプレイリストを作成する'));
+        await waitFor(() => {
+            expect(consoleSpy).toHaveBeenCalledWith("プレイリストの作成中にエラーが発生しました。", expect.any(Error));
+        });
+        consoleSpy.mockRestore();
+    });
+    
+    /**
+     * ソート機能が正しく動作することを確認するテスト
+     */
+    it('sorts tracks correctly when clicking on sortable headers', async () => {
+        const queryClient = new QueryClient();
+        render(
+            <QueryClientProvider client={queryClient}>
+                <RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="owner1" playlistId="playlist1"/>
+            </QueryClientProvider>
+        );
+        const titleHeader = screen.getByText('Title');
+        fireEvent.click(titleHeader);
+        await waitFor(() => {
+            const titles = screen.getAllByTestId('name').map(el => el.textContent);
+            expect(titles).toEqual(['Test Track 1', 'Test Track 2', 'Test Track 3']);
+        });
+        fireEvent.click(titleHeader);
+        await waitFor(() => {
+            const titles = screen.getAllByTestId('name').map(el => el.textContent);
+            expect(titles).toEqual(['Test Track 3', 'Test Track 2', 'Test Track 1']);
+        });
+    });
 });
