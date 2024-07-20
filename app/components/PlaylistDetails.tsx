@@ -1,4 +1,5 @@
 // app/components/PlaylistDetails.tsx
+
 "use client";
 
 import React from "react";
@@ -15,6 +16,7 @@ interface PlaylistDetailsProps {
     ownerId: string; // プレイリストの所有者のID
     userId: string; // 現在のユーザーのID
     playlistId: string; // プレイリストのID
+    totalDuration: string; // フォーマットされた総再生時間
 }
 
 /**
@@ -47,6 +49,7 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                                                              ownerId, // ownerId を props から受け取る
                                                              userId, // userId を props から受け取る
                                                              playlistId, // プレイリストIDを受け取る
+                                                             totalDuration, // フォーマットされた総再生時間を受け取る
                                                          }) => {
     return (
         <>
@@ -56,6 +59,11 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                     <h1 className="text-2xl font-bold">{playlistName}</h1>
                 </div>
             )}
+            
+            {/* 総再生時間を表示 */}
+            <div className="text-center my-4">
+                <h2 className="text-xl">総再生時間: {totalDuration}</h2>
+            </div>
             
             {/* プレイリストのトラック一覧を表示 */}
             <PlaylistDetailsTable tracks={tracks}/>

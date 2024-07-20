@@ -1,4 +1,5 @@
 // app/components/PlaylistDetailsLoader.tsx
+
 "use client";
 
 import {useQuery} from '@tanstack/react-query';
@@ -23,6 +24,7 @@ interface PlaylistData {
     recommendations: Track[];
     playlistName: string | null;
     ownerId: string;
+    totalDuration: number;
 }
 
 /**
@@ -49,9 +51,27 @@ const fetchPlaylistDetails = async (playlistId: string): Promise<PlaylistData> =
             recommendations: data.recommendations || [],
             playlistName: data.playlistName || null,
             ownerId: data.ownerId || '',
+            totalDuration: data.totalDuration || 0,
         };
     }
     throw new Error('Invalid response data');
+};
+
+/**
+ * ミリ秒を「○時間○分○秒」に変換する関数
+ * @param millis - ミリ秒
+ * @returns フォーマットされた時間文字列
+ */
+const formatDuration = (millis: number): string => {
+    const hours = Math.floor(millis / (1000 * 60 * 60));
+    const minutes = Math.floor((millis % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((millis % (1000 * 60)) / 1000);
+    
+    if (hours > 0) {
+        return `${hours}時間${minutes}分${seconds}秒`;
+    } else {
+        return `${minutes}分${seconds}秒`;
+    }
 };
 
 /**
@@ -80,6 +100,9 @@ const PlaylistDetailsLoader: React.FC<PlaylistDetailsLoaderProps> = ({
         return <div>プレイリスト取得中にエラーが発生しました</div>;
     }
     
+    // 総再生時間をフォーマット
+    const formattedDuration = formatDuration(playlistData.totalDuration);
+    
     // プレイリストの詳細情報を表示
     return (
         <PlaylistDetails
@@ -90,6 +113,7 @@ const PlaylistDetailsLoader: React.FC<PlaylistDetailsLoaderProps> = ({
             ownerId={playlistData.ownerId}
             userId={userId || ''}
             playlistId={playlistId}
+            totalDuration={formattedDuration} // フォーマットされた総再生時間を渡す
         />
     );
 };
