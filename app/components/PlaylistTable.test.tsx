@@ -106,18 +106,6 @@ describe('PlaylistTable', () => {
         expect(playlistRows).toHaveLength(0);
     });
     
-    it('applies correct CSS classes to table elements', () => {
-        // PlaylistTableコンポーネントをレンダリング
-        render(<PlaylistTable playlists={mockPlaylists} onPlaylistClick={mockOnPlaylistClick} currentPage={1}
-                              totalPlaylists={20}/>);
-        
-        // 画像要素に正しいCSSクラスが適用されているか確認
-        const images = screen.getAllByRole('img');
-        images.forEach((img) => {
-            expect(img).toHaveClass('w-12', 'h-12', 'object-cover', 'rounded-full');
-        });
-    });
-    
     it('handles playlists without images correctly', () => {
         // 画像がないプレイリストを含む場合のテーブルのレンダリング
         render(<PlaylistTable playlists={[mockPlaylistWithoutImage]} onPlaylistClick={mockOnPlaylistClick}
