@@ -18,11 +18,11 @@ export const prepareAudioFeaturesData = (
     
     // オーディオ特徴データを配列として返す
     return [
+        {feature: 'Acousticness', value: audioFeatures.acousticness},
         {feature: 'Danceability', value: audioFeatures.danceability},
         {feature: 'Energy', value: audioFeatures.energy},
-        {feature: 'Speechiness', value: audioFeatures.speechiness},
-        {feature: 'Acousticness', value: audioFeatures.acousticness},
         {feature: 'Liveness', value: audioFeatures.liveness},
+        {feature: 'Speechiness', value: audioFeatures.speechiness},
         {feature: 'Valence', value: audioFeatures.valence},
     ];
 };

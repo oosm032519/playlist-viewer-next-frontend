@@ -20,7 +20,6 @@ const AverageAudioFeaturesChart: React.FC<AverageAudioFeaturesChartProps> = ({av
         {feature: 'Acousticness', value: averageAudioFeatures.acousticness},
         {feature: 'Danceability', value: averageAudioFeatures.danceability},
         {feature: 'Energy', value: averageAudioFeatures.energy},
-        {feature: 'Instrumentalness', value: averageAudioFeatures.instrumentalness},
         {feature: 'Liveness', value: averageAudioFeatures.liveness},
         {feature: 'Speechiness', value: averageAudioFeatures.speechiness},
         {feature: 'Valence', value: averageAudioFeatures.valence},
