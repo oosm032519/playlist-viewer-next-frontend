@@ -71,11 +71,11 @@ const FollowedPlaylists: React.FC<FollowedPlaylistsProps> = ({onPlaylistClick}) 
                                     <img
                                         src={playlist.images[0].url}
                                         alt={playlist.name}
-                                        className="w-full h-40 object-cover mb-2 rounded-full cursor-pointer"
+                                        className="w-full h-40 object-cover mb-2 cursor-pointer"
                                     />
                                 ) : (
                                     <div
-                                        className="w-full h-40 bg-gray-200 flex items-center justify-center mb-2 rounded-full">
+                                        className="w-full h-40 bg-gray-200 flex items-center justify-center mb-2">
                                         <span className="text-gray-500">No Image</span>
                                     </div>
                                 )}
