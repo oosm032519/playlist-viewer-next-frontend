@@ -10,6 +10,7 @@ import {useUser, UserContextProvider} from "./context/UserContext";
 import ErrorAlert from "./components/ErrorAlert";
 import PlaylistDisplay from "./components/PlaylistDisplay";
 import {Playlist} from "./types/playlist";
+import {Toaster} from "@/app/components/ui/toaster"; // Toasterのインポート
 
 /**
  * Homeコンポーネント
@@ -71,6 +72,7 @@ export default function Home() {
                     </CardContent>
                 </Card>
             </main>
+            <Toaster/> {/* Toasterコンポーネントを追加 */}
         </UserContextProvider>
     );
 }

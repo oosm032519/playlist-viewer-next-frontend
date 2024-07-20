@@ -16,6 +16,7 @@ import {useMutation} from '@tanstack/react-query';
 import LoadingSpinner from './LoadingSpinner';
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "./ui/table";
 import {ArrowUpDown} from "lucide-react";
+import {useToast} from "@/app/components/ui/use-toast"; // トーストのインポート
 
 export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({
                                                                               tracks,
@@ -26,6 +27,7 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({
     const [createdPlaylistId, setCreatedPlaylistId] = useState<string | null>(null);
     const [sorting, setSorting] = useState<SortingState>([]);
     const [addedTracks, setAddedTracks] = useState<Set<string>>(new Set());
+    const {toast} = useToast(); // トーストの使用
     
     useEffect(() => {
         console.log("ownerId:", ownerId);
@@ -67,6 +69,10 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({
     const handleAddTrack = async (playlistId: string, trackId: string) => {
         await addTrackToPlaylist(playlistId, trackId);
         setAddedTracks(prev => new Set(prev).add(trackId));
+        toast({
+            title: "楽曲追加",
+            description: "プレイリストに楽曲を追加しました。",
+        });
     };
     
     const handleRemoveTrack = async (playlistId: string, trackId: string) => {
@@ -75,6 +81,10 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({
             const newSet = new Set(prev);
             newSet.delete(trackId);
             return newSet;
+        });
+        toast({
+            title: "楽曲削除",
+            description: "プレイリストから楽曲を削除しました。",
         });
     };
     
