@@ -1,3 +1,5 @@
+// app/components/RecommendationsTable.tsx
+
 import React, {useEffect, useMemo, useState} from "react";
 import Image from "next/image";
 import {
@@ -16,7 +18,7 @@ import {useMutation} from '@tanstack/react-query';
 import LoadingSpinner from './LoadingSpinner';
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "./ui/table";
 import {ArrowUpDown} from "lucide-react";
-import {useToast} from "@/app/components/ui/use-toast"; // トーストのインポート
+import {useToast} from "@/app/components/ui/use-toast";
 
 export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({
                                                                               tracks,
@@ -27,7 +29,7 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({
     const [createdPlaylistId, setCreatedPlaylistId] = useState<string | null>(null);
     const [sorting, setSorting] = useState<SortingState>([]);
     const [addedTracks, setAddedTracks] = useState<Set<string>>(new Set());
-    const {toast} = useToast(); // トーストの使用
+    const {toast} = useToast();
     
     useEffect(() => {
         console.log("ownerId:", ownerId);
@@ -55,9 +57,18 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({
         },
         onSuccess: (data: string) => {
             setCreatedPlaylistId(data);
+            toast({
+                title: "プレイリスト作成成功",
+                description: "新しいプレイリストが正常に作成されました。",
+            });
         },
         onError: (error) => {
             console.error("プレイリストの作成中にエラーが発生しました。", error);
+            toast({
+                title: "エラー",
+                description: "プレイリストの作成中にエラーが発生しました。",
+                variant: "destructive",
+            });
         },
     });
     
@@ -67,25 +78,43 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({
     };
     
     const handleAddTrack = async (playlistId: string, trackId: string) => {
-        await addTrackToPlaylist(playlistId, trackId);
-        setAddedTracks(prev => new Set(prev).add(trackId));
-        toast({
-            title: "楽曲追加",
-            description: "プレイリストに楽曲を追加しました。",
-        });
+        try {
+            await addTrackToPlaylist(playlistId, trackId);
+            setAddedTracks(prev => new Set(prev).add(trackId));
+            toast({
+                title: "楽曲追加",
+                description: "プレイリストに楽曲を追加しました。",
+            });
+        } catch (error) {
+            console.error("楽曲の追加中にエラーが発生しました。", error);
+            toast({
+                title: "エラー",
+                description: "楽曲の追加中にエラーが発生しました。",
+                variant: "destructive",
+            });
+        }
     };
     
     const handleRemoveTrack = async (playlistId: string, trackId: string) => {
-        await removeTrackFromPlaylist(playlistId, trackId);
-        setAddedTracks(prev => {
-            const newSet = new Set(prev);
-            newSet.delete(trackId);
-            return newSet;
-        });
-        toast({
-            title: "楽曲削除",
-            description: "プレイリストから楽曲を削除しました。",
-        });
+        try {
+            await removeTrackFromPlaylist(playlistId, trackId);
+            setAddedTracks(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(trackId);
+                return newSet;
+            });
+            toast({
+                title: "楽曲削除",
+                description: "プレイリストから楽曲を削除しました。",
+            });
+        } catch (error) {
+            console.error("楽曲の削除中にエラーが発生しました。", error);
+            toast({
+                title: "エラー",
+                description: "楽曲の削除中にエラーが発生しました。",
+                variant: "destructive",
+            });
+        }
     };
     
     const columns = useMemo<ColumnDef<typeof tracks[0]>[]>(() => {
