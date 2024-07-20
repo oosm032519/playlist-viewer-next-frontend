@@ -27,11 +27,11 @@ describe('prepareAudioFeaturesData', () => {
     it('正しくデータを変換する', () => {
         const result = prepareAudioFeaturesData(mockAudioFeatures);
         expect(result).toEqual([
+            {feature: 'Acousticness', value: 0.2},
             {feature: 'Danceability', value: 0.8},
             {feature: 'Energy', value: 0.6},
-            {feature: 'Speechiness', value: 0.1},
-            {feature: 'Acousticness', value: 0.2},
             {feature: 'Liveness', value: 0.3},
+            {feature: 'Speechiness', value: 0.1},
             {feature: 'Valence', value: 0.7},
         ]);
     });
