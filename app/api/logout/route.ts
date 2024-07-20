@@ -2,11 +2,6 @@
 
 import {NextResponse} from 'next/server';
 
-/**
- * POSTメソッドでログアウト処理を行う関数
- * @param {Request} request - クライアントからのリクエストオブジェクト
- * @returns {Promise<NextResponse>} - APIレスポンスを返すPromise
- */
 export async function POST(request: Request): Promise<NextResponse> {
     console.log('logout関数が呼び出されました');
     
@@ -39,10 +34,10 @@ export async function POST(request: Request): Promise<NextResponse> {
         console.log('APIレスポンスを受信しました:', response.status);
         console.log('レスポンステキスト:', responseText);
         
-        // テキストレスポンスをJSONに変換
-        const responseData = {message: responseText};
+        // レスポンステキストが空の場合、デフォルトメッセージを使用
+        const message = responseText || 'ログアウトしました';
         
-        return NextResponse.json(responseData, {status: 200});
+        return NextResponse.json({message}, {status: 200});
     } catch (error) {
         console.error('APIリクエスト中にエラーが発生しました:', error);
         return NextResponse.json({error: 'ログアウト失敗: ログアウトエラー'}, {status: 500});

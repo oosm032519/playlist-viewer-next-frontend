@@ -1,5 +1,3 @@
-// app/api/logout/route.test.ts
-
 import {POST} from './route';
 import {expect} from '@jest/globals';
 
@@ -36,7 +34,8 @@ describe('Session API Route', () => {
         global.fetch = jest.fn().mockResolvedValueOnce({
             ok: true,
             status: 200,
-            json: async () => ({}),
+            json: async () => ({message: 'ログアウトしました'}), // 期待されるレスポンスを返す
+            text: async () => '', // textメソッドを追加
         });
         
         // POST関数を呼び出してレスポンスを取得
@@ -101,7 +100,8 @@ describe('Session API Route', () => {
         global.fetch = jest.fn().mockResolvedValueOnce({
             ok: true,
             status: 200,
-            json: async () => ({}),
+            json: async () => ({message: 'ログアウトしました'}), // 期待されるレスポンスを返す
+            text: async () => '', // textメソッドを追加
         });
         
         // POST関数を呼び出してレスポンスを取得
