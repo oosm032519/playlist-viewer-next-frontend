@@ -50,6 +50,13 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                                                          }) => {
     return (
         <>
+            {/* プレイリスト名を表示 */}
+            {playlistName && (
+                <div className="text-center my-4">
+                    <h1 className="text-2xl font-bold">{playlistName}</h1>
+                </div>
+            )}
+            
             {/* プレイリストのトラック一覧を表示 */}
             <PlaylistDetailsTable tracks={tracks}/>
             
