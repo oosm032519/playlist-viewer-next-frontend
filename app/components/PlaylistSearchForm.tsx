@@ -21,6 +21,7 @@ import LoadingSpinner from "./LoadingSpinner";
 import {Playlist} from "../types/playlist";
 import {useQueryClient} from "@tanstack/react-query";
 import PaginationButtons from "./PaginationButtons";
+import {usePlaylist} from "../context/PlaylistContext";
 
 interface SearchFormInputs {
     query: string;
@@ -44,6 +45,8 @@ export default function PlaylistSearchForm({
     const [currentPlaylists, setCurrentPlaylists] = useState<Playlist[]>([]);
     // React Queryのクライアントを取得
     const queryClient = useQueryClient();
+    
+    const {selectedPlaylistId} = usePlaylist();
     
     // フォームの設定
     const form = useForm<SearchFormInputs>({
@@ -161,7 +164,7 @@ export default function PlaylistSearchForm({
                 </CardContent>
             </Card>
             <LoadingSpinner loading={searchMutation.isPending}/>
-            {currentPlaylists.length > 0 && ( // 条件を追加
+            {currentPlaylists.length > 0 && !selectedPlaylistId &&( // 条件を追加
                 <PaginationButtons
                     currentPage={currentPage}
                     isPending={searchMutation.isPending}
