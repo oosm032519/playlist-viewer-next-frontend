@@ -11,6 +11,7 @@ import AudioFeaturesChart from "./AudioFeaturesChart";
 import {playlistDetailsTableColumns} from "../lib/PlaylistDetailsTableColumns";
 import AverageAudioFeaturesChart from '@/app/components/AverageAudioFeaturesChart'
 import {AudioFeatures} from '@/app/types/audioFeaturesTypes'
+import CombinedAudioFeaturesChart from './CombinedAudioFeaturesChart';
 
 interface PlaylistDetailsTableProps {
     tracks: Track[];
@@ -22,8 +23,7 @@ interface PlaylistDetailsTableProps {
  * @param {PlaylistDetailsTableProps} props - トラックの配列を含むプロパティ
  * @returns {JSX.Element} プレイリストの詳細テーブル
  */
-export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({tracks, averageAudioFeatures}) => {
-    // 選択されたトラックを管理するための状態
+export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({tracks, averageAudioFeatures}) => {    // 選択されたトラックを管理するための状態
     const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
     // テーブルのソート状態を管理するための状態
     const [sorting, setSorting] = useState<SortingState>([]);
@@ -89,15 +89,17 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({track
                 </Table>
             </div>
             <div className="w-full max-w-2xl mx-auto mb-8">
-                <h3 className="text-lg font-semibold mb-4">プレイリストの平均 Audio Features</h3>
-                <AverageAudioFeaturesChart averageAudioFeatures={averageAudioFeatures}/>
+                <h3 className="text-lg font-semibold mb-4">Audio Features 比較</h3>
+                <CombinedAudioFeaturesChart
+                    track={selectedTrack || undefined}
+                    averageAudioFeatures={averageAudioFeatures}
+                />
+                {!selectedTrack && (
+                    <p className="mt-4 text-center text-gray-500">
+                        トラックを選択すると、個別の Audio Features が表示されます。
+                    </p>
+                )}
             </div>
-            {selectedTrack && (
-                <div className="mt-8 w-full max-w-2xl mx-auto">
-                    <h3 className="text-lg font-semibold mb-4">Audio Features: {selectedTrack.name}</h3>
-                    <AudioFeaturesChart track={selectedTrack}/>
-                </div>
-            )}
         </div>
     );
 };
