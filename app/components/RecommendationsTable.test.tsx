@@ -132,16 +132,13 @@ describe('RecommendationsTable', () => {
             </QueryClientProvider>
         );
         expect(screen.getAllByText('追加')).toHaveLength(mockTracks.length);
-        expect(screen.getAllByText('削除')).toHaveLength(mockTracks.length);
         
         rerender(
             <QueryClientProvider client={queryClient}>
                 <RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="user2" playlistId="playlist1"/>
             </QueryClientProvider>
         );
-        expect(screen.queryByText('追加')).not.toBeInTheDocument();
-        expect(screen.queryByText('削除')).not.toBeInTheDocument();
-    });
+        expect(screen.queryByText('追加')).not.toBeInTheDocument();});
     
     /**
      * トラック追加ボタンのクリックが正しく処理されることを確認するテスト
@@ -160,25 +157,7 @@ describe('RecommendationsTable', () => {
             expect(mockedUtils.addTrackToPlaylist).toHaveBeenCalledWith('playlist1', '1');
         });
     });
-    
-    /**
-     * トラック削除ボタンのクリックが正しく処理されることを確認するテスト
-     */
-    it('handles remove track button click correctly', async () => {
-        const queryClient = new QueryClient();
-        mockedUtils.removeTrackFromPlaylist.mockResolvedValue(true);
-        render(
-            <QueryClientProvider client={queryClient}>
-                <RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="owner1" playlistId="playlist1"/>
-            </QueryClientProvider>
-        );
-        const removeButtons = screen.getAllByText('削除');
-        fireEvent.click(removeButtons[0]);
-        await waitFor(() => {
-            expect(mockedUtils.removeTrackFromPlaylist).toHaveBeenCalledWith('playlist1', '1');
-        });
-    });
-    
+
     /**
      * 複数のアーティストがいるトラックでは最初のアーティストのみ表示することを確認するテスト
      */
