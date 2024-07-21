@@ -12,6 +12,7 @@ import ErrorAlert from "./components/ErrorAlert";
 import PlaylistDisplay from "./components/PlaylistDisplay";
 import {Playlist} from "./types/playlist";
 import {Toaster} from "@/app/components/ui/toaster";
+import {FavoriteProvider} from '@/app/context/FavoriteContext'
 
 function HomeContent() {
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
@@ -57,8 +58,10 @@ export default function Home() {
     return (
         <UserContextProvider>
             <PlaylistContextProvider>
-                <HomeContent/>
-                <Toaster/>
+                <FavoriteProvider>
+                    <HomeContent/>
+                    <Toaster/>
+                </FavoriteProvider>
             </PlaylistContextProvider>
         </UserContextProvider>
     );

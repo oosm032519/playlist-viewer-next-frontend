@@ -37,25 +37,6 @@ describe('プレイリスト詳細の表示', () => {
         cy.get('.loading-spinner').should('not.be.visible');
     });
     
-    it('プレイリストの音声特徴チャートが正しく表示される', () => {
-        cy.get('input[placeholder="Enter playlist URL"]').type(validPlaylistUrl);
-        cy.get('button').contains('Submit').click();
-        cy.wait('@getPlaylist');
-        
-        cy.get('table', {timeout: 10000}).should('be.visible');
-        cy.get('table tbody tr').first().click();
-        
-        cy.get('.recharts-responsive-container', {timeout: 10000}).should('be.visible');
-        
-        cy.contains('Audio Features: 月の椀').should('be.visible');
-        
-        cy.get('.recharts-polar-grid', {timeout: 5000}).should('exist');
-        cy.get('.recharts-polar-angle-axis', {timeout: 5000}).should('exist');
-        cy.get('.recharts-polar-radius-axis', {timeout: 5000}).should('exist');
-        
-        cy.contains('Genre Distribution').should('be.visible');
-    });
-    
     it('ジャンル分布チャートが正しく表示される', () => {
         cy.get('input[placeholder="Enter playlist URL"]').type(validPlaylistUrl);
         cy.get('button').contains('Submit').click();

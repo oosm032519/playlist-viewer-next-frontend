@@ -2,13 +2,13 @@
 
 "use client";
 
-import React from "react";
+import React, {useContext} from "react";
 import {Track} from "../types/track";
 import {PlaylistDetailsTable} from "./PlaylistDetailsTable";
 import GenreChart from "./GenreChart";
 import {RecommendationsTable} from "./RecommendationsTable";
-import AverageAudioFeaturesChart from "./AverageAudioFeaturesChart";
 import {AudioFeatures} from "../types/audioFeaturesTypes";
+import {FavoriteContext} from "../context/FavoriteContext";
 
 interface PlaylistDetailsProps {
     tracks: Track[];
@@ -29,7 +29,7 @@ const GenreDistributionChart: React.FC<{
     if (Object.keys(genreCounts).length > 0) {
         return (
             <div className="mt-8">
-                <h3 className="text-lg font-semibold mb-4">Genre Distribution:</h3>
+                <h3 className="text-lg font-semibold mb-4">ジャンル分布:</h3>
                 <GenreChart genreCounts={genreCounts} playlistName={playlistName}/>
             </div>
         );
@@ -48,11 +48,26 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                                                              totalDuration,
                                                              averageAudioFeatures,
                                                          }) => {
+    const {favorites, toggleFavorite} = useContext(FavoriteContext);
+    
+    const isFavorite = favorites.includes(playlistId);
+    
+    const handleStarClick = () => {
+        toggleFavorite(playlistId);
+    };
+    
     return (
         <>
             {playlistName && (
-                <div className="text-center my-4">
-                    <h1 className="text-2xl font-bold">{playlistName}</h1>
+                <div className="text-center my-4 flex items-center justify-center">
+                    <h1 className="text-2xl font-bold mr-2">{playlistName}</h1>
+                    <button onClick={handleStarClick} className="focus:outline-none">
+                        {isFavorite ? (
+                            <span className="text-yellow-400 text-2xl">★</span>
+                        ) : (
+                            <span className="text-gray-400 text-2xl">☆</span>
+                        )}
+                    </button>
                 </div>
             )}
             
@@ -71,7 +86,7 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
             />
             
             <div className="mt-8">
-                <h3 className="text-lg font-semibold mb-4">Recommendations:</h3>
+                <h3 className="text-lg font-semibold mb-4">おすすめ:</h3>
                 <RecommendationsTable
                     tracks={recommendations}
                     ownerId={ownerId}
