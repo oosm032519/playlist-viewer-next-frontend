@@ -48,22 +48,27 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                                                              totalDuration,
                                                              averageAudioFeatures,
                                                          }) => {
-    const {favorites, toggleFavorite} = useContext(FavoriteContext);
+    const {favorites, addFavorite, removeFavorite} = useContext(FavoriteContext); // addFavorite, removeFavorite を追加
     const [isFavorite, setIsFavorite] = useState(false);
     
     useEffect(() => {
-        setIsFavorite(favorites.includes(playlistId));
+        setIsFavorite(playlistId in favorites);
     }, [favorites, playlistId]);
     
     const handleStarClick = async () => {
         try {
-            const response = await fetch(`/api/playlists/favorite?playlistId=${playlistId}`, {
+            const response = await fetch(`/api/playlists/favorite?playlistId=${playlistId}&playlistName=${encodeURIComponent(playlistName || '')}`, {
                 method: isFavorite ? 'DELETE' : 'POST',
-                credentials: 'include', // クッキーを含める
+                credentials: 'include',
             });
             
             if (response.ok) {
-                toggleFavorite(playlistId);
+                // isFavorite の状態に応じて addFavorite または removeFavorite を呼び出す
+                if (isFavorite) {
+                    removeFavorite(playlistId);
+                } else {
+                    addFavorite(playlistId, playlistName || ''); // playlistName が null の場合は空文字列を渡す
+                }
             } else {
                 console.error('お気に入り登録/解除に失敗しました。');
             }

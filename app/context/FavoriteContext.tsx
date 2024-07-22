@@ -3,14 +3,17 @@
 import React, {createContext, useState, useCallback, useEffect} from 'react';
 
 interface FavoriteContextType {
-    favorites: string[];
-    toggleFavorite: (playlistId: string) => void;
+    favorites: { [playlistId: string]: string };
+    addFavorite: (playlistId: string, playlistName: string) => void;
+    removeFavorite: (playlistId: string) => void;
     fetchFavorites: () => void;
 }
 
 export const FavoriteContext = createContext<FavoriteContextType>({
-    favorites: [],
-    toggleFavorite: () => {
+    favorites: {},
+    addFavorite: () => {
+    },
+    removeFavorite: () => {
     },
     fetchFavorites: () => {
     },
@@ -19,25 +22,32 @@ export const FavoriteContext = createContext<FavoriteContextType>({
 export const FavoriteProvider: React.FC<{ children: React.ReactNode }> = ({
                                                                               children,
                                                                           }) => {
-    const [favorites, setFavorites] = useState<string[]>([]);
+    const [favorites, setFavorites] = useState<{ [playlistId: string]: string }>({});
     
-    const toggleFavorite = useCallback((playlistId: string) => {
-        setFavorites((prev) =>
-            prev.includes(playlistId)
-                ? prev.filter((id) => id !== playlistId)
-                : [...prev, playlistId]
-        );
+    const addFavorite = useCallback((playlistId: string, playlistName: string) => {
+        setFavorites((prev) => ({...prev, [playlistId]: playlistName}));
+    }, []);
+    
+    const removeFavorite = useCallback((playlistId: string) => {
+        setFavorites((prev) => {
+            const {[playlistId]: _, ...rest} = prev;
+            return rest;
+        });
     }, []);
     
     const fetchFavorites = useCallback(async () => {
         try {
             const response = await fetch('/api/playlists/favorite', {
-                credentials: 'include', // クッキーを含める
+                credentials: 'include',
             });
             
             if (response.ok) {
-                const data = await response.json();
-                setFavorites(data);
+                const data: { playlistId: string; playlistName: string }[] = await response.json();
+                const newFavorites: { [playlistId: string]: string } = {};
+                data.forEach((item) => {
+                    newFavorites[item.playlistId] = item.playlistName;
+                });
+                setFavorites(newFavorites);
             } else {
                 console.error('お気に入り情報の取得に失敗しました。');
             }
@@ -51,7 +61,7 @@ export const FavoriteProvider: React.FC<{ children: React.ReactNode }> = ({
     }, [fetchFavorites]);
     
     return (
-        <FavoriteContext.Provider value={{favorites, toggleFavorite, fetchFavorites}}>
+        <FavoriteContext.Provider value={{favorites, addFavorite, removeFavorite, fetchFavorites}}>
             {children}
         </FavoriteContext.Provider>
     );
