@@ -90,6 +90,7 @@ const PlaylistDetailsLoader: React.FC<PlaylistDetailsLoaderProps> = ({
             playlistId={playlistId}
             totalDuration={formattedDuration}
             averageAudioFeatures={playlistData.averageAudioFeatures}
+            totalTracks={playlistData.tracks.length}
         />
     );
 };

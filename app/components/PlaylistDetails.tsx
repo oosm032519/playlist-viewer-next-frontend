@@ -20,6 +20,7 @@ interface PlaylistDetailsProps {
     playlistId: string;
     totalDuration: string;
     averageAudioFeatures: AudioFeatures;
+    totalTracks: number;
 }
 
 const GenreDistributionChart: React.FC<{
@@ -47,6 +48,7 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                                                              playlistId,
                                                              totalDuration,
                                                              averageAudioFeatures,
+                                                             totalTracks,
                                                          }) => {
     const {favorites, addFavorite, removeFavorite} = useContext(FavoriteContext); // addFavorite, removeFavorite を追加
     const [isFavorite, setIsFavorite] = useState(false);
@@ -93,6 +95,7 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
             )}
             
             <div className="text-center my-4">
+                <h2 className="text-xl">楽曲数: {totalTracks}</h2>
                 <h2 className="text-xl">総再生時間: {totalDuration}</h2>
             </div>
             
