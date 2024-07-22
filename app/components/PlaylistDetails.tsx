@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, {useContext} from "react";
+import React, {useContext, useState, useEffect} from "react";
 import {Track} from "../types/track";
 import {PlaylistDetailsTable} from "./PlaylistDetailsTable";
 import GenreChart from "./GenreChart";
@@ -49,11 +49,27 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                                                              averageAudioFeatures,
                                                          }) => {
     const {favorites, toggleFavorite} = useContext(FavoriteContext);
+    const [isFavorite, setIsFavorite] = useState(false);
     
-    const isFavorite = favorites.includes(playlistId);
+    useEffect(() => {
+        setIsFavorite(favorites.includes(playlistId));
+    }, [favorites, playlistId]);
     
-    const handleStarClick = () => {
-        toggleFavorite(playlistId);
+    const handleStarClick = async () => {
+        try {
+            const response = await fetch(`/api/playlists/favorite?playlistId=${playlistId}`, {
+                method: isFavorite ? 'DELETE' : 'POST',
+                credentials: 'include', // クッキーを含める
+            });
+            
+            if (response.ok) {
+                toggleFavorite(playlistId);
+            } else {
+                console.error('お気に入り登録/解除に失敗しました。');
+            }
+        } catch (error) {
+            console.error('お気に入り登録/解除中にエラーが発生しました。', error);
+        }
     };
     
     return (
