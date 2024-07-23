@@ -21,6 +21,7 @@ interface PlaylistData {
     ownerId: string;
     totalDuration: number;
     averageAudioFeatures: AudioFeatures;
+    ownerName: string;
 }
 
 const fetchPlaylistDetails = async (playlistId: string): Promise<PlaylistData> => {
@@ -43,6 +44,7 @@ const fetchPlaylistDetails = async (playlistId: string): Promise<PlaylistData> =
             ownerId: data.ownerId || '',
             totalDuration: data.totalDuration || 0,
             averageAudioFeatures: data.averageAudioFeatures || {},
+            ownerName: data.ownerName || '',
         };
     }
     throw new Error('Invalid response data');
@@ -91,6 +93,7 @@ const PlaylistDetailsLoader: React.FC<PlaylistDetailsLoaderProps> = ({
             totalDuration={formattedDuration}
             averageAudioFeatures={playlistData.averageAudioFeatures}
             totalTracks={playlistData.tracks.length}
+            ownerName={playlistData.ownerName}
         />
     );
 };

@@ -21,6 +21,7 @@ interface PlaylistDetailsProps {
     totalDuration: string;
     averageAudioFeatures: AudioFeatures;
     totalTracks: number;
+    ownerName: string;
 }
 
 const GenreDistributionChart: React.FC<{
@@ -49,6 +50,7 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                                                              totalDuration,
                                                              averageAudioFeatures,
                                                              totalTracks,
+                                                             ownerName,
                                                          }) => {
     const {favorites, addFavorite, removeFavorite} = useContext(FavoriteContext); // addFavorite, removeFavorite を追加
     const [isFavorite, setIsFavorite] = useState(false);
@@ -88,7 +90,7 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
         <>
             {playlistName && (
                 <div className="text-center my-4 flex items-center justify-center">
-                    <h1 className="text-2xl font-bold mr-2">{playlistName}</h1>
+                    <h1 className="text-2xl font-bold mr-2">{playlistName} by {ownerName}</h1>
                     <button onClick={handleStarClick} className="focus:outline-none">
                         {isFavorite ? (
                             <span className="text-yellow-400 text-2xl">★</span>
