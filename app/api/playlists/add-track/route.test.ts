@@ -23,7 +23,7 @@ describe('POST handler', () => {
     beforeEach(() => {
         mockFetch = jest.fn();
         global.fetch = mockFetch as unknown as typeof global.fetch;
-        process.env = {...originalEnv, BACKEND_URL: 'http://test-backend.com'};
+        process.env = {...originalEnv, BACKEND_URL: 'http://localhost:8080'};
         mockConsoleError = jest.spyOn(console, 'error').mockImplementation(() => {
         });
     });
@@ -39,8 +39,8 @@ describe('POST handler', () => {
         global.fetch = originalFetch;
         process.env = originalEnv;
     });
-    
-    // 正常にトラックをプレイリストに追加できることをテスト
+
+// 正常にトラックをプレイリストに追加できることをテスト
     it('正常にトラックをプレイリストに追加できること', async () => {
         const mockRequest = {
             json: jest.fn().mockResolvedValue({playlistId: '1', trackId: '2'}),
@@ -65,7 +65,7 @@ describe('POST handler', () => {
         
         // モックフェッチが正しいURLとオプションで呼び出されたことを検証
         expect(mockFetch).toHaveBeenCalledWith(
-            'http://test-backend.com/api/playlist/add-track',
+            `${process.env.BACKEND_URL}/api/playlist/add-track`,
             expect.objectContaining({
                 method: 'POST',
                 credentials: 'include',
