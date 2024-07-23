@@ -1,5 +1,3 @@
-// app/components/PlaylistDetails.test.tsx
-
 import React from 'react';
 import {render, screen, within} from '@testing-library/react';
 import {axe, toHaveNoViolations} from 'jest-axe';
@@ -100,6 +98,24 @@ describe('PlaylistDetails', () => {
         ownerId: 'owner123',
         userId: 'user123',
         playlistId: 'playlist123',
+        totalDuration: '3:00:00', // 例として3時間
+        averageAudioFeatures: {
+            danceability: 0.5,
+            energy: 0.5,
+            key: 5,
+            loudness: -5,
+            mode: 1,
+            speechiness: 0.05,
+            acousticness: 0.1,
+            instrumentalness: 0.0,
+            liveness: 0.1,
+            valence: 0.5,
+            tempo: 120,
+            durationMs: 180000,
+            timeSignature: 4,
+        }, // 例として適当な値を設定
+        totalTracks: 1, // mockTracksの長さに合わせる
+        ownerName: 'Owner Name', // 例としてオーナーの名前を設定
     };
     
     it('renders PlaylistDetailsTable with correct number of tracks', () => {
@@ -149,8 +165,8 @@ describe('PlaylistDetails', () => {
         // PlaylistDetailsコンポーネントをレンダリング
         render(<PlaylistDetails {...defaultProps} />);
         // 正しい見出しがレンダリングされているか確認
-        expect(screen.getByText('Genre Distribution:')).toBeInTheDocument();
-        expect(screen.getByText('Recommendations:')).toBeInTheDocument();
+        expect(screen.getByText('ジャンル分布:')).toBeInTheDocument();
+        expect(screen.getByText('おすすめ:')).toBeInTheDocument();
     });
     
     it('handles empty tracks array', () => {
