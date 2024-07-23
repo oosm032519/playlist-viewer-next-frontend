@@ -12,11 +12,14 @@ export async function POST(request: NextRequest): Promise<Response> {
         // リクエストボディからトラックIDの配列を取得
         const trackIds: string[] = await request.json();
         
-        // バックエンドAPIのエンドポイントURLを環境変数から取得、デフォルトはローカルホスト
-        const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
+        // 環境変数からバックエンドURLを取得、デフォルトはローカルホスト
+        const BACKENDURL = process.env.BACKEND_URL || "http://localhost:8080";
+        
+        // APIエンドポイントURLを定義
+        const APIURL = `${BACKENDURL}/api/playlists/create`;
         
         // バックエンドAPIに対してプレイリスト作成リクエストを送信
-        const response = await fetch(`${backendUrl}/api/playlists/create`, {
+        const response = await fetch(APIURL, {
             method: 'POST',
             headers: {
                 'Cookie': request.headers.get('cookie') || '', // クッキーをヘッダーに追加

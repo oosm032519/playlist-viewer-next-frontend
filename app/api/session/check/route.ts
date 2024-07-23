@@ -2,6 +2,10 @@
 
 import {NextRequest, NextResponse} from 'next/server';
 
+// 環境変数からバックエンドのURLを取得
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8080';
+const API_URL = `${BACKEND_URL}/api/session/check`;
+
 /**
  * セッションの状態をチェックするためのGETリクエストを処理します。
  *
@@ -14,7 +18,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         const cookie = request.headers.get('Cookie') || '';
         
         // セッションチェックのためのAPIリクエストを送信
-        const response = await fetch('http://localhost:8080/api/session/check', {
+        const response = await fetch(API_URL, {
             headers: {
                 'Cookie': cookie,
             },

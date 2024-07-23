@@ -1,6 +1,8 @@
-// app/api/playlists/add-track/route.ts
-
 import {NextRequest} from "next/server";
+
+// 環境変数からバックエンドURLを取得し、定数として定義
+const BACKENDURL = process.env.BACKEND_URL || "http://localhost:8080";
+const APIURL = `${BACKENDURL}/api/playlist/add-track`;
 
 /**
  * POSTリクエストを処理する非同期関数
@@ -12,11 +14,8 @@ export async function POST(request: NextRequest): Promise<Response> {
         // リクエストのJSONボディからplaylistIdとtrackIdを抽出
         const {playlistId, trackId} = await request.json();
         
-        // バックエンドAPIのエンドポイントURLを環境変数から取得、デフォルトはローカルホスト
-        const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
-        
         // バックエンドAPIにトラックをプレイリストに追加するためのリクエストを送信
-        const response = await fetch(`${backendUrl}/api/playlist/add-track`, {
+        const response = await fetch(APIURL, {
             method: 'POST', // HTTPメソッドをPOSTに設定
             credentials: 'include', // 認証情報を含める
             headers: {

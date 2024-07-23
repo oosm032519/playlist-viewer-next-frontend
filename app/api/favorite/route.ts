@@ -1,6 +1,9 @@
 // app/api/playlists/favorite/route.ts
 import {NextRequest, NextResponse} from 'next/server';
 
+const BACKENDURL = process.env.BACKEND_URL || 'http://localhost:8080';
+const APIURL = `${BACKENDURL}/api/playlists/favorite`;
+
 /**
  * お気に入りプレイリストを取得する非同期関数
  * @param {NextRequest} req - Next.jsのリクエストオブジェクト
@@ -11,10 +14,10 @@ const getFavoritePlaylists = async (req: NextRequest): Promise<any> => {
     console.log('getFavoritePlaylists関数が呼び出されました');
     
     try {
-        console.log('APIリクエストを送信します:', 'http://localhost:8080/api/playlists/favorite');
+        console.log('APIリクエストを送信します:', APIURL);
         console.log('リクエストヘッダー:', req.headers.get('cookie'));
         
-        const response = await fetch('http://localhost:8080/api/playlists/favorite', {
+        const response = await fetch(APIURL, {
             method: 'GET',
             credentials: 'include',
             headers: {
@@ -86,7 +89,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             return NextResponse.json({error: '必要なパラメータが不足しています'}, {status: 400});
         }
         
-        const response = await fetch(`http://localhost:8080/api/playlists/favorite?playlistId=${playlistId}&playlistName=${encodeURIComponent(playlistName)}&totalTracks=${totalTracks}&playlistOwnerName=${encodeURIComponent(playlistOwnerName)}`, {
+        const response = await fetch(`${APIURL}?playlistId=${playlistId}&playlistName=${encodeURIComponent(playlistName)}&totalTracks=${totalTracks}&playlistOwnerName=${encodeURIComponent(playlistOwnerName)}`, {
             method: 'POST',
             credentials: 'include',
             headers: {
@@ -127,7 +130,7 @@ export async function DELETE(req: NextRequest): Promise<NextResponse> {
             return NextResponse.json({error: 'playlistIdが必要です'}, {status: 400});
         }
         
-        const response = await fetch(`http://localhost:8080/api/playlists/favorite?playlistId=${playlistId}`, {
+        const response = await fetch(`${APIURL}?playlistId=${playlistId}`, {
             method: 'DELETE',
             credentials: 'include',
             headers: {

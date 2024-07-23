@@ -1,6 +1,9 @@
 // app/api/playlists/followed/route.ts
 import {NextRequest, NextResponse} from 'next/server';
 
+const BACKENDURL = process.env.BACKEND_URL || 'http://localhost:8080';
+const APIURL = `${BACKENDURL}/api/playlists/followed`;
+
 /**
  * フォロー中のプレイリストを取得する非同期関数
  * @param {NextRequest} req - Next.jsのリクエストオブジェクト
@@ -11,10 +14,10 @@ const getFollowedPlaylists = async (req: NextRequest): Promise<any> => {
     console.log('getFollowedPlaylists関数が呼び出されました');
     
     try {
-        console.log('APIリクエストを送信します:', 'http://localhost:8080/api/playlists/followed');
+        console.log('APIリクエストを送信します:', APIURL);
         console.log('リクエストヘッダー:', req.headers.get('cookie'));
         
-        const response = await fetch('http://localhost:8080/api/playlists/followed', {
+        const response = await fetch(APIURL, {
             method: 'GET',
             credentials: 'include',
             headers: {

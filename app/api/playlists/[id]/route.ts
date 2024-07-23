@@ -2,8 +2,9 @@
 
 import {NextResponse} from 'next/server';
 
-// バックエンドサーバーのURLを定義
-const BACKEND_URL = 'http://localhost:8080';
+// 環境変数からバックエンドサーバーのURLを取得
+const BACKENDURL = process.env.BACKEND_URL || 'http://localhost:8080';
+const APIURL = `${BACKENDURL}/api/playlists`;
 
 /**
  * プレイリストデータを取得する非同期関数
@@ -13,7 +14,7 @@ const BACKEND_URL = 'http://localhost:8080';
  */
 const fetchPlaylistData = async (id: string) => {
     // 完全なURLを構築
-    const fullUrl = `${BACKEND_URL}/api/playlists/${id}`;
+    const fullUrl = `${APIURL}/${id}`;
     console.log(`フルURL: ${fullUrl}`);
     
     try {

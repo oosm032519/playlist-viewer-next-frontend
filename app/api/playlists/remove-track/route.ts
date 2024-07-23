@@ -1,5 +1,3 @@
-// app/api/playlists/remove-track/route.ts
-
 import {NextRequest} from "next/server";
 
 /**
@@ -15,12 +13,15 @@ export async function POST(request: NextRequest): Promise<Response> {
         const {playlistId, trackId} = await request.json();
         console.log(`Received request to remove track ${trackId} from playlist ${playlistId}`);
         
-        // バックエンドのURLを環境変数から取得（デフォルトはローカルホスト）
-        const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
-        console.log(`Using backend URL: ${backendUrl}`);
+        // 環境変数からバックエンドのURLを取得（デフォルトはローカルホスト）
+        const BACKENDURL = process.env.BACKEND_URL || "http://localhost:8080";
+        console.log(`Using backend URL: ${BACKENDURL}`);
+        
+        // APIエンドポイントURLを定義
+        const APIURL = `${BACKENDURL}/api/playlist/remove-track`;
         
         // バックエンドAPIに対してトラック削除リクエストを送信
-        const response = await fetch(`${backendUrl}/api/playlist/remove-track`, {
+        const response = await fetch(APIURL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

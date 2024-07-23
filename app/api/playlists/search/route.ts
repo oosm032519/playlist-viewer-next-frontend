@@ -2,7 +2,8 @@
 
 import {NextResponse} from 'next/server';
 
-const apiUrl = 'http://localhost:8080/api'; // APIのベースURLを定数化
+const BACKENDURL = process.env.BACKEND_URL || 'http://localhost:8080'; // 環境変数からバックエンドURLを取得
+const APIURL = `${BACKENDURL}/api`; // APIのベースURLを定数化
 
 /**
  * プレイリスト検索を行う関数
@@ -15,7 +16,7 @@ const apiUrl = 'http://localhost:8080/api'; // APIのベースURLを定数化
  */
 async function searchPlaylists(query: string, offset: number, limit: number): Promise<any> {
     try {
-        const response = await fetch(`${apiUrl}/playlists/search?query=${query}&offset=${offset}&limit=${limit}`, {
+        const response = await fetch(`${APIURL}/playlists/search?query=${query}&offset=${offset}&limit=${limit}`, {
             method: 'GET',
         });
         
