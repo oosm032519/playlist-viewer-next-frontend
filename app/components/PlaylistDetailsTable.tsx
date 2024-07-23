@@ -7,9 +7,7 @@ import {useReactTable, getCoreRowModel, getSortedRowModel, flexRender, SortingSt
 import {Track} from "../types/track";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "./ui/table";
 import {ArrowUpDown} from "lucide-react";
-import AudioFeaturesChart from "./AudioFeaturesChart";
 import {playlistDetailsTableColumns} from "../lib/PlaylistDetailsTableColumns";
-import AverageAudioFeaturesChart from '@/app/components/AverageAudioFeaturesChart'
 import {AudioFeatures} from '@/app/types/audioFeaturesTypes'
 import CombinedAudioFeaturesChart from './CombinedAudioFeaturesChart';
 
