@@ -11,6 +11,7 @@ describe('POST handler', () => {
     let mockFetch: MockFetch;
     let originalFetch: typeof global.fetch;
     let originalEnv: NodeJS.ProcessEnv;
+    let mockConsoleError: jest.SpyInstance;
     
     // テスト全体の前に一度だけ実行されるセットアップ
     beforeAll(() => {
@@ -23,11 +24,14 @@ describe('POST handler', () => {
         mockFetch = jest.fn();
         global.fetch = mockFetch as unknown as typeof global.fetch;
         process.env = {...originalEnv, BACKEND_URL: 'http://test-backend.com'};
+        mockConsoleError = jest.spyOn(console, 'error').mockImplementation(() => {
+        });
     });
     
     // 各テストの後に実行されるクリーンアップ
     afterEach(() => {
         jest.resetAllMocks();
+        mockConsoleError.mockRestore();
     });
     
     // テスト全体の後に一度だけ実行されるクリーンアップ
@@ -123,5 +127,29 @@ describe('POST handler', () => {
             'http://localhost:8080/api/playlist/add-track',
             expect.anything()
         );
+    });
+    
+    // 不明なエラーが発生した場合のエラーハンドリングをテスト
+    it('不明なエラーが発生した場合、適切にエラーハンドリングされること', async () => {
+        const mockRequest = {
+            json: jest.fn().mockRejectedValue('Unknown error'),
+            headers: {
+                get: jest.fn().mockReturnValue('session=test'),
+            },
+        } as unknown as NextRequest;
+        
+        // POSTハンドラを呼び出し
+        const response = await POST(mockRequest);
+        const responseData = await response.json();
+        
+        // レスポンスのステータスとエラーデータを検証
+        expect(response.status).toBe(500);
+        expect(responseData).toEqual({
+            error: 'Failed to add track to playlist',
+            details: 'Unknown error',
+        });
+        
+        // console.errorが正しく呼び出されたことを検証
+        expect(console.error).toHaveBeenCalledWith('Unknown error:', 'Unknown error');
     });
 });

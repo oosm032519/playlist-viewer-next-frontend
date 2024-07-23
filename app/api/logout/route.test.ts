@@ -137,4 +137,47 @@ describe('Session API Route', () => {
         expect(response.status).toBe(405);
         expect(await response.json()).toEqual({error: 'Method PUT Not Allowed'});
     });
+    
+    it('APIがエラーレスポンスを返した場合、適切なエラーメッセージを返すこと', async () => {
+        // fetchをモックしてエラーレスポンスを返す
+        global.fetch = jest.fn().mockResolvedValueOnce({
+            ok: false,
+            status: 400,
+            statusText: 'Bad Request',
+            text: async () => 'エラーが発生しました',
+        });
+        
+        // console.errorをスパイしてエラーが正しくログに出力されることを確認
+        const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+        
+        // POST関数を呼び出してレスポンスを取得
+        const response = await POST(req as Request);
+        
+        // エラーメッセージが正しくログに出力されることを確認
+        expect(consoleSpy).toHaveBeenCalledWith('APIレスポンスエラー:', 'エラーが発生しました');
+        
+        // レスポンスのステータスと内容を確認
+        expect(response.status).toBe(400);
+        expect(await response.json()).toEqual({error: 'ログアウト失敗: Bad Request'});
+        
+        // スパイを元に戻す
+        consoleSpy.mockRestore();
+    });
+    
+    it('APIがレスポンスボディなしで成功した場合、デフォルトメッセージを返すこと', async () => {
+        // fetchをモックして空のレスポンスを返す
+        global.fetch = jest.fn().mockResolvedValueOnce({
+            ok: true,
+            status: 200,
+            text: async () => '',
+        });
+        
+        // POST関数を呼び出してレスポンスを取得
+        const response = await POST(req as Request);
+        
+        // レスポンスのステータスと内容を確認
+        expect(response.status).toBe(200);
+        expect(await response.json()).toEqual({message: 'ログアウトしました'});
+    });
+    
 });
