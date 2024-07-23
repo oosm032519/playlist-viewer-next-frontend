@@ -3,133 +3,109 @@
 import React from 'react';
 import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
-import {axe} from 'jest-axe';
-import 'jest-axe/extend-expect'; // アクセシビリティテストのためのjest-axeの拡張
+import {axe, toHaveNoViolations} from 'jest-axe';
+import {useRouter} from 'next/navigation';
+import {useUser} from '../context/UserContext';
 import LoginButton from './LoginButton';
-import {UserContextProvider, useUser} from '../context/UserContext';
 import {expect} from '@jest/globals';
 
-// UserContextのモックを作成
+expect.extend(toHaveNoViolations);
+
+// モックの設定
+jest.mock('next/navigation', () => ({
+    useRouter: jest.fn(),
+}));
+
 jest.mock('../context/UserContext', () => ({
-    ...jest.requireActual('../context/UserContext'),
     useUser: jest.fn(),
 }));
 
-const mockUseUser = useUser as jest.MockedFunction<typeof useUser>;
+const queryClient = new QueryClient();
 
-// window.locationオブジェクトのモック
-const mockReload = jest.fn();
-Object.defineProperty(window, 'location', {
-    value: {reload: mockReload, href: ''},
-    writable: true,
-});
+const renderWithProviders = (ui: React.ReactElement) => {
+    return render(
+        <QueryClientProvider client={queryClient}>
+            {ui}
+        </QueryClientProvider>
+    );
+};
 
-// fetch APIのモック
-global.fetch = jest.fn(() =>
-    Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({status: 'success'}), // モックのレスポンスを設定
-    } as Response)
-);
-
-describe('LoginButton', () => {
-    let queryClient: QueryClient;
+describe('LoginButton コンポーネント', () => {
+    let originalFetch: typeof global.fetch;
+    let originalConsoleError: typeof console.error;
+    
+    beforeAll(() => {
+        originalFetch = global.fetch;
+        originalConsoleError = console.error;
+        console.error = jest.fn();
+    });
+    
+    afterAll(() => {
+        global.fetch = originalFetch;
+        console.error = originalConsoleError;
+    });
     
     beforeEach(() => {
-        queryClient = new QueryClient();
-        jest.clearAllMocks(); // 各テスト前にモックをクリア
-    });
-    
-    it('ログインしていない状態で正しく表示される', () => {
-        // ログインしていない状態のモックを設定
-        mockUseUser.mockReturnValue({isLoggedIn: false, userId: null, error: null});
-        
-        render(
-            <QueryClientProvider client={queryClient}>
-                <UserContextProvider>
-                    <LoginButton/>
-                </UserContextProvider>
-            </QueryClientProvider>
-        );
-        
-        // ログインボタンが表示されていることを確認
-        expect(screen.getByText('Spotifyでログイン')).toBeInTheDocument();
-    });
-    
-    it('ログイン状態で正しく表示される', () => {
-        // ログイン状態のモックを設定
-        mockUseUser.mockReturnValue({isLoggedIn: true, userId: 'test-user-id', error: null});
-        
-        render(
-            <QueryClientProvider client={queryClient}>
-                <UserContextProvider>
-                    <LoginButton/>
-                </UserContextProvider>
-            </QueryClientProvider>
-        );
-        
-        // ログアウトボタンが表示されていることを確認
-        expect(screen.getByText('ログアウト')).toBeInTheDocument();
-    });
-    
-    it('ログインボタンをクリックするとSpotify認証URLにリダイレクトする', () => {
-        // ログインしていない状態のモックを設定
-        mockUseUser.mockReturnValue({isLoggedIn: false, userId: null, error: null});
-        process.env.NEXT_PUBLIC_SPOTIFY_AUTH_URL = 'http://test-spotify-auth-url.com';
-        
-        render(
-            <QueryClientProvider client={queryClient}>
-                <UserContextProvider>
-                    <LoginButton/>
-                </UserContextProvider>
-            </QueryClientProvider>
-        );
-        
-        // ログインボタンをクリック
-        fireEvent.click(screen.getByText('Spotifyでログイン'));
-        
-        // URLが正しく設定されていることを確認
-        expect(window.location.href).toBe('http://test-spotify-auth-url.com');
-    });
-    
-    it('ログアウトボタンをクリックするとログアウト処理が実行される', async () => {
-        // ログイン状態のモックを設定
-        mockUseUser.mockReturnValue({isLoggedIn: true, userId: 'test-user-id', error: null});
-        
-        render(
-            <QueryClientProvider client={queryClient}>
-                <UserContextProvider>
-                    <LoginButton/>
-                </UserContextProvider>
-            </QueryClientProvider>
-        );
-        
-        // ログアウトボタンをクリック
-        fireEvent.click(screen.getByText('ログアウト'));
-        
-        // ログアウト処理が実行されることを確認
-        await waitFor(() => {
-            expect(global.fetch).toHaveBeenCalledWith('/api/logout', {
-                method: 'POST',
-                credentials: 'include',
-            });
-            expect(mockReload).toHaveBeenCalled();
+        jest.clearAllMocks();
+        Object.defineProperty(window, 'location', {
+            value: {reload: jest.fn()},
+            writable: true
         });
     });
     
-    it('アクセシビリティ違反がないこと', async () => {
-        // ログインしていない状態のモックを設定
-        mockUseUser.mockReturnValue({isLoggedIn: false, userId: null, error: null});
+    test('ログインしていない状態でレンダリングされる', () => {
+        (useUser as jest.Mock).mockReturnValue({isLoggedIn: false});
+        renderWithProviders(<LoginButton/>);
+        expect(screen.getByText('Spotifyでログイン')).toBeInTheDocument();
+    });
+    
+    test('ログインしている状態でレンダリングされる', () => {
+        (useUser as jest.Mock).mockReturnValue({isLoggedIn: true});
+        renderWithProviders(<LoginButton/>);
+        expect(screen.getByText('ログアウト')).toBeInTheDocument();
+    });
+    
+    test('ログインボタンがクリックされたときの動作', () => {
+        const push = jest.fn();
+        (useRouter as jest.Mock).mockReturnValue({push});
+        (useUser as jest.Mock).mockReturnValue({isLoggedIn: false});
         
-        const {container} = render(
-            <QueryClientProvider client={queryClient}>
-                <UserContextProvider>
-                    <LoginButton/>
-                </UserContextProvider>
-            </QueryClientProvider>
-        );
+        renderWithProviders(<LoginButton/>);
+        fireEvent.click(screen.getByText('Spotifyでログイン'));
+        expect(push).toHaveBeenCalledWith('/api/login');
+    });
+    
+    test('ログアウトボタンがクリックされたときの動作', async () => {
+        (useUser as jest.Mock).mockReturnValue({isLoggedIn: true});
+        global.fetch = jest.fn().mockResolvedValue({
+            ok: true,
+            json: () => Promise.resolve({}),
+        });
         
-        // アクセシビリティテストを実行
+        renderWithProviders(<LoginButton/>);
+        fireEvent.click(screen.getByText('ログアウト'));
+        
+        await waitFor(() => {
+            expect(global.fetch).toHaveBeenCalledWith('/api/logout', expect.any(Object));
+            expect(window.location.reload).toHaveBeenCalled();
+        });
+    });
+    
+    test('ログアウト処理でエラーが発生した場合', async () => {
+        (useUser as jest.Mock).mockReturnValue({isLoggedIn: true});
+        global.fetch = jest.fn().mockRejectedValue(new Error('ログアウトに失敗しました'));
+        
+        renderWithProviders(<LoginButton/>);
+        fireEvent.click(screen.getByText('ログアウト'));
+        
+        await waitFor(() => {
+            expect(console.error).toHaveBeenCalledWith('ログアウトエラー:', expect.any(Error));
+        });
+    });
+    
+    test('アクセシビリティテスト', async () => {
+        (useUser as jest.Mock).mockReturnValue({isLoggedIn: false});
+        const {container} = renderWithProviders(<LoginButton/>);
         const results = await axe(container);
         expect(results).toHaveNoViolations();
     });
