@@ -1,3 +1,4 @@
+// app/components/FavoritePlaylistsTable.tsx
 "use client";
 
 import {useState, useEffect} from 'react';
@@ -11,6 +12,7 @@ import {
     TableRow,
 } from './ui/table';
 import {format} from 'date-fns';
+import {usePlaylist} from '@/app/context/PlaylistContext';
 
 interface FavoritePlaylist {
     playlistId: string;
@@ -33,6 +35,7 @@ const fetchFavoritePlaylists = async (): Promise<FavoritePlaylist[]> => {
 };
 
 const FavoritePlaylistsTable: React.FC = () => {
+    const {setSelectedPlaylistId} = usePlaylist(); // usePlaylist を追加
     const {data: playlists, isLoading, error} = useQuery<FavoritePlaylist[], Error>({
         queryKey: ['favoritePlaylists'],
         queryFn: fetchFavoritePlaylists,
@@ -60,7 +63,9 @@ const FavoritePlaylistsTable: React.FC = () => {
                 </TableHeader>
                 <TableBody>
                     {playlists?.map((playlist) => (
-                        <TableRow key={playlist.playlistId}>
+                        <TableRow key={playlist.playlistId}
+                                  onClick={() => setSelectedPlaylistId(playlist.playlistId)} // onClick を追加
+                                  style={{cursor: "pointer"}}>
                             <TableCell>{playlist.playlistName}</TableCell>
                             <TableCell>{playlist.playlistOwnerName}</TableCell>
                             <TableCell>{playlist.totalTracks}</TableCell>
