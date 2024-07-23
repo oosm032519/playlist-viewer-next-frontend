@@ -59,7 +59,7 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
     
     const handleStarClick = async () => {
         try {
-            const response = await fetch(`/api/playlists/favorite?playlistId=${playlistId}&playlistName=${encodeURIComponent(playlistName || '')}`, {
+            const response = await fetch(`/api/playlists/favorite?playlistId=${playlistId}&playlistName=${encodeURIComponent(playlistName || '')}&totalTracks=${totalTracks}`, { // totalTracks をクエリパラメータに追加
                 method: isFavorite ? 'DELETE' : 'POST',
                 credentials: 'include',
             });

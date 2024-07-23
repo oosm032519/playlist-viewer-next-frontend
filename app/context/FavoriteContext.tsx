@@ -3,8 +3,8 @@
 import React, {createContext, useState, useCallback, useEffect} from 'react';
 
 interface FavoriteContextType {
-    favorites: { [playlistId: string]: string };
-    addFavorite: (playlistId: string, playlistName: string) => void;
+    favorites: { [playlistId: string]: { playlistName: string, totalTracks: number, addedAt: string } };
+    addFavorite: (playlistId: string, playlistName: string, totalTracks: number) => void;
     removeFavorite: (playlistId: string) => void;
     fetchFavorites: () => void;
 }
@@ -22,10 +22,15 @@ export const FavoriteContext = createContext<FavoriteContextType>({
 export const FavoriteProvider: React.FC<{ children: React.ReactNode }> = ({
                                                                               children,
                                                                           }) => {
-    const [favorites, setFavorites] = useState<{ [playlistId: string]: string }>({});
+    const [favorites, setFavorites] = useState<{
+        [playlistId: string]: { playlistName: string, totalTracks: number, addedAt: string }
+    }>({});
     
-    const addFavorite = useCallback((playlistId: string, playlistName: string) => {
-        setFavorites((prev) => ({...prev, [playlistId]: playlistName}));
+    const addFavorite = useCallback((playlistId: string, playlistName: string, totalTracks: number) => {
+        setFavorites((prev) => ({
+            ...prev,
+            [playlistId]: {playlistName, totalTracks, addedAt: new Date().toISOString()}
+        }));
     }, []);
     
     const removeFavorite = useCallback((playlistId: string) => {
@@ -42,10 +47,21 @@ export const FavoriteProvider: React.FC<{ children: React.ReactNode }> = ({
             });
             
             if (response.ok) {
-                const data: { playlistId: string; playlistName: string }[] = await response.json();
-                const newFavorites: { [playlistId: string]: string } = {};
+                const data: {
+                    playlistId: string;
+                    playlistName: string,
+                    totalTracks: number,
+                    addedAt: string
+                }[] = await response.json();
+                const newFavorites: {
+                    [playlistId: string]: { playlistName: string, totalTracks: number, addedAt: string }
+                } = {};
                 data.forEach((item) => {
-                    newFavorites[item.playlistId] = item.playlistName;
+                    newFavorites[item.playlistId] = {
+                        playlistName: item.playlistName,
+                        totalTracks: item.totalTracks,
+                        addedAt: item.addedAt,
+                    };
                 });
                 setFavorites(newFavorites);
             } else {
