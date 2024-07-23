@@ -47,16 +47,11 @@ export const FavoriteProvider: React.FC<{ children: React.ReactNode }> = ({
             });
             
             if (response.ok) {
-                const data: {
-                    playlistId: string;
-                    playlistName: string,
-                    totalTracks: number,
-                    addedAt: string
-                }[] = await response.json();
+                const data = await response.json();
                 const newFavorites: {
                     [playlistId: string]: { playlistName: string, totalTracks: number, addedAt: string }
                 } = {};
-                data.forEach((item) => {
+                data.forEach((item: any) => {
                     newFavorites[item.playlistId] = {
                         playlistName: item.playlistName,
                         totalTracks: item.totalTracks,

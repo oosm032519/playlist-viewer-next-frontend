@@ -53,7 +53,7 @@ const FavoritePlaylistsTable: React.FC = () => {
     const [sorting, setSorting] = React.useState<SortingState>([]);
     
     const handleStarClick = async (playlist: FavoritePlaylist, isFavorite: boolean, event: React.MouseEvent) => {
-        event.stopPropagation(); // 行のクリックイベントが発生しないようにする
+        event.stopPropagation();
         try {
             const response = await fetch(
                 `/api/playlists/favorite?playlistId=${playlist.playlistId}&playlistName=${encodeURIComponent(
