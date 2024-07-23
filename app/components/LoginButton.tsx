@@ -1,13 +1,14 @@
-// app/components/LoginButton.tsx
 "use client";
 
 import React from 'react';
 import {useMutation} from '@tanstack/react-query';
 import {Button} from "./ui/button";
 import {useUser} from "../context/UserContext";
+import {useRouter} from 'next/navigation';
 
 const LoginButton: React.FC = () => {
-    const {isLoggedIn} = useUser();
+    const {isLoggedIn, setIsLoggedIn, setUserId} = useUser();
+    const router = useRouter();
     console.log('LoginButton コンポーネントがレンダリングされました', isLoggedIn);
     
     const logoutMutation = useMutation({
@@ -23,7 +24,9 @@ const LoginButton: React.FC = () => {
         },
         onSuccess: () => {
             console.log('ログアウト成功');
-            window.location.reload();
+            setIsLoggedIn(false);
+            setUserId(null);
+            router.push('/');
         },
         onError: (error) => {
             console.error('ログアウトエラー:', error);
