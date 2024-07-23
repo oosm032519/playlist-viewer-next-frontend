@@ -1,7 +1,7 @@
 // app/page.tsx
 "use client";
 
-import {useState} from "react";
+import React, {useState} from "react";
 import {Card, CardHeader, CardTitle, CardContent} from "./components/ui/card";
 import PlaylistSearchForm from "./components/PlaylistSearchForm";
 import PlaylistIdForm from "./components/PlaylistIdForm";
@@ -13,6 +13,7 @@ import PlaylistDisplay from "./components/PlaylistDisplay";
 import {Playlist} from "./types/playlist";
 import {Toaster} from "@/app/components/ui/toaster";
 import {FavoriteProvider} from '@/app/context/FavoriteContext'
+import FavoritePlaylistsTable from '@/app/components/FavoritePlaylistsTable'
 
 function HomeContent() {
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
@@ -48,6 +49,7 @@ function HomeContent() {
                             onPlaylistClick={handlePlaylistClick}
                         />
                     </div>
+                    {isLoggedIn && <FavoritePlaylistsTable/>}
                 </CardContent>
             </Card>
         </main>

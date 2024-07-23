@@ -23,6 +23,7 @@
     "axios": "^1.7.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "date-fns": "^3.6.0",
     "lucide-react": "^0.396.0",
     "node-mocks-http": "^1.15.0",
     "react": "^18",
