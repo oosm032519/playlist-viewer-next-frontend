@@ -64,7 +64,7 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
             const response = await fetch(
                 `/api/playlists/favorite?playlistId=${playlistId}&playlistName=${encodeURIComponent(
                     playlistName || ''
-                )}&totalTracks=${totalTracks}`,
+                )}&totalTracks=${totalTracks}&playlistOwnerName=${encodeURIComponent(ownerName || '')}`,
                 {
                     method: isFavorite ? 'DELETE' : 'POST',
                     credentials: 'include',
