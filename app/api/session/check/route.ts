@@ -1,5 +1,4 @@
 // app/api/session/check/route.ts
-export const dynamic = 'force-dynamic'
 import {NextRequest, NextResponse} from 'next/server';
 
 // 環境変数からバックエンドのURLを取得

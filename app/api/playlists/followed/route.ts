@@ -1,5 +1,4 @@
 // app/api/playlists/followed/route.ts
-export const dynamic = 'force-dynamic'
 import {NextRequest, NextResponse} from 'next/server';
 
 const BACKENDURL = process.env.BACKEND_URL || 'http://localhost:8080';
