@@ -5,11 +5,9 @@ import React from 'react';
 import {useMutation} from '@tanstack/react-query';
 import {Button} from "./ui/button";
 import {useUser} from "../context/UserContext";
-import {useRouter} from 'next/navigation';
 
 const LoginButton: React.FC = () => {
     const {isLoggedIn} = useUser();
-    const router = useRouter();
     console.log('LoginButton コンポーネントがレンダリングされました', isLoggedIn);
     
     const logoutMutation = useMutation({
@@ -32,9 +30,19 @@ const LoginButton: React.FC = () => {
         }
     });
     
-    const handleLogin = () => {
+    const handleLogin = async () => {
         console.log('ログイン処理を開始します');
-        router.push('/api/login');
+        try {
+            const response = await fetch('/api/login');
+            const data = await response.json();
+            if (data.redirectUrl) {
+                window.location.href = data.redirectUrl;
+            } else {
+                console.error('リダイレクトURLが見つかりません');
+            }
+        } catch (error) {
+            console.error('ログインエラー:', error);
+        }
     }
     
     return (
