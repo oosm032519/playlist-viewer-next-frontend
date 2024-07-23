@@ -59,17 +59,22 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
     
     const handleStarClick = async () => {
         try {
-            const response = await fetch(`/api/playlists/favorite?playlistId=${playlistId}&playlistName=${encodeURIComponent(playlistName || '')}&totalTracks=${totalTracks}`, { // totalTracks をクエリパラメータに追加
-                method: isFavorite ? 'DELETE' : 'POST',
-                credentials: 'include',
-            });
+            const response = await fetch(
+                `/api/playlists/favorite?playlistId=${playlistId}&playlistName=${encodeURIComponent(
+                    playlistName || ''
+                )}&totalTracks=${totalTracks}`,
+                {
+                    method: isFavorite ? 'DELETE' : 'POST',
+                    credentials: 'include',
+                }
+            );
             
             if (response.ok) {
                 // isFavorite の状態に応じて addFavorite または removeFavorite を呼び出す
                 if (isFavorite) {
                     removeFavorite(playlistId);
                 } else {
-                    addFavorite(playlistId, playlistName || ''); // playlistName が null の場合は空文字列を渡す
+                    addFavorite(playlistId, playlistName || '', totalTracks); // totalTracks をここに追加
                 }
             } else {
                 console.error('お気に入り登録/解除に失敗しました。');
