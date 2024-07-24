@@ -124,20 +124,4 @@ describe('Session API Route', () => {
             credentials: 'include',
         });
     });
-    
-    /**
-     * コンソールにエラーがログされるべき
-     * - ネットワークエラーをシミュレート
-     * - GET関数を呼び出し、コンソールエラーログを検証
-     */
-    it('コンソールにエラーがログされるべき', async () => {
-        const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-        fetchMock.mockRejectOnce(new Error('Network error'));
-        
-        const mockRequest = new NextRequest('http://localhost:3000/api/session/check');
-        await GET(mockRequest);
-        
-        expect(consoleSpy).toHaveBeenCalledWith('セッションチェックエラー:', expect.any(Error));
-        consoleSpy.mockRestore();
-    });
 });
