@@ -30,6 +30,18 @@ const nextConfig = {
             },
         ];
     },
+    async rewrites() {
+        return [
+            {
+                source: '/api/session/check',
+                destination: '/api/session/check',
+            },
+            {
+                source: '/api/playlists/followed',
+                destination: '/api/playlists/followed',
+            },
+        ];
+    },
 };
 
 module.exports = nextConfig;
