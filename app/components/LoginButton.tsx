@@ -12,7 +12,7 @@ import {useUser} from "../context/UserContext";
  */
 const LoginButton: React.FC = () => {
     const {isLoggedIn} = useUser(); // UserContextからisLoggedInを取得
-    console.log('LoginButton コンポーネントがレンダリングされました', isLoggedIn);
+    console.log('LoginButton コンポーネントがレンダリングされました', {isLoggedIn});
     
     /**
      * ログアウト処理を行うためのReact QueryのuseMutationフック
@@ -20,12 +20,22 @@ const LoginButton: React.FC = () => {
     const logoutMutation = useMutation({
         mutationFn: async () => {
             console.log('ログアウトを実行しています');
-            const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/logout`, {
-                method: 'POST',
-                credentials: 'include'
-            });
-            if (!response.ok) {
-                throw new Error('ログアウトに失敗しました');
+            try {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/logout`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                if (!response.ok) {
+                    console.error('ログアウトに失敗しました', {
+                        status: response.status,
+                        statusText: response.statusText
+                    });
+                    throw new Error('ログアウトに失敗しました');
+                }
+                console.log('ログアウトリクエストが成功しました', {status: response.status});
+            } catch (error) {
+                console.error('ログアウトリクエスト中にエラーが発生しました', {error});
+                throw error;
             }
         },
         onSuccess: () => {
@@ -33,7 +43,7 @@ const LoginButton: React.FC = () => {
             window.location.reload(); // ログアウト成功時にページをリロード
         },
         onError: (error) => {
-            console.error('ログアウトエラー:', error); // エラー発生時のログ出力
+            console.error('ログアウトエラー:', {error}); // エラー発生時のログ出力
         }
     });
     
@@ -44,13 +54,13 @@ const LoginButton: React.FC = () => {
     const handleLogin = () => {
         console.log('ログイン処理を開始します');
         const loginUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/oauth2/authorization/spotify`;
-        console.log('リダイレクト先:', loginUrl);
+        console.log('リダイレクト先:', {loginUrl});
         window.location.href = loginUrl; // 認証URLにリダイレクト
     }
     
     return (
         <Button onClick={() => {
-            console.log('ボタンがクリックされました');
+            console.log('ボタンがクリックされました', {isLoggedIn});
             isLoggedIn ? logoutMutation.mutate() : handleLogin(); // ログイン状態に応じて処理を分岐
         }}>
             {isLoggedIn ? 'ログアウト' : 'Spotifyでログイン'} {/* ボタンのラベルを動的に変更 */}
