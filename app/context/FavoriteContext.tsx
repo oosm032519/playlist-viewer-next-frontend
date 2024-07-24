@@ -1,4 +1,5 @@
 // app/context/FavoriteContext.tsx
+'use client';
 
 import React, {createContext, useState, useCallback, useEffect} from 'react';
 
