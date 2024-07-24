@@ -39,7 +39,7 @@ const LoginButton: React.FC = () => {
             const response = await fetch('/api/login');
             const data = await response.json();
             if (data.redirectUrl) {
-                window.location.href = data.redirectUrl;
+                router.push(data.redirectUrl);
             } else {
                 console.error('リダイレクトURLが見つかりません');
             }
