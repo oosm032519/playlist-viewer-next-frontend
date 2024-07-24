@@ -2,7 +2,8 @@
 
 import {NextResponse} from 'next/server';
 
-const apiUrl = 'http://localhost:8080/api'; // APIのベースURLを定数化
+// 環境変数からバックエンドのURLを取得
+const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
 
 /**
  * プレイリスト検索を行う関数
@@ -15,21 +16,23 @@ const apiUrl = 'http://localhost:8080/api'; // APIのベースURLを定数化
  */
 async function searchPlaylists(query: string, offset: number, limit: number): Promise<any> {
     try {
-        const response = await fetch(`${apiUrl}/playlists/search?query=${query}&offset=${offset}&limit=${limit}`, {
+        const response = await fetch(`${apiUrl}/api/playlists/search?query=${encodeURIComponent(query)}&offset=${offset}&limit=${limit}`, {
             method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
         });
         
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
         
         const data = await response.json();
         console.log('プレイリスト検索APIからレスポンスを受信しました');
-        console.log(`レスポンスデータ: ${JSON.stringify(data)}`);
         return data;
     } catch (error) {
         console.error('プレイリスト取得中にエラーが発生しました:', error);
-        throw new Error('Failed to fetch playlists'); // エラーを明示的にスロー
+        throw error; // エラーを上位に伝播させる
     }
 }
 
@@ -44,9 +47,8 @@ export async function GET(request: Request): Promise<Response> {
     
     const {searchParams} = new URL(request.url);
     const query = searchParams.get('query');
-    const offset = parseInt(searchParams.get('offset') || '0', 10); // offsetパラメータを取得、デフォルトは0
-    const limit = parseInt(searchParams.get('limit') || '20', 10); // limitパラメータを取得、デフォルトは20
-    console.log(`クエリパラメータ: ${query}, offset: ${offset}, limit: ${limit}`);
+    const offset = parseInt(searchParams.get('offset') || '0', 10);
+    const limit = parseInt(searchParams.get('limit') || '20', 10);
     
     if (!query) {
         console.log('クエリパラメータが指定されていません。400エラーを返します');
@@ -54,10 +56,10 @@ export async function GET(request: Request): Promise<Response> {
     }
     
     try {
-        const playlists = await searchPlaylists(query, offset, limit); // プレイリスト検索関数を呼び出す
+        const playlists = await searchPlaylists(query, offset, limit);
         return NextResponse.json(playlists);
     } catch (error) {
-        console.log('500エラーを返します');
+        console.error('エラーが発生しました:', error);
         return NextResponse.json({error: 'Internal Server Error'}, {status: 500});
     }
 }

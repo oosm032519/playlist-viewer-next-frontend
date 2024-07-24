@@ -20,7 +20,7 @@ const LoginButton: React.FC = () => {
     const logoutMutation = useMutation({
         mutationFn: async () => {
             console.log('ログアウトを実行しています');
-            const response = await fetch('/api/logout', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/logout`, {
                 method: 'POST',
                 credentials: 'include'
             });
@@ -43,7 +43,7 @@ const LoginButton: React.FC = () => {
      */
     const handleLogin = () => {
         console.log('ログイン処理を開始します');
-        const loginUrl = process.env.NEXT_PUBLIC_SPOTIFY_AUTH_URL || 'http://localhost:8080/oauth2/authorization/spotify';
+        const loginUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/oauth2/authorization/spotify`;
         console.log('リダイレクト先:', loginUrl);
         window.location.href = loginUrl; // 認証URLにリダイレクト
     }

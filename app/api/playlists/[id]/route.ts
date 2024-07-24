@@ -2,8 +2,8 @@
 
 import {NextResponse} from 'next/server';
 
-// バックエンドサーバーのURLを定義
-const BACKEND_URL = 'http://localhost:8080';
+// バックエンドサーバーのURLを環境変数から取得
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
 
 /**
  * プレイリストデータを取得する非同期関数

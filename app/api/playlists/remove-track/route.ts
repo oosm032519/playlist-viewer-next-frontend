@@ -16,7 +16,7 @@ export async function POST(request: NextRequest): Promise<Response> {
         console.log(`Received request to remove track ${trackId} from playlist ${playlistId}`);
         
         // バックエンドのURLを環境変数から取得（デフォルトはローカルホスト）
-        const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
+        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
         console.log(`Using backend URL: ${backendUrl}`);
         
         // バックエンドAPIに対してトラック削除リクエストを送信

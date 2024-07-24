@@ -10,11 +10,14 @@ import {NextRequest, NextResponse} from 'next/server';
 const getFollowedPlaylists = async (req: NextRequest): Promise<any> => {
     console.log('getFollowedPlaylists関数が呼び出されました');
     
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
+    const apiUrl = `${backendUrl}/api/playlists/followed`;
+    
     try {
-        console.log('APIリクエストを送信します:', 'http://localhost:8080/api/playlists/followed');
+        console.log('APIリクエストを送信します:', apiUrl);
         console.log('リクエストヘッダー:', req.headers.get('cookie'));
         
-        const response = await fetch('http://localhost:8080/api/playlists/followed', {
+        const response = await fetch(apiUrl, {
             method: 'GET',
             credentials: 'include',
             headers: {

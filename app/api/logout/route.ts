@@ -2,6 +2,8 @@
 
 import {NextResponse} from 'next/server';
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
+
 export async function POST(request: Request): Promise<NextResponse> {
     console.log('logout関数が呼び出されました');
     
@@ -10,12 +12,13 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
     
     try {
-        console.log('APIリクエストを送信します:', 'http://localhost:8080/api/logout');
+        const logoutUrl = `${BACKEND_URL}/api/logout`;
+        console.log('APIリクエストを送信します:', logoutUrl);
         
         const cookies = request.headers.get('cookie') || '';
         console.log('リクエストヘッダー:', cookies);
         
-        const response = await fetch('http://localhost:8080/api/logout', {
+        const response = await fetch(logoutUrl, {
             method: 'POST',
             credentials: 'include',
             headers: {
@@ -34,7 +37,6 @@ export async function POST(request: Request): Promise<NextResponse> {
         console.log('APIレスポンスを受信しました:', response.status);
         console.log('レスポンステキスト:', responseText);
         
-        // レスポンステキストが空の場合、デフォルトメッセージを使用
         const message = responseText || 'ログアウトしました';
         
         return NextResponse.json({message}, {status: 200});

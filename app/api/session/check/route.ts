@@ -10,11 +10,14 @@ import {NextRequest, NextResponse} from 'next/server';
  */
 export async function GET(request: NextRequest): Promise<NextResponse> {
     try {
+        // 環境変数からバックエンドのURLを取得
+        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
+        
         // クッキーをリクエストヘッダーから取得
         const cookie = request.headers.get('Cookie') || '';
         
         // セッションチェックのためのAPIリクエストを送信
-        const response = await fetch('http://localhost:8080/api/session/check', {
+        const response = await fetch(`${backendUrl}/api/session/check`, {
             headers: {
                 'Cookie': cookie,
             },
