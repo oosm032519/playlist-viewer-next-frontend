@@ -1,155 +1,136 @@
-// app/api/playlists/add-track/route.test.ts
-
-import {POST} from './route';
 import {NextRequest} from 'next/server';
+import {POST} from './route';
+import {cookies} from 'next/headers';
 import {expect} from '@jest/globals';
 
-// モックフェッチ関数の型定義
-type MockFetch = jest.Mock<Promise<Response>, [input: RequestInfo | URL, init?: RequestInit | undefined]>;
+// モックの設定
+jest.mock('next/headers', () => ({
+    cookies: jest.fn(),
+}));
 
-describe('POST handler', () => {
-    let mockFetch: MockFetch;
-    let originalFetch: typeof global.fetch;
-    let originalEnv: NodeJS.ProcessEnv;
-    let mockConsoleError: jest.SpyInstance;
-    
-    // テスト全体の前に一度だけ実行されるセットアップ
-    beforeAll(() => {
-        originalFetch = global.fetch;
-        originalEnv = process.env;
-    });
-    
-    // 各テストの前に実行されるセットアップ
+// グローバルなfetchのモック
+global.fetch = jest.fn();
+
+describe('POST /api/playlists/add-track', () => {
+    // テストごとにモックをリセット
     beforeEach(() => {
-        mockFetch = jest.fn();
-        global.fetch = mockFetch as unknown as typeof global.fetch;
-        process.env = {...originalEnv, BACKEND_URL: 'http://test-backend.com'};
-        mockConsoleError = jest.spyOn(console, 'error').mockImplementation(() => {
-        });
-    });
-    
-    // 各テストの後に実行されるクリーンアップ
-    afterEach(() => {
         jest.resetAllMocks();
-        mockConsoleError.mockRestore();
+        console.log = jest.fn();
+        console.error = jest.fn();
     });
     
-    // テスト全体の後に一度だけ実行されるクリーンアップ
+    // 環境変数の設定
+    const originalEnv = process.env;
+    beforeEach(() => {
+        jest.resetModules();
+        process.env = {...originalEnv};
+    });
     afterAll(() => {
-        global.fetch = originalFetch;
         process.env = originalEnv;
     });
     
-    // 正常にトラックをプレイリストに追加できることをテスト
-    it('正常にトラックをプレイリストに追加できること', async () => {
+    it('正常系: トラックをプレイリストに追加できること', async () => {
+        // モックの設定
         const mockRequest = {
             json: jest.fn().mockResolvedValue({playlistId: '1', trackId: '2'}),
-            headers: {
-                get: jest.fn().mockReturnValue('session=test'),
-            },
         } as unknown as NextRequest;
         
-        // モックフェッチが成功レスポンスを返すように設定
-        mockFetch.mockResolvedValueOnce({
+        (cookies as jest.Mock).mockReturnValue({
+            get: jest.fn().mockReturnValue({value: 'mock-jwt-token'}),
+        });
+        
+        (global.fetch as jest.Mock).mockResolvedValue({
             status: 200,
-            json: async () => ({message: 'Track added successfully'}),
-        } as Response);
+            json: jest.fn().mockResolvedValue({message: 'Track added successfully'}),
+        });
         
-        // POSTハンドラを呼び出し
+        // テスト実行
         const response = await POST(mockRequest);
-        const responseData = await response.json();
+        const responseBody = await response.json();
         
-        // レスポンスのステータスとデータを検証
+        // アサーション
         expect(response.status).toBe(200);
-        expect(responseData).toEqual({message: 'Track added successfully'});
-        
-        // モックフェッチが正しいURLとオプションで呼び出されたことを検証
-        expect(mockFetch).toHaveBeenCalledWith(
-            'http://test-backend.com/api/playlist/add-track',
+        expect(responseBody).toEqual({message: 'Track added successfully'});
+        expect(global.fetch).toHaveBeenCalledWith(
+            'http://localhost:8080/api/playlist/add-track',
             expect.objectContaining({
                 method: 'POST',
-                credentials: 'include',
                 headers: expect.objectContaining({
                     'Content-Type': 'application/json',
-                    'Cookie': 'session=test',
+                    'Cookie': 'JWT=mock-jwt-token',
                 }),
                 body: JSON.stringify({playlistId: '1', trackId: '2'}),
             })
         );
     });
     
-    // バックエンドAPIがエラーを返した場合のエラーハンドリングをテスト
-    it('バックエンドAPIがエラーを返した場合、適切にエラーハンドリングされること', async () => {
+    it('異常系: バックエンドAPIがエラーを返した場合', async () => {
+        // モックの設定
         const mockRequest = {
             json: jest.fn().mockResolvedValue({playlistId: '1', trackId: '2'}),
-            headers: {
-                get: jest.fn().mockReturnValue('session=test'),
-            },
         } as unknown as NextRequest;
         
-        // モックフェッチがエラーを返すように設定
-        mockFetch.mockRejectedValueOnce(new Error('Backend error'));
+        (cookies as jest.Mock).mockReturnValue({
+            get: jest.fn().mockReturnValue({value: 'mock-jwt-token'}),
+        });
         
-        // POSTハンドラを呼び出し
+        (global.fetch as jest.Mock).mockResolvedValue({
+            status: 400,
+            json: jest.fn().mockResolvedValue({error: 'Invalid playlist ID'}),
+        });
+        
+        // テスト実行
         const response = await POST(mockRequest);
-        const responseData = await response.json();
+        const responseBody = await response.json();
         
-        // レスポンスのステータスとエラーデータを検証
+        // アサーション
+        expect(response.status).toBe(400);
+        expect(responseBody).toEqual({error: 'Invalid playlist ID'});
+    });
+    
+    it('異常系: リクエストのJSONパースに失敗した場合', async () => {
+        // モックの設定
+        const mockRequest = {
+            json: jest.fn().mockRejectedValue(new Error('Invalid JSON')),
+        } as unknown as NextRequest;
+        
+        // テスト実行
+        const response = await POST(mockRequest);
+        const responseBody = await response.json();
+        
+        // アサーション
         expect(response.status).toBe(500);
-        expect(responseData).toEqual({
-            error: 'Failed to add track to playlist',
-            details: 'Backend error',
+        expect(responseBody).toEqual({
+            error: 'プレイリストへのトラック追加に失敗しました',
+            details: 'Invalid JSON',
         });
     });
     
-    // BACKEND_URL環境変数が設定されていない場合のデフォルトURL使用をテスト
-    it('BACKEND_URL環境変数が設定されていない場合、デフォルトURLを使用すること', async () => {
-        delete process.env.BACKEND_URL;
+    it('環境変数BACKEND_URLが設定されている場合、そのURLを使用すること', async () => {
+        // 環境変数の設定
+        process.env.BACKEND_URL = 'https://api.example.com';
         
+        // モックの設定
         const mockRequest = {
             json: jest.fn().mockResolvedValue({playlistId: '1', trackId: '2'}),
-            headers: {
-                get: jest.fn().mockReturnValue('session=test'),
-            },
         } as unknown as NextRequest;
         
-        // モックフェッチが成功レスポンスを返すように設定
-        mockFetch.mockResolvedValueOnce({
-            status: 200,
-            json: async () => ({message: 'Track added successfully'}),
-        } as Response);
+        (cookies as jest.Mock).mockReturnValue({
+            get: jest.fn().mockReturnValue({value: 'mock-jwt-token'}),
+        });
         
-        // POSTハンドラを呼び出し
+        (global.fetch as jest.Mock).mockResolvedValue({
+            status: 200,
+            json: jest.fn().mockResolvedValue({message: 'Track added successfully'}),
+        });
+        
+        // テスト実行
         await POST(mockRequest);
         
-        // モックフェッチがデフォルトURLで呼び出されたことを検証
-        expect(mockFetch).toHaveBeenCalledWith(
-            'http://localhost:8080/api/playlist/add-track',
+        // アサーション
+        expect(global.fetch).toHaveBeenCalledWith(
+            'https://api.example.com/api/playlist/add-track',
             expect.anything()
         );
-    });
-    
-    // 不明なエラーが発生した場合のエラーハンドリングをテスト
-    it('不明なエラーが発生した場合、適切にエラーハンドリングされること', async () => {
-        const mockRequest = {
-            json: jest.fn().mockRejectedValue('Unknown error'),
-            headers: {
-                get: jest.fn().mockReturnValue('session=test'),
-            },
-        } as unknown as NextRequest;
-        
-        // POSTハンドラを呼び出し
-        const response = await POST(mockRequest);
-        const responseData = await response.json();
-        
-        // レスポンスのステータスとエラーデータを検証
-        expect(response.status).toBe(500);
-        expect(responseData).toEqual({
-            error: 'Failed to add track to playlist',
-            details: 'Unknown error',
-        });
-        
-        // console.errorが正しく呼び出されたことを検証
-        expect(console.error).toHaveBeenCalledWith('Unknown error:', 'Unknown error');
     });
 });

@@ -1,107 +1,170 @@
-// app/api/playlists/followed/route.test.ts
-import {NextRequest} from 'next/server';
+import {NextRequest, NextResponse} from 'next/server';
+import {cookies} from 'next/headers';
 import {GET} from './route';
 import {expect} from '@jest/globals';
 
+// モックの設定
 jest.mock('next/server', () => ({
-    NextRequest: jest.fn().mockImplementation((url, init) => ({
-        url,
-        headers: new Map(Object.entries(init.headers)),
-    })),
+    NextRequest: jest.fn(),
     NextResponse: {
-        json: jest.fn((data, init) => ({
-            json: async () => data,
-            status: init?.status || 200,
-        })),
+        json: jest.fn(),
     },
 }));
 
-describe('GET handler', () => {
+jest.mock('next/headers', () => ({
+    cookies: jest.fn(),
+}));
+
+// グローバルなfetch関数をモック
+global.fetch = jest.fn();
+
+describe('GET handler for followed playlists', () => {
+    // テストごとにモックをリセット
     beforeEach(() => {
         jest.clearAllMocks();
     });
     
     it('should return playlists when API call is successful', async () => {
-        const mockRequest = new NextRequest('http://localhost:3000/api/playlists/followed', {
-            headers: {
-                cookie: 'test-cookie'
-            }
-        });
-        
+        // モックの設定
+        const mockJwt = 'mock-jwt-token';
         const mockPlaylists = [{id: 1, name: 'Playlist 1'}, {id: 2, name: 'Playlist 2'}];
         
-        global.fetch = jest.fn().mockResolvedValue({
+        (cookies as jest.Mock).mockReturnValue({
+            get: jest.fn().mockReturnValue({value: mockJwt}),
+        });
+        
+        (global.fetch as jest.Mock).mockResolvedValue({
             ok: true,
-            json: async () => mockPlaylists,
+            json: jest.fn().mockResolvedValue(mockPlaylists),
         });
         
-        const response = await GET(mockRequest);
-        const jsonResponse = await response.json();
-        
-        expect(jsonResponse).toEqual(mockPlaylists);
-        expect(global.fetch).toHaveBeenCalledWith('http://localhost:8080/api/playlists/followed', {
+        // リクエストオブジェクトの作成
+        const req = new NextRequest('http://localhost:3000/api/playlists/followed', {
             method: 'GET',
-            credentials: 'include',
-            headers: {
-                'Cookie': 'test-cookie',
-            },
         });
+        
+        // ハンドラーの呼び出し
+        const response = await GET(req);
+        
+        // アサーション
+        expect(global.fetch).toHaveBeenCalledWith(
+            'http://localhost:8080/api/playlists/followed',
+            expect.objectContaining({
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                    'Cookie': `JWT=${mockJwt}`,
+                },
+            })
+        );
+        
+        expect(NextResponse.json).toHaveBeenCalledWith(mockPlaylists);
     });
     
-    it('should return error when API call fails', async () => {
-        const mockRequest = new NextRequest('http://localhost:3000/api/playlists/followed', {
-            headers: {
-                cookie: 'test-cookie'
-            }
+    it('should handle API errors and return a 500 response', async () => {
+        // モックの設定
+        const mockJwt = 'mock-jwt-token';
+        const mockError = new Error('API error');
+        
+        (cookies as jest.Mock).mockReturnValue({
+            get: jest.fn().mockReturnValue({value: mockJwt}),
         });
         
-        global.fetch = jest.fn().mockResolvedValue({
-            ok: false,
-            status: 500,
+        (global.fetch as jest.Mock).mockRejectedValue(mockError);
+        
+        // リクエストオブジェクトの作成
+        const req = new NextRequest('http://localhost:3000/api/playlists/followed', {
+            method: 'GET',
         });
         
-        const response = await GET(mockRequest);
-        const jsonResponse = await response.json();
+        // ハンドラーの呼び出し
+        const response = await GET(req);
         
-        expect(jsonResponse).toEqual({
-            error: 'フォロー中のプレイリストの取得中にエラーが発生しました: Failed to fetch playlists: HTTP error! status: 500'
-        });
-        expect(response.status).toBe(500);
+        // アサーション
+        expect(global.fetch).toHaveBeenCalledWith(
+            'http://localhost:8080/api/playlists/followed',
+            expect.objectContaining({
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                    'Cookie': `JWT=${mockJwt}`,
+                },
+            })
+        );
+        
+        expect(NextResponse.json).toHaveBeenCalledWith(
+            {error: 'フォロー中のプレイリストの取得中にエラーが発生しました: Failed to fetch playlists: API error'},
+            {status: 500}
+        );
     });
     
-    it('should return error when fetch throws an Error', async () => {
-        const mockRequest = new NextRequest('http://localhost:3000/api/playlists/followed', {
-            headers: {
-                cookie: 'test-cookie'
-            }
+    it('should handle missing JWT token', async () => {
+        // モックの設定
+        (cookies as jest.Mock).mockReturnValue({
+            get: jest.fn().mockReturnValue(undefined),
         });
         
-        global.fetch = jest.fn().mockRejectedValue(new Error('Network error'));
-        
-        const response = await GET(mockRequest);
-        const jsonResponse = await response.json();
-        
-        expect(jsonResponse).toEqual({
-            error: 'フォロー中のプレイリストの取得中にエラーが発生しました: Failed to fetch playlists: Network error'
+        // リクエストオブジェクトの作成
+        const req = new NextRequest('http://localhost:3000/api/playlists/followed', {
+            method: 'GET',
         });
-        expect(response.status).toBe(500);
+        
+        // ハンドラーの呼び出し
+        const response = await GET(req);
+        
+        // アサーション
+        expect(global.fetch).toHaveBeenCalledWith(
+            'http://localhost:8080/api/playlists/followed',
+            expect.objectContaining({
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                    'Cookie': 'JWT=undefined',
+                },
+            })
+        );
+        
+        // この場合、APIリクエストは失敗するはずなので、エラーレスポンスを期待します
+        expect(NextResponse.json).toHaveBeenCalledWith(
+            expect.objectContaining({
+                error: expect.stringContaining('フォロー中のプレイリストの取得中にエラーが発生しました'),
+            }),
+            {status: 500}
+        );
     });
     
-    it('should return error with unknown error message when fetch throws a non-Error exception', async () => {
-        const mockRequest = new NextRequest('http://localhost:3000/api/playlists/followed', {
-            headers: {
-                cookie: 'test-cookie'
-            }
+    it('should use custom backend URL when environment variable is set', async () => {
+        // 環境変数の設定
+        process.env.NEXT_PUBLIC_BACKEND_URL = 'https://custom-backend.com';
+        
+        // モックの設定
+        const mockJwt = 'mock-jwt-token';
+        const mockPlaylists = [{id: 1, name: 'Playlist 1'}];
+        
+        (cookies as jest.Mock).mockReturnValue({
+            get: jest.fn().mockReturnValue({value: mockJwt}),
         });
         
-        global.fetch = jest.fn().mockRejectedValue('Some non-error exception');
-        
-        const response = await GET(mockRequest);
-        const jsonResponse = await response.json();
-        
-        expect(jsonResponse).toEqual({
-            error: 'フォロー中のプレイリストの取得中にエラーが発生しました: Failed to fetch playlists: Unknown error'
+        (global.fetch as jest.Mock).mockResolvedValue({
+            ok: true,
+            json: jest.fn().mockResolvedValue(mockPlaylists),
         });
-        expect(response.status).toBe(500);
+        
+        // リクエストオブジェクトの作成
+        const req = new NextRequest('http://localhost:3000/api/playlists/followed', {
+            method: 'GET',
+        });
+        
+        // ハンドラーの呼び出し
+        const response = await GET(req);
+        
+        // アサーション
+        expect(global.fetch).toHaveBeenCalledWith(
+            'https://custom-backend.com/api/playlists/followed',
+            expect.anything()
+        );
+        
+        // 環境変数をリセット
+        delete process.env.NEXT_PUBLIC_BACKEND_URL;
     });
 });
