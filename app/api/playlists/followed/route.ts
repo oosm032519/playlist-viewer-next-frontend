@@ -1,5 +1,6 @@
 // app/api/playlists/followed/route.ts
 import {NextRequest, NextResponse} from 'next/server';
+import {cookies} from 'next/headers';
 
 /**
  * フォロー中のプレイリストを取得する非同期関数
@@ -15,13 +16,17 @@ const getFollowedPlaylists = async (req: NextRequest): Promise<any> => {
     
     try {
         console.log('APIリクエストを送信します:', apiUrl);
-        console.log('リクエストヘッダー:', req.headers.get('cookie'));
+        
+        // クッキーストアからJWTを取得
+        const cookieStore = cookies();
+        const jwt = cookieStore.get('JWT')?.value;
+        console.log('JWTクッキー:', jwt);
         
         const response = await fetch(apiUrl, {
             method: 'GET',
             credentials: 'include',
             headers: {
-                'Cookie': req.headers.get('cookie') || '',
+                'Cookie': `JWT=${jwt}`, // JWTクッキーのみを送信
             },
         });
         

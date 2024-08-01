@@ -1,6 +1,5 @@
-// app/api/session/check/route.ts
-
 import {NextRequest, NextResponse} from 'next/server';
+import {cookies} from 'next/headers';
 
 /**
  * セッションの状態をチェックするためのGETリクエストを処理します。
@@ -16,15 +15,16 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
         console.log(`[${new Date().toISOString()}] 環境変数からバックエンドURLを取得: ${backendUrl}`);
         
-        // クッキーをリクエストヘッダーから取得
-        const cookie = request.headers.get('Cookie') || '';
-        console.log(`[${new Date().toISOString()}] リクエストヘッダーからクッキーを取得: ${cookie}`);
+        // クッキーを取得
+        const cookieStore = cookies();
+        const jwt = cookieStore.get('JWT')?.value;
+        console.log(`[${new Date().toISOString()}] リクエストヘッダーからJWTクッキーを取得: ${jwt}`);
         
         // セッションチェックのためのAPIリクエストを送信
         console.log(`[${new Date().toISOString()}] セッションチェックのためのAPIリクエストを送信: ${backendUrl}/api/session/check`);
         const response = await fetch(`${backendUrl}/api/session/check`, {
             headers: {
-                'Cookie': cookie,
+                'Cookie': `JWT=${jwt}`, // JWTクッキーのみを送信
             },
             credentials: 'include',
         });

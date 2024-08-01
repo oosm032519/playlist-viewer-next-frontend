@@ -19,8 +19,9 @@ export function cn(...inputs: ClassValue[]) {
  * @returns {Promise<boolean>} - 曲の追加が成功したかどうかを示すブール値
  */
 export const addTrackToPlaylist = async (playlistId: string, trackId: string): Promise<boolean> => {
+    console.log(`[addTrackToPlaylist] 開始: playlistId = ${playlistId}, trackId = ${trackId}`);
     try {
-        // APIエンドポイントにPOSTリクエストを送信
+        console.log('[addTrackToPlaylist] APIリクエスト送信開始');
         const response = await fetch("/api/playlist/add-track", {
             method: "POST",
             headers: {
@@ -29,18 +30,21 @@ export const addTrackToPlaylist = async (playlistId: string, trackId: string): P
             body: JSON.stringify({playlistId, trackId}),
         });
         
-        // レスポンスが正常かどうかをチェック
+        console.log(`[addTrackToPlaylist] APIレスポンス受信: ステータス = ${response.status}`);
+        
         if (response.ok) {
-            console.log("曲が正常に追加されました");
+            console.log("[addTrackToPlaylist] 曲が正常に追加されました");
             return true;
         } else {
-            console.error("曲の追加に失敗しました");
+            const errorData = await response.text();
+            console.error(`[addTrackToPlaylist] 曲の追加に失敗しました。ステータス: ${response.status}, エラー: ${errorData}`);
             return false;
         }
     } catch (error) {
-        // エラーハンドリング
-        console.error("エラーが発生しました:", error);
+        console.error(`[addTrackToPlaylist] 予期せぬエラーが発生しました:`, error);
         return false;
+    } finally {
+        console.log('[addTrackToPlaylist] 処理終了');
     }
 };
 
@@ -51,8 +55,9 @@ export const addTrackToPlaylist = async (playlistId: string, trackId: string): P
  * @returns {Promise<boolean>} - 曲の削除が成功したかどうかを示すブール値
  */
 export const removeTrackFromPlaylist = async (playlistId: string, trackId: string): Promise<boolean> => {
+    console.log(`[removeTrackFromPlaylist] 開始: playlistId = ${playlistId}, trackId = ${trackId}`);
     try {
-        // APIエンドポイントにPOSTリクエストを送信
+        console.log('[removeTrackFromPlaylist] APIリクエスト送信開始');
         const response = await fetch("/api/playlists/remove-track", {
             method: "POST",
             headers: {
@@ -61,19 +66,20 @@ export const removeTrackFromPlaylist = async (playlistId: string, trackId: strin
             body: JSON.stringify({playlistId, trackId}),
         });
         
-        // レスポンスが正常かどうかをチェック
+        console.log(`[removeTrackFromPlaylist] APIレスポンス受信: ステータス = ${response.status}`);
+        
         if (response.ok) {
-            console.log("曲が正常に削除されました");
+            console.log("[removeTrackFromPlaylist] 曲が正常に削除されました");
             return true;
         } else {
-            // エラーレスポンスの内容を取得
-            const errorData = await response.json();
-            console.error("曲の削除に失敗しました", errorData);
+            const errorData = await response.text();
+            console.error(`[removeTrackFromPlaylist] 曲の削除に失敗しました。ステータス: ${response.status}, エラー: ${errorData}`);
             return false;
         }
     } catch (error) {
-        // エラーハンドリング
-        console.error("エラーが発生しました:", error);
+        console.error(`[removeTrackFromPlaylist] 予期せぬエラーが発生しました:`, error);
         return false;
+    } finally {
+        console.log('[removeTrackFromPlaylist] 処理終了');
     }
 };
