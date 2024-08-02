@@ -26,7 +26,7 @@ const getFollowedPlaylists = async (req: NextRequest): Promise<any> => {
             method: 'GET',
             credentials: 'include',
             headers: {
-                'Cookie': `JWT=${jwt}`, // JWTクッキーのみを送信
+                'Cookie': `JWT=${jwt}`,
             },
         });
         
