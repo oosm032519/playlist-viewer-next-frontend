@@ -43,7 +43,7 @@ function HomeContent() {
             console.log("クエリパラメータを削除しました"); // クエリパラメータを削除
         }
         console.log("トークンの取得処理が完了しました"); // トークンの取得処理が完了
-    }, []);
+    }, [window.location.search]);
     
     const handlePlaylistClick = async (playlistId: string): Promise<void> => {
         console.log("handlePlaylistClick: 選択されたプレイリストID", playlistId); // プレイリストIDログ
