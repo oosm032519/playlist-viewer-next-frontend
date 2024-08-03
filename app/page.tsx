@@ -30,7 +30,7 @@ function HomeContent() {
         const hash = window.location.hash;
         if (hash.startsWith('#token=')) {
             const token = hash.substring(7); // '#token=' の部分を削除
-            sessionStorage.setItem('JWT', token);
+            localStorage.setItem('JWT', token);
             // トークンを取得したらフラグメントを削除
             window.history.replaceState({}, document.title, window.location.pathname);
             document.title = 'Playlist Viewer';
