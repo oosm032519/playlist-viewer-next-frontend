@@ -25,14 +25,15 @@ function HomeContent() {
         setSelectedPlaylistId(null);
     };
     
-    // URLパラメータからJWTトークンを取得
+    // URLフラグメントからJWTトークンを取得
     useEffect(() => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('token');
-        if (token) {
+        const hash = window.location.hash;
+        if (hash.startsWith('#token=')) {
+            const token = hash.substring(7); // '#token=' の部分を削除
             sessionStorage.setItem('JWT', token);
-            // トークンを取得したらURLパラメータから削除
+            // トークンを取得したらフラグメントを削除
             window.history.replaceState({}, document.title, window.location.pathname);
+            document.title = 'Playlist Viewer';
         }
     }, []);
     

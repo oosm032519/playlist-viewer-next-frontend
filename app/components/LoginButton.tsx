@@ -22,30 +22,8 @@ const LoginButton: React.FC = () => {
         const loginUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/oauth2/authorization/spotify`;
         console.log('リダイレクト先:', {loginUrl});
         
-        // 新しいウィンドウを開く
-        const loginWindow = window.open(loginUrl, '_blank', 'width=500,height=600');
-        
-        // message イベントリスナーを設定
-        window.addEventListener('message', (event) => {
-            if (event.origin === process.env.NEXT_PUBLIC_BACKEND_URL) {
-                if (event.data.token) {
-                    // JWT トークンをセッションストレージに保存
-                    sessionStorage.setItem('JWT', event.data.token);
-                    
-                    // ログイン状態を更新
-                    setIsLoggedIn(true);
-                    setUserId(event.data.userId); // もしユーザーIDも送られてくるなら
-                    
-                    // ログインウィンドウを閉じる
-                    if (loginWindow) {
-                        loginWindow.close();
-                    }
-                    
-                    // 必要に応じてページをリロード
-                    window.location.reload();
-                }
-            }
-        });
+        // リダイレクト
+        window.location.href = loginUrl;
     };
     
     /**
