@@ -21,23 +21,30 @@ function HomeContent() {
     const {setSelectedPlaylistId} = usePlaylist();
     
     const handleSearch = (playlists: Playlist[]) => {
+        console.log("handleSearch: プレイリスト検索結果", playlists); // 検索結果をログ出力
         setPlaylists(playlists);
         setSelectedPlaylistId(null);
     };
     
     // URLフラグメントからJWTトークンを取得
     useEffect(() => {
+        console.log("useEffect: URLフラグメントからJWTトークンを取得開始"); // 関数開始ログ
         const hash = window.location.hash;
         if (hash.startsWith('#token=')) {
             const token = hash.substring(7); // '#token=' の部分を削除
             localStorage.setItem('JWT', token);
+            console.log("useEffect: JWTトークンをlocalStorageに保存しました"); // トークン保存ログ
             // トークンを取得したらフラグメントを削除
             window.history.replaceState({}, document.title, window.location.pathname);
             document.title = 'Playlist Viewer';
+        } else {
+            console.log("useEffect: URLフラグメントにJWTトークンは含まれていませんでした"); // トークン未取得ログ
         }
+        console.log("useEffect: URLフラグメントからJWTトークンを取得終了"); // 関数終了ログ
     }, []);
     
     const handlePlaylistClick = async (playlistId: string): Promise<void> => {
+        console.log("handlePlaylistClick: 選択されたプレイリストID", playlistId); // プレイリストIDログ
         setSelectedPlaylistId(playlistId);
     };
     
@@ -54,7 +61,7 @@ function HomeContent() {
                         <LoginButton/>
                         <PlaylistIdForm onPlaylistSelect={handlePlaylistClick}/>
                         <PlaylistSearchForm onSearch={handleSearch}/>
-                        {error && <ErrorAlert error={error}/>}
+                        {error && <ErrorAlert error={error}/>} {/* エラー発生時にエラー内容をログ出力 */}
                         <PlaylistDisplay
                             playlists={playlists}
                             userId={userId || undefined}
