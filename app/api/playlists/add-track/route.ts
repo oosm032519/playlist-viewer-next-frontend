@@ -1,7 +1,6 @@
 // app/api/playlists/add-track/route.ts
 
 import {NextRequest} from "next/server";
-import {cookies} from 'next/headers';
 
 /**
  * POSTリクエストを処理する非同期関数
@@ -19,10 +18,17 @@ export async function POST(request: NextRequest): Promise<Response> {
         const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
         console.log(`[${new Date().toISOString()}] バックエンドURL: ${backendUrl}`);
         
-        // JWTクッキーを取得
-        const cookieStore = cookies();
-        const jwt = cookieStore.get('JWT')?.value;
-        console.log(`[${new Date().toISOString()}] JWTクッキーを取得: ${jwt}`);
+        // AuthorizationヘッダーからJWTを取得
+        const authorizationHeader = request.headers.get('Authorization');
+        const jwt = authorizationHeader ? authorizationHeader.split(' ')[1] : null;
+        console.log(`[${new Date().toISOString()}] AuthorizationヘッダーからJWTを取得: ${jwt}`);
+        
+        if (!jwt) {
+            return new Response(JSON.stringify({error: "JWTが見つかりません"}), {
+                status: 401,
+                headers: {'Content-Type': 'application/json'}
+            });
+        }
         
         // バックエンドAPIにトラックをプレイリストに追加するためのリクエストを送信
         console.log(`[${new Date().toISOString()}] バックエンドAPIリクエスト開始: ${backendUrl}/api/playlist/add-track`);
@@ -30,7 +36,7 @@ export async function POST(request: NextRequest): Promise<Response> {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Cookie': `JWT=${jwt}`, // JWTクッキーのみを送信
+                'Authorization': `Bearer ${jwt}`, // JWTをAuthorizationヘッダーに設定
             },
             body: JSON.stringify({playlistId, trackId}),
         });

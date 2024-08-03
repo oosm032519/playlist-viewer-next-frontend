@@ -1,7 +1,6 @@
 // app/api/session/check/route.ts
 
 import {NextRequest, NextResponse} from 'next/server';
-import {cookies} from 'next/headers';
 
 /**
  * セッションの状態をチェックするためのGETリクエストを処理します。
@@ -17,18 +16,21 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
         console.log(`[${new Date().toISOString()}] 環境変数からバックエンドURLを取得: ${backendUrl}`);
         
-        // クッキーを取得
-        const cookieStore = cookies();
-        const jwt = cookieStore.get('JWT')?.value;
-        console.log(`[${new Date().toISOString()}] リクエストヘッダーからJWTクッキーを取得: ${jwt}`);
+        // リクエストヘッダーから Authorization ヘッダーを取得
+        const authorizationHeader = request.headers.get('Authorization');
+        console.log(`[${new Date().toISOString()}] リクエストヘッダーから Authorization ヘッダーを取得: ${authorizationHeader}`);
+        
+        // Authorization ヘッダーが存在しない場合エラー
+        if (!authorizationHeader) {
+            return NextResponse.json({status: 'error', message: 'Authorization ヘッダーがありません'}, {status: 401});
+        }
         
         // セッションチェックのためのAPIリクエストを送信
         console.log(`[${new Date().toISOString()}] セッションチェックのためのAPIリクエストを送信: ${backendUrl}/api/session/check`);
         const response = await fetch(`${backendUrl}/api/session/check`, {
             headers: {
-                'Cookie': `JWT=${jwt}`, // JWTクッキーのみを送信
+                'Authorization': authorizationHeader, // Authorization ヘッダーを設定
             },
-            credentials: 'include',
         });
         
         // APIレスポンスのステータスコードをログ出力

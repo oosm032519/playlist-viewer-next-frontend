@@ -1,5 +1,4 @@
 import {useState} from "react";
-import {useMutation} from '@tanstack/react-query';
 import {addTrackToPlaylist, removeTrackFromPlaylist} from "../lib/trackUtils";
 
 export const useTrackActions = (playlistId: string, toast: any) => {

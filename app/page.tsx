@@ -1,7 +1,7 @@
 // app/page.tsx
 "use client";
 
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {Card, CardHeader, CardTitle, CardContent} from "./components/ui/card";
 import PlaylistSearchForm from "./components/PlaylistSearchForm";
 import PlaylistIdForm from "./components/PlaylistIdForm";
@@ -24,6 +24,17 @@ function HomeContent() {
         setPlaylists(playlists);
         setSelectedPlaylistId(null);
     };
+    
+    // URLパラメータからJWTトークンを取得
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        if (token) {
+            sessionStorage.setItem('JWT', token);
+            // トークンを取得したらURLパラメータから削除
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    }, []);
     
     const handlePlaylistClick = async (playlistId: string): Promise<void> => {
         setSelectedPlaylistId(playlistId);

@@ -31,8 +31,13 @@ interface FavoritePlaylist {
 }
 
 const fetchFavoritePlaylists = async (): Promise<FavoritePlaylist[]> => {
-    const response = await fetch('/api/playlists/favorite', {
-        credentials: 'include',
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080'; // 環境変数を使用
+    // セッションストレージからJWTを取得
+    const jwt = sessionStorage.getItem('JWT');
+    const response = await fetch(`${backendUrl}/api/playlists/favorites`, { // バックエンドURLを付加
+        headers: {
+            'Authorization': `Bearer ${jwt}`, // JWTをAuthorizationヘッダーに設定
+        },
     });
     
     if (!response.ok) {
@@ -53,15 +58,20 @@ const FavoritePlaylistsTable: React.FC = () => {
     const [sorting, setSorting] = React.useState<SortingState>([]);
     
     const handleStarClick = async (playlist: FavoritePlaylist, isFavorite: boolean, event: React.MouseEvent) => {
-        event.stopPropagation(); // 行のクリックイベントが発生しないようにする
+        event.stopPropagation();
+        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080'; // 環境変数を使用
+        // セッションストレージからJWTを取得
+        const jwt = sessionStorage.getItem('JWT');
         try {
             const response = await fetch(
-                `/api/playlists/favorite?playlistId=${playlist.playlistId}&playlistName=${encodeURIComponent(
+                `${backendUrl}/api/playlists/favorite?playlistId=${playlist.playlistId}&playlistName=${encodeURIComponent(
                     playlist.playlistName
-                )}&totalTracks=${playlist.totalTracks}&playlistOwnerName=${encodeURIComponent(playlist.playlistOwnerName)}`,
+                )}&totalTracks=${playlist.totalTracks}&playlistOwnerName=${encodeURIComponent(playlist.playlistOwnerName)}`, // バックエンドURLを付加
                 {
                     method: isFavorite ? 'DELETE' : 'POST',
-                    credentials: 'include',
+                    headers: {
+                        'Authorization': `Bearer ${jwt}`, // JWTをAuthorizationヘッダーに設定
+                    },
                 }
             );
             

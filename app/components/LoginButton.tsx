@@ -2,7 +2,6 @@
 "use client";
 
 import React from 'react';
-import {useMutation} from '@tanstack/react-query';
 import {Button} from "./ui/button";
 import {useUser} from "../context/UserContext";
 
@@ -11,41 +10,8 @@ import {useUser} from "../context/UserContext";
  * ユーザーのログイン状態に応じて、ログインまたはログアウトを行うボタンを表示します。
  */
 const LoginButton: React.FC = () => {
-    const {isLoggedIn} = useUser(); // UserContextからisLoggedInを取得
+    const {isLoggedIn, setUserId, setIsLoggedIn} = useUser(); // UserContextからisLoggedInを取得
     console.log('LoginButton コンポーネントがレンダリングされました', {isLoggedIn});
-    
-    /**
-     * ログアウト処理を行うためのReact QueryのuseMutationフック
-     */
-    const logoutMutation = useMutation({
-        mutationFn: async () => {
-            console.log('ログアウトを実行しています');
-            try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/logout`, {
-                    method: 'POST',
-                    credentials: 'include'
-                });
-                if (!response.ok) {
-                    console.error('ログアウトに失敗しました', {
-                        status: response.status,
-                        statusText: response.statusText
-                    });
-                    throw new Error('ログアウトに失敗しました');
-                }
-                console.log('ログアウトリクエストが成功しました', {status: response.status});
-            } catch (error) {
-                console.error('ログアウトリクエスト中にエラーが発生しました', {error});
-                throw error;
-            }
-        },
-        onSuccess: () => {
-            console.log('ログアウト成功');
-            window.location.reload(); // ログアウト成功時にページをリロード
-        },
-        onError: (error) => {
-            console.error('ログアウトエラー:', {error}); // エラー発生時のログ出力
-        }
-    });
     
     /**
      * ログイン処理を開始する関数
@@ -55,13 +21,49 @@ const LoginButton: React.FC = () => {
         console.log('ログイン処理を開始します');
         const loginUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/oauth2/authorization/spotify`;
         console.log('リダイレクト先:', {loginUrl});
-        window.location.href = loginUrl; // 認証URLにリダイレクト
-    }
+        
+        // 新しいウィンドウを開く
+        const loginWindow = window.open(loginUrl, '_blank', 'width=500,height=600');
+        
+        // message イベントリスナーを設定
+        window.addEventListener('message', (event) => {
+            if (event.origin === process.env.NEXT_PUBLIC_BACKEND_URL) {
+                if (event.data.token) {
+                    // JWT トークンをセッションストレージに保存
+                    sessionStorage.setItem('JWT', event.data.token);
+                    
+                    // ログイン状態を更新
+                    setIsLoggedIn(true);
+                    setUserId(event.data.userId); // もしユーザーIDも送られてくるなら
+                    
+                    // ログインウィンドウを閉じる
+                    if (loginWindow) {
+                        loginWindow.close();
+                    }
+                    
+                    // 必要に応じてページをリロード
+                    window.location.reload();
+                }
+            }
+        });
+    };
+    
+    /**
+     * ログアウト処理を行う関数
+     */
+    const handleLogout = () => {
+        console.log('ログアウトを実行しています');
+        // セッションストレージからJWTトークンを削除
+        sessionStorage.removeItem('JWT');
+        setIsLoggedIn(false);
+        setUserId(null);
+        window.location.reload(); // ログアウト成功時にページをリロード
+    };
     
     return (
         <Button onClick={() => {
             console.log('ボタンがクリックされました', {isLoggedIn});
-            isLoggedIn ? logoutMutation.mutate() : handleLogin(); // ログイン状態に応じて処理を分岐
+            isLoggedIn ? handleLogout() : handleLogin(); // ログイン状態に応じて処理を分岐
         }}>
             {isLoggedIn ? 'ログアウト' : 'Spotifyでログイン'} {/* ボタンのラベルを動的に変更 */}
         </Button>

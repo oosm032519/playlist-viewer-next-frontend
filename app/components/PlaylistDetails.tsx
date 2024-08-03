@@ -52,7 +52,7 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                                                              totalTracks,
                                                              ownerName,
                                                          }) => {
-    const {favorites, addFavorite, removeFavorite} = useContext(FavoriteContext); // addFavorite, removeFavorite を追加
+    const {favorites, addFavorite, removeFavorite} = useContext(FavoriteContext);
     const [isFavorite, setIsFavorite] = useState(false);
     
     useEffect(() => {
@@ -60,23 +60,27 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
     }, [favorites, playlistId]);
     
     const handleStarClick = async () => {
+        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080'; // 環境変数を使用
+        // セッションストレージからJWTを取得
+        const jwt = sessionStorage.getItem('JWT');
         try {
             const response = await fetch(
-                `/api/playlists/favorite?playlistId=${playlistId}&playlistName=${encodeURIComponent(
+                `${backendUrl}/api/playlists/favorite?playlistId=${playlistId}&playlistName=${encodeURIComponent(
                     playlistName || ''
-                )}&totalTracks=${totalTracks}&playlistOwnerName=${encodeURIComponent(ownerName || '')}`,
+                )}&totalTracks=${totalTracks}&playlistOwnerName=${encodeURIComponent(ownerName || '')}`, // バックエンドURLを付加
                 {
                     method: isFavorite ? 'DELETE' : 'POST',
-                    credentials: 'include',
+                    headers: {
+                        'Authorization': `Bearer ${jwt}`, // JWTをAuthorizationヘッダーに設定
+                    },
                 }
             );
             
             if (response.ok) {
-                // isFavorite の状態に応じて addFavorite または removeFavorite を呼び出す
                 if (isFavorite) {
                     removeFavorite(playlistId);
                 } else {
-                    addFavorite(playlistId, playlistName || '', totalTracks); // totalTracks をここに追加
+                    addFavorite(playlistId, playlistName || '', totalTracks);
                 }
             } else {
                 console.error('お気に入り登録/解除に失敗しました。');

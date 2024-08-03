@@ -1,6 +1,5 @@
 // app/api/playlists/followed/route.ts
 import {NextRequest, NextResponse} from 'next/server';
-import {cookies} from 'next/headers';
 
 /**
  * フォロー中のプレイリストを取得する非同期関数
@@ -17,16 +16,18 @@ const getFollowedPlaylists = async (req: NextRequest): Promise<any> => {
     try {
         console.log('APIリクエストを送信します:', apiUrl);
         
-        // クッキーストアからJWTを取得
-        const cookieStore = cookies();
-        const jwt = cookieStore.get('JWT')?.value;
-        console.log('JWTクッキー:', jwt);
+        // リクエストヘッダーからJWTを取得
+        const jwt = req.headers.get('Authorization')?.split(' ')[1]; // 'Bearer <token>' からトークン部分を抽出
+        console.log('JWTトークン:', jwt);
+        
+        if (!jwt) {
+            throw new Error('Authorization header missing');
+        }
         
         const response = await fetch(apiUrl, {
             method: 'GET',
-            credentials: 'include',
             headers: {
-                'Cookie': `JWT=${jwt}`,
+                'Authorization': `Bearer ${jwt}`, // JWTをAuthorizationヘッダーに設定
             },
         });
         

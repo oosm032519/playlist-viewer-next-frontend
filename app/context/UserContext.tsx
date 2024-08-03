@@ -2,13 +2,14 @@
 "use client";
 
 import React, {createContext, useContext, useState, useEffect} from "react";
-import {checkSession} from "../lib/checkSession";
 
 // ユーザーコンテキストの型定義
 interface UserContextType {
     isLoggedIn: boolean;
     userId: string | null;
     error: string | null;
+    setIsLoggedIn: (isLoggedIn: boolean) => void;
+    setUserId: (userId: string | null) => void;
 }
 
 // ユーザーコンテキストの作成
@@ -31,14 +32,17 @@ export const UserContextProvider: React.FC<React.PropsWithChildren<{}>> = ({chil
     useEffect(() => {
         const initializeSession = async () => {
             try {
-                // セッションの状態を確認
-                const sessionStatus = await checkSession();
-                setIsLoggedIn(sessionStatus);
-                
-                if (sessionStatus) {
-                    // セッションが有効な場合、ユーザーIDを取得
+                // セッションストレージからJWTを取得
+                const jwt = sessionStorage.getItem('JWT');
+                if (jwt) {
+                    setIsLoggedIn(true);
+                    
+                    // バックエンドAPIにJWTを送信してユーザーIDを取得
                     const response = await fetch("/api/session/check", {
                         credentials: "include",
+                        headers: {
+                            'Authorization': `Bearer ${jwt}`, // JWTをAuthorizationヘッダーに設定
+                        },
                     });
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
@@ -61,7 +65,7 @@ export const UserContextProvider: React.FC<React.PropsWithChildren<{}>> = ({chil
     }, []);
     
     // コンテキストの値を設定
-    const contextValue = {isLoggedIn, userId, error};
+    const contextValue = {isLoggedIn, userId, error, setIsLoggedIn, setUserId};
     
     return (
         <UserContext.Provider value={contextValue}>

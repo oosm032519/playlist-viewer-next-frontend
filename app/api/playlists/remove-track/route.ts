@@ -1,7 +1,6 @@
 // app/api/playlists/remove-track/route.ts
 
 import {NextRequest} from "next/server";
-import {cookies} from 'next/headers';
 
 export async function POST(request: NextRequest): Promise<Response> {
     console.log("POST request received to remove track from playlist");
@@ -12,46 +11,48 @@ export async function POST(request: NextRequest): Promise<Response> {
         const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
         console.log(`Using backend URL: ${backendUrl}`);
         
-        const cookieStore = cookies();
-        const jwt = cookieStore.get('JWT')?.value;
-        console.log(`JWT cookie retrieved: ${jwt}`);
+        // AuthorizationヘッダーからJWTを取得
+        const authorizationHeader = request.headers.get('Authorization');
+        const jwt = authorizationHeader ? authorizationHeader.split(' ')[1] : null;
+        console.log(`[${new Date().toISOString()}] AuthorizationヘッダーからJWTを取得: ${jwt}`);
+        
+        if (!jwt) {
+            return new Response(JSON.stringify({error: "JWTが見つかりません"}), {
+                status: 401,
+                headers: {'Content-Type': 'application/json'}
+            });
+        }
         
         const response = await fetch(`${backendUrl}/api/playlist/remove-track`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Cookie': `JWT=${jwt}`, // JWTクッキーのみを送信
+                'Authorization': `Bearer ${jwt}`, // JWTをAuthorizationヘッダーに設定
             },
             body: JSON.stringify({playlistId, trackId}),
         });
         
-        const responseData = await response.json();
-        
+        // レスポンスがOKかどうかを確認
         if (response.ok) {
+            // OKの場合は、レスポンスをJSONとして解析し、クライアントに返す
+            const responseData = await response.json();
             return new Response(JSON.stringify(responseData), {
                 status: response.status,
                 headers: {'Content-Type': 'application/json'}
             });
+        } else {
+            // OKでない場合は、エラーメッセージをクライアントに返す
+            const errorData = await response.json();
+            return new Response(JSON.stringify({error: "トラックの削除に失敗しました", details: errorData}), {
+                status: response.status,
+                headers: {'Content-Type': 'application/json'}
+            });
         }
-        
-        throw new Error(JSON.stringify(responseData));
     } catch (error) {
         console.error("Error removing track from playlist:", error);
-        let errorMessage = "Failed to remove track from playlist";
-        let errorDetails = "Unknown error";
-        let statusCode = 500;
-        
-        if (error instanceof Error) {
-            try {
-                errorDetails = JSON.parse(error.message);
-            } catch {
-                errorDetails = error.message;
-            }
-        }
-        
         return new Response(
-            JSON.stringify({error: errorMessage, details: errorDetails}),
-            {status: statusCode, headers: {'Content-Type': 'application/json'}}
+            JSON.stringify({error: "トラックの削除に失敗しました", details: "不明なエラー"}),
+            {status: 500, headers: {'Content-Type': 'application/json'}}
         );
     }
 }
