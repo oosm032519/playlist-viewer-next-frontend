@@ -28,19 +28,21 @@ function HomeContent() {
     
     // URLフラグメントからJWTトークンを取得
     useEffect(() => {
-        console.log("useEffect: URLフラグメントからJWTトークンを取得開始"); // 関数開始ログ
-        const hash = window.location.hash;
-        if (hash.startsWith('?token=')) {
-            const token = hash.substring(7); // '#token=' の部分を削除
+        console.log("トークンの取得処理を開始します"); // トークンの取得処理を開始
+        const urlParams = new URLSearchParams(window.location.search);
+        console.log("URLパラメータ", urlParams); // URLパラメータをログ出力
+        const token = urlParams.get('token');
+        console.log("JWTトークン", token); // トークンをログ出力
+        if (token) {
+            console.log("トークンをセッションストレージに保存します"); // トークンをセッションストレージに保存
             localStorage.setItem('JWT', token);
-            console.log("useEffect: JWTトークンをlocalStorageに保存しました"); // トークン保存ログ
-            // トークンを取得したらフラグメントを削除
+            console.log("トークンをセッションストレージに保存しました"); // トークンをセッションストレージに保存
+            // トークンを取得したらクエリパラメータを削除
+            console.log("クエリパラメータを削除します"); // クエリパラメータを削除
             window.history.replaceState({}, document.title, window.location.pathname);
-            document.title = 'Playlist Viewer';
-        } else {
-            console.log("useEffect: URLフラグメントにJWTトークンは含まれていませんでした"); // トークン未取得ログ
+            console.log("クエリパラメータを削除しました"); // クエリパラメータを削除
         }
-        console.log("useEffect: URLフラグメントからJWTトークンを取得終了"); // 関数終了ログ
+        console.log("トークンの取得処理が完了しました"); // トークンの取得処理が完了
     }, []);
     
     const handlePlaylistClick = async (playlistId: string): Promise<void> => {
