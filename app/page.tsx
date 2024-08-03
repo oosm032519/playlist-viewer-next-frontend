@@ -30,7 +30,7 @@ function HomeContent() {
     useEffect(() => {
         console.log("useEffect: URLフラグメントからJWTトークンを取得開始"); // 関数開始ログ
         const hash = window.location.hash;
-        if (hash.startsWith('#token=')) {
+        if (hash.startsWith('?token=')) {
             const token = hash.substring(7); // '#token=' の部分を削除
             localStorage.setItem('JWT', token);
             console.log("useEffect: JWTトークンをlocalStorageに保存しました"); // トークン保存ログ
