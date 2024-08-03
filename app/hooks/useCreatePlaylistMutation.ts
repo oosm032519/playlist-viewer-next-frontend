@@ -7,7 +7,7 @@ export const useCreatePlaylistMutation = (tracks: any[], toast: any) => {
     const createPlaylistMutation = useMutation({
         mutationFn: async (trackIds: string[]) => {
             // セッションストレージからJWTを取得
-            const jwt = sessionStorage.getItem('JWT');
+            const jwt = localStorage.getItem('JWT');
             const response = await fetch('/api/playlists/create', {
                 method: 'POST',
                 headers: {

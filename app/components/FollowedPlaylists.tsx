@@ -18,7 +18,7 @@ interface FollowedPlaylistsProps {
  */
 const fetchFollowedPlaylists = async (): Promise<Playlist[]> => {
     // セッションストレージからJWTを取得
-    const jwt = sessionStorage.getItem('JWT');
+    const jwt = localStorage.getItem('JWT');
     const response = await fetch('/api/playlists/followed', {
         headers: {
             'Authorization': `Bearer ${jwt}`, // JWTをAuthorizationヘッダーに設定

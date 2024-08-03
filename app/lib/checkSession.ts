@@ -6,7 +6,7 @@
  */
 export const checkSession = (): boolean => {
     // セッションストレージからJWTを取得
-    const jwt = sessionStorage.getItem('JWT');
+    const jwt = localStorage.getItem('JWT');
     // JWTが存在すればセッションは有効とみなす
     return !!jwt;
 };

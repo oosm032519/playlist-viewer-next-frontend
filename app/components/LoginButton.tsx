@@ -32,7 +32,7 @@ const LoginButton: React.FC = () => {
     const handleLogout = () => {
         console.log('ログアウトを実行しています');
         // セッションストレージからJWTトークンを削除
-        sessionStorage.removeItem('JWT');
+        localStorage.removeItem('JWT');
         setIsLoggedIn(false);
         setUserId(null);
         window.location.reload(); // ログアウト成功時にページをリロード
