@@ -37,7 +37,7 @@ function HomeContent() {
         console.log("JWTトークン", token); // トークンをログ出力
         if (token) {
             console.log("トークンをセッションストレージに保存します"); // トークンをセッションストレージに保存
-            localStorage.setItem('JWT', token);
+            sessionStorage.setItem('JWT', token);
             console.log("トークンをセッションストレージに保存しました"); // トークンをセッションストレージに保存
             // トークンを取得したらハッシュを削除
             console.log("ハッシュを削除します"); // ハッシュを削除

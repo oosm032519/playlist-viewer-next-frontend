@@ -20,7 +20,7 @@ export const addTrackToPlaylist = async (playlistId: string, trackId: string): P
     console.log(`[addTrackToPlaylist] 開始: playlistId = ${playlistId}, trackId = ${trackId}`);
     try {
         // セッションストレージからJWTを取得
-        const jwt = localStorage.getItem('JWT');
+        const jwt = sessionStorage.getItem('JWT');
         
         if (!jwt) {
             console.error(`[addTrackToPlaylist] JWTが見つかりません`);
@@ -65,7 +65,7 @@ export const removeTrackFromPlaylist = async (playlistId: string, trackId: strin
     console.log(`[removeTrackFromPlaylist] 開始: playlistId = ${playlistId}, trackId = ${trackId}`);
     try {
         // セッションストレージからJWTを取得
-        const jwt = localStorage.getItem('JWT');
+        const jwt = sessionStorage.getItem('JWT');
         
         if (!jwt) {
             console.error(`[removeTrackFromPlaylist] JWTが見つかりません`);

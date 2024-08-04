@@ -43,7 +43,7 @@ export const FavoriteProvider: React.FC<{ children: React.ReactNode }> = ({
     const fetchFavorites = useCallback(async () => {
         try {
             // セッションストレージからJWTを取得
-            const jwt = localStorage.getItem('JWT');
+            const jwt = sessionStorage.getItem('JWT');
             const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/playlists/favorites`, {
                 headers: {
                     'Authorization': `Bearer ${jwt}`, // JWTをAuthorizationヘッダーに設定

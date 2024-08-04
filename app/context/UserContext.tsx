@@ -33,7 +33,7 @@ export const UserContextProvider: React.FC<React.PropsWithChildren<{}>> = ({chil
         const initializeSession = async () => {
             try {
                 // セッションストレージからJWTを取得
-                const jwt = localStorage.getItem('JWT');
+                const jwt = sessionStorage.getItem('JWT');
                 if (jwt) {
                     setIsLoggedIn(true);
                     

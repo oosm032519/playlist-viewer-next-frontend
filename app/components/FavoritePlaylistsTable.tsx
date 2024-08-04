@@ -33,7 +33,7 @@ interface FavoritePlaylist {
 const fetchFavoritePlaylists = async (): Promise<FavoritePlaylist[]> => {
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080'; // 環境変数を使用
     // セッションストレージからJWTを取得
-    const jwt = localStorage.getItem('JWT');
+    const jwt = sessionStorage.getItem('JWT');
     const response = await fetch(`${backendUrl}/api/playlists/favorites`, { // バックエンドURLを付加
         headers: {
             'Authorization': `Bearer ${jwt}`, // JWTをAuthorizationヘッダーに設定
@@ -61,7 +61,7 @@ const FavoritePlaylistsTable: React.FC = () => {
         event.stopPropagation();
         const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080'; // 環境変数を使用
         // セッションストレージからJWTを取得
-        const jwt = localStorage.getItem('JWT');
+        const jwt = sessionStorage.getItem('JWT');
         try {
             const response = await fetch(
                 `${backendUrl}/api/playlists/favorite?playlistId=${playlist.playlistId}&playlistName=${encodeURIComponent(
