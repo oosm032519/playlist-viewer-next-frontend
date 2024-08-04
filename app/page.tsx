@@ -25,11 +25,13 @@ function HomeContent() {
         setPlaylists(playlists);
         setSelectedPlaylistId(null);
     };
-    
+
     // URLフラグメントからJWTトークンを取得
     useEffect(() => {
         console.log("トークンの取得処理を開始します"); // トークンの取得処理を開始
-        const urlParams = new URLSearchParams(window.location.search);
+        const hash = window.location.hash;
+        console.log("URLハッシュ", hash); // URLハッシュをログ出力
+        const urlParams = new URLSearchParams(hash.substring(1)); // '#' を削除
         console.log("URLパラメータ", urlParams); // URLパラメータをログ出力
         const token = urlParams.get('token');
         console.log("JWTトークン", token); // トークンをログ出力
@@ -37,13 +39,13 @@ function HomeContent() {
             console.log("トークンをセッションストレージに保存します"); // トークンをセッションストレージに保存
             localStorage.setItem('JWT', token);
             console.log("トークンをセッションストレージに保存しました"); // トークンをセッションストレージに保存
-            // トークンを取得したらクエリパラメータを削除
-            console.log("クエリパラメータを削除します"); // クエリパラメータを削除
-            window.history.replaceState({}, document.title, window.location.pathname);
-            console.log("クエリパラメータを削除しました"); // クエリパラメータを削除
+            // トークンを取得したらハッシュを削除
+            console.log("ハッシュを削除します"); // ハッシュを削除
+            window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+            console.log("ハッシュを削除しました"); // ハッシュを削除
         }
         console.log("トークンの取得処理が完了しました"); // トークンの取得処理が完了
-    }, [window.location.search]);
+    }, []);
     
     const handlePlaylistClick = async (playlistId: string): Promise<void> => {
         console.log("handlePlaylistClick: 選択されたプレイリストID", playlistId); // プレイリストIDログ
