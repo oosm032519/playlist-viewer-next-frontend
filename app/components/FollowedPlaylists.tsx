@@ -17,12 +17,8 @@ interface FollowedPlaylistsProps {
  * @throws {Error} APIリクエストが失敗した場合にエラーを投げる
  */
 const fetchFollowedPlaylists = async (): Promise<Playlist[]> => {
-    // セッションストレージからJWTを取得
-    const jwt = sessionStorage.getItem('JWT');
     const response = await fetch('/api/playlists/followed', {
-        headers: {
-            'Authorization': `Bearer ${jwt}`, // JWTをAuthorizationヘッダーに設定
-        },
+        credentials: 'include', // Cookieを含めて送信
     });
     
     if (!response.ok) {

@@ -19,22 +19,14 @@ export function cn(...inputs: ClassValue[]) {
 export const addTrackToPlaylist = async (playlistId: string, trackId: string): Promise<boolean> => {
     console.log(`[addTrackToPlaylist] 開始: playlistId = ${playlistId}, trackId = ${trackId}`);
     try {
-        // セッションストレージからJWTを取得
-        const jwt = sessionStorage.getItem('JWT');
-        
-        if (!jwt) {
-            console.error(`[addTrackToPlaylist] JWTが見つかりません`);
-            return false;
-        }
-        
         console.log('[addTrackToPlaylist] APIリクエスト送信開始');
         const response = await fetch("/api/playlists/add-track", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                'Authorization': `Bearer ${jwt}`, // JWTをAuthorizationヘッダーに設定
             },
             body: JSON.stringify({playlistId, trackId}),
+            credentials: 'include', // Cookieを含めて送信
         });
         
         console.log(`[addTrackToPlaylist] APIレスポンス受信: ステータス = ${response.status}`);
@@ -64,22 +56,14 @@ export const addTrackToPlaylist = async (playlistId: string, trackId: string): P
 export const removeTrackFromPlaylist = async (playlistId: string, trackId: string): Promise<boolean> => {
     console.log(`[removeTrackFromPlaylist] 開始: playlistId = ${playlistId}, trackId = ${trackId}`);
     try {
-        // セッションストレージからJWTを取得
-        const jwt = sessionStorage.getItem('JWT');
-        
-        if (!jwt) {
-            console.error(`[removeTrackFromPlaylist] JWTが見つかりません`);
-            return false;
-        }
-        
         console.log('[removeTrackFromPlaylist] APIリクエスト送信開始');
         const response = await fetch("/api/playlists/remove-track", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                'Authorization': `Bearer ${jwt}`, // JWTをAuthorizationヘッダーに設定
             },
             body: JSON.stringify({playlistId, trackId}),
+            credentials: 'include', // Cookieを含めて送信
         });
         
         console.log(`[removeTrackFromPlaylist] APIレスポンス受信: ステータス = ${response.status}`);

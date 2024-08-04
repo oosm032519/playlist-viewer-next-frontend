@@ -32,12 +32,8 @@ interface FavoritePlaylist {
 
 const fetchFavoritePlaylists = async (): Promise<FavoritePlaylist[]> => {
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080'; // 環境変数を使用
-    // セッションストレージからJWTを取得
-    const jwt = sessionStorage.getItem('JWT');
     const response = await fetch(`${backendUrl}/api/playlists/favorites`, { // バックエンドURLを付加
-        headers: {
-            'Authorization': `Bearer ${jwt}`, // JWTをAuthorizationヘッダーに設定
-        },
+        credentials: 'include', // Cookieを含めて送信
     });
     
     if (!response.ok) {
@@ -60,8 +56,6 @@ const FavoritePlaylistsTable: React.FC = () => {
     const handleStarClick = async (playlist: FavoritePlaylist, isFavorite: boolean, event: React.MouseEvent) => {
         event.stopPropagation();
         const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080'; // 環境変数を使用
-        // セッションストレージからJWTを取得
-        const jwt = sessionStorage.getItem('JWT');
         try {
             const response = await fetch(
                 `${backendUrl}/api/playlists/favorite?playlistId=${playlist.playlistId}&playlistName=${encodeURIComponent(
@@ -69,9 +63,7 @@ const FavoritePlaylistsTable: React.FC = () => {
                 )}&totalTracks=${playlist.totalTracks}&playlistOwnerName=${encodeURIComponent(playlist.playlistOwnerName)}`, // バックエンドURLを付加
                 {
                     method: isFavorite ? 'DELETE' : 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${jwt}`, // JWTをAuthorizationヘッダーに設定
-                    },
+                    credentials: 'include', // Cookieを含めて送信
                 }
             );
             

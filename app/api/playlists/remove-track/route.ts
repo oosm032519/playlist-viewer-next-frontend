@@ -11,25 +11,13 @@ export async function POST(request: NextRequest): Promise<Response> {
         const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
         console.log(`Using backend URL: ${backendUrl}`);
         
-        // AuthorizationヘッダーからJWTを取得
-        const authorizationHeader = request.headers.get('Authorization');
-        const jwt = authorizationHeader ? authorizationHeader.split(' ')[1] : null;
-        console.log(`[${new Date().toISOString()}] AuthorizationヘッダーからJWTを取得: ${jwt}`);
-        
-        if (!jwt) {
-            return new Response(JSON.stringify({error: "JWTが見つかりません"}), {
-                status: 401,
-                headers: {'Content-Type': 'application/json'}
-            });
-        }
-        
         const response = await fetch(`${backendUrl}/api/playlist/remove-track`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${jwt}`, // JWTをAuthorizationヘッダーに設定
             },
             body: JSON.stringify({playlistId, trackId}),
+            credentials: 'include', // Cookieを含めて送信
         });
         
         // レスポンスがOKかどうかを確認

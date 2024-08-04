@@ -32,22 +32,16 @@ export const UserContextProvider: React.FC<React.PropsWithChildren<{}>> = ({chil
     useEffect(() => {
         const initializeSession = async () => {
             try {
-                // セッションストレージからJWTを取得
-                const jwt = sessionStorage.getItem('JWT');
-                if (jwt) {
+                // バックエンドAPIにJWTを送信してユーザーIDを取得
+                const response = await fetch("/api/session/check", {
+                    credentials: "include", // Cookieを含めて送信
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                if (data.status === 'success') {
                     setIsLoggedIn(true);
-                    
-                    // バックエンドAPIにJWTを送信してユーザーIDを取得
-                    const response = await fetch("/api/session/check", {
-                        credentials: "include",
-                        headers: {
-                            'Authorization': `Bearer ${jwt}`, // JWTをAuthorizationヘッダーに設定
-                        },
-                    });
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
                     setUserId(data.userId);
                 }
             } catch (error) {

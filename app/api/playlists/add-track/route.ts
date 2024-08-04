@@ -18,27 +18,15 @@ export async function POST(request: NextRequest): Promise<Response> {
         const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
         console.log(`[${new Date().toISOString()}] バックエンドURL: ${backendUrl}`);
         
-        // AuthorizationヘッダーからJWTを取得
-        const authorizationHeader = request.headers.get('Authorization');
-        const jwt = authorizationHeader ? authorizationHeader.split(' ')[1] : null;
-        console.log(`[${new Date().toISOString()}] AuthorizationヘッダーからJWTを取得: ${jwt}`);
-        
-        if (!jwt) {
-            return new Response(JSON.stringify({error: "JWTが見つかりません"}), {
-                status: 401,
-                headers: {'Content-Type': 'application/json'}
-            });
-        }
-        
         // バックエンドAPIにトラックをプレイリストに追加するためのリクエストを送信
         console.log(`[${new Date().toISOString()}] バックエンドAPIリクエスト開始: ${backendUrl}/api/playlist/add-track`);
         const response = await fetch(`${backendUrl}/api/playlist/add-track`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${jwt}`, // JWTをAuthorizationヘッダーに設定
             },
             body: JSON.stringify({playlistId, trackId}),
+            credentials: 'include',
         });
         console.log(`[${new Date().toISOString()}] バックエンドAPIレスポンス受信: ステータス=${response.status}`);
         

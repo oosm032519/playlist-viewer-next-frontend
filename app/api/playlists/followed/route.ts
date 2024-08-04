@@ -16,19 +16,9 @@ const getFollowedPlaylists = async (req: NextRequest): Promise<any> => {
     try {
         console.log('APIリクエストを送信します:', apiUrl);
         
-        // リクエストヘッダーからJWTを取得
-        const jwt = req.headers.get('Authorization')?.split(' ')[1]; // 'Bearer <token>' からトークン部分を抽出
-        console.log('JWTトークン:', jwt);
-        
-        if (!jwt) {
-            throw new Error('Authorization header missing');
-        }
-        
         const response = await fetch(apiUrl, {
             method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${jwt}`, // JWTをAuthorizationヘッダーに設定
-            },
+            credentials: 'include', // Cookieを含めて送信
         });
         
         if (!response.ok) {
