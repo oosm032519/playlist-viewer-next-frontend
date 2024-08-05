@@ -2,13 +2,7 @@
 
 import {POST} from './route';
 import {NextRequest} from 'next/server';
-import {cookies} from 'next/headers';
 import {expect} from '@jest/globals'
-
-// モックの設定
-jest.mock('next/headers', () => ({
-    cookies: jest.fn(),
-}));
 
 // 環境変数のモック
 const originalEnv = process.env;
@@ -24,11 +18,6 @@ describe('POST /api/playlists/remove-track', () => {
         // 環境変数のリセット
         process.env = {...originalEnv};
         process.env.NEXT_PUBLIC_BACKEND_URL = 'http://test-backend.com';
-        
-        // cookiesのモックをリセット
-        (cookies as jest.Mock).mockReturnValue({
-            get: jest.fn().mockReturnValue({value: 'test-jwt-token'}),
-        });
     });
     
     afterEach(() => {
@@ -40,6 +29,9 @@ describe('POST /api/playlists/remove-track', () => {
         const mockRequestBody = {playlistId: '123', trackId: '456'};
         const mockRequest = {
             json: jest.fn().mockResolvedValue(mockRequestBody),
+            headers: {
+                get: jest.fn().mockReturnValue('Bearer test-jwt-token')
+            }
         } as unknown as NextRequest;
         
         mockFetch.mockResolvedValue({
@@ -54,12 +46,12 @@ describe('POST /api/playlists/remove-track', () => {
         expect(response.status).toBe(200);
         expect(responseBody).toEqual({message: 'Track removed successfully'});
         expect(mockFetch).toHaveBeenCalledWith(
-            'http://test-backend.com/api/playlist/remove-track', // ここを修正
+            'http://test-backend.com/api/playlist/remove-track',
             expect.objectContaining({
                 method: 'POST',
                 headers: expect.objectContaining({
                     'Content-Type': 'application/json',
-                    'Cookie': 'JWT=test-jwt-token',
+                    'Authorization': 'Bearer test-jwt-token',
                 }),
                 body: JSON.stringify(mockRequestBody),
             })
@@ -72,6 +64,9 @@ describe('POST /api/playlists/remove-track', () => {
         const mockRequestBody = {playlistId: '123', trackId: '456'};
         const mockRequest = {
             json: jest.fn().mockResolvedValue(mockRequestBody),
+            headers: {
+                get: jest.fn().mockReturnValue('Bearer test-jwt-token')
+            }
         } as unknown as NextRequest;
         
         mockFetch.mockResolvedValue({
@@ -92,6 +87,9 @@ describe('POST /api/playlists/remove-track', () => {
         const mockRequestBody = {playlistId: '123', trackId: '456'};
         const mockRequest = {
             json: jest.fn().mockResolvedValue(mockRequestBody),
+            headers: {
+                get: jest.fn().mockReturnValue('Bearer test-jwt-token')
+            }
         } as unknown as NextRequest;
         
         mockFetch.mockResolvedValue({
@@ -103,9 +101,9 @@ describe('POST /api/playlists/remove-track', () => {
         const response = await POST(mockRequest);
         const responseBody = await response.json();
         
-        expect(response.status).toBe(500);
+        expect(response.status).toBe(400);
         expect(responseBody).toEqual({
-            error: 'Failed to remove track from playlist',
+            error: "トラックの削除に失敗しました",
             details: {error: 'Invalid request'},
         });
     });
@@ -114,6 +112,9 @@ describe('POST /api/playlists/remove-track', () => {
         const mockRequestBody = {playlistId: '123', trackId: '456'};
         const mockRequest = {
             json: jest.fn().mockResolvedValue(mockRequestBody),
+            headers: {
+                get: jest.fn().mockReturnValue('Bearer test-jwt-token')
+            }
         } as unknown as NextRequest;
         
         mockFetch.mockRejectedValue(new Error('Network error'));
@@ -123,8 +124,26 @@ describe('POST /api/playlists/remove-track', () => {
         
         expect(response.status).toBe(500);
         expect(responseBody).toEqual({
-            error: 'Failed to remove track from playlist',
-            details: 'Network error',
+            error: "トラックの削除に失敗しました",
+            details: "不明なエラー",
+        });
+    });
+    
+    it('JWTが見つからない場合、401エラーを返すこと', async () => {
+        const mockRequestBody = {playlistId: '123', trackId: '456'};
+        const mockRequest = {
+            json: jest.fn().mockResolvedValue(mockRequestBody),
+            headers: {
+                get: jest.fn().mockReturnValue(null)
+            }
+        } as unknown as NextRequest;
+        
+        const response = await POST(mockRequest);
+        const responseBody = await response.json();
+        
+        expect(response.status).toBe(401);
+        expect(responseBody).toEqual({
+            error: "JWTが見つかりません"
         });
     });
 });

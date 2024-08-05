@@ -39,7 +39,13 @@ describe('LoginButton', () => {
     });
     
     it('ログインしていない状態で正しく表示される', async () => {
-        mockUseUser.mockReturnValue({isLoggedIn: false, userId: null, error: null});
+        mockUseUser.mockReturnValue({
+            isLoggedIn: false,
+            userId: null,
+            error: null,
+            setIsLoggedIn: jest.fn(),
+            setUserId: jest.fn()
+        });
         
         await act(async () => {
             render(
@@ -55,7 +61,13 @@ describe('LoginButton', () => {
     });
     
     it('ログイン状態で正しく表示される', async () => {
-        mockUseUser.mockReturnValue({isLoggedIn: true, userId: 'test-user-id', error: null});
+        mockUseUser.mockReturnValue({
+            isLoggedIn: true,
+            userId: 'test-user-id',
+            error: null,
+            setIsLoggedIn: jest.fn(),
+            setUserId: jest.fn()
+        });
         
         await act(async () => {
             render(
@@ -71,7 +83,13 @@ describe('LoginButton', () => {
     });
     
     it('ログインボタンをクリックするとSpotify認証URLにリダイレクトする', async () => {
-        mockUseUser.mockReturnValue({isLoggedIn: false, userId: null, error: null});
+        mockUseUser.mockReturnValue({
+            isLoggedIn: false,
+            userId: null,
+            error: null,
+            setIsLoggedIn: jest.fn(),
+            setUserId: jest.fn()
+        });
         
         await act(async () => {
             render(
@@ -89,7 +107,15 @@ describe('LoginButton', () => {
     });
     
     it('ログアウトボタンをクリックするとログアウト処理が実行される', async () => {
-        mockUseUser.mockReturnValue({isLoggedIn: true, userId: 'test-user-id', error: null});
+        const mockSetIsLoggedIn = jest.fn();
+        const mockSetUserId = jest.fn();
+        mockUseUser.mockReturnValue({
+            isLoggedIn: true,
+            userId: 'test-user-id',
+            error: null,
+            setIsLoggedIn: mockSetIsLoggedIn,
+            setUserId: mockSetUserId
+        });
         
         await act(async () => {
             render(
@@ -104,16 +130,20 @@ describe('LoginButton', () => {
         fireEvent.click(screen.getByText('ログアウト'));
         
         await waitFor(() => {
-            expect(global.fetch).toHaveBeenCalledWith('http://test-backend-url.com/api/logout', {
-                method: 'POST',
-                credentials: 'include',
-            });
+            expect(mockSetIsLoggedIn).toHaveBeenCalledWith(false);
+            expect(mockSetUserId).toHaveBeenCalledWith(null);
             expect(mockReload).toHaveBeenCalled();
         });
     });
     
     it('アクセシビリティ違反がないこと', async () => {
-        mockUseUser.mockReturnValue({isLoggedIn: false, userId: null, error: null});
+        mockUseUser.mockReturnValue({
+            isLoggedIn: false,
+            userId: null,
+            error: null,
+            setIsLoggedIn: jest.fn(),
+            setUserId: jest.fn()
+        });
         
         const {container} = render(
             <QueryClientProvider client={queryClient}>

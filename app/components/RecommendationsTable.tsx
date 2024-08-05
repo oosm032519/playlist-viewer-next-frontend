@@ -17,6 +17,13 @@ import {useCreatePlaylistMutation} from "../hooks/useCreatePlaylistMutation";
 import LoadingSpinner from './LoadingSpinner';
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "./ui/table";
 import {ArrowUpDown} from "lucide-react";
+import DOMPurify from 'dompurify';
+
+// DOMPurify の設定
+const purifyConfig = {
+    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a'],
+    ALLOWED_ATTR: ['href', 'target']
+};
 
 export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({tracks, ownerId, userId, playlistId}) => {
     const [sorting, setSorting] = useState<SortingState>([]);
@@ -29,14 +36,17 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({track
         console.log("userId:", userId);
     }, [ownerId, userId]);
     
+    // DOMPurify の結果をメモ化
+    const sanitize = useMemo(() => (content: string) => DOMPurify.sanitize(content, purifyConfig), []);
+    
     const columns = useMemo<ColumnDef<typeof tracks[0]>[]>(() => {
         const baseColumns: ColumnDef<typeof tracks[0]>[] = [
             {
                 header: 'Album',
                 cell: info => (
                     <Image
-                        src={info.row.original.album.images[0].url}
-                        alt={info.row.original.album.name}
+                        src={sanitize(info.row.original.album.images[0].url)}
+                        alt={sanitize(info.row.original.album.name)}
                         width={50}
                         height={50}
                     />
@@ -45,10 +55,11 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({track
             {
                 header: 'Title',
                 accessorKey: 'name',
+                cell: info => <span dangerouslySetInnerHTML={{__html: sanitize(info.getValue() as string)}}/>,
             },
             {
                 header: 'Artist',
-                cell: info => info.row.original.artists[0].name,
+                cell: info => <span dangerouslySetInnerHTML={{__html: sanitize(info.row.original.artists[0].name)}}/>,
             },
             {
                 header: 'Preview',
@@ -77,7 +88,7 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({track
         }
         
         return baseColumns;
-    }, [ownerId, userId, addedTracks, handleAddTrack, handleRemoveTrack]);
+    }, [ownerId, userId, addedTracks, handleAddTrack, handleRemoveTrack, sanitize]);
     
     const table = useReactTable({
         data: tracks,

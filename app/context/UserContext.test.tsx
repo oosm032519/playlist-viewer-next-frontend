@@ -4,16 +4,20 @@ import React from 'react';
 import {render, screen, waitFor} from '@testing-library/react';
 import {axe, toHaveNoViolations} from 'jest-axe';
 import {UserContextProvider, useUser} from './UserContext';
-import * as checkSessionModule from '../lib/checkSession';
 import {expect} from '@jest/globals';
 
 expect.extend(toHaveNoViolations);
 
-// モックの設定
-jest.mock('../lib/checkSession');
-
 // グローバルなfetchのモック
 global.fetch = jest.fn() as jest.Mock;
+
+// sessionStorageのモック
+const mockSessionStorage = {
+    getItem: jest.fn(),
+    setItem: jest.fn(),
+    clear: jest.fn()
+};
+Object.defineProperty(window, 'sessionStorage', {value: mockSessionStorage});
 
 const originalConsoleError = console.error;
 beforeAll(() => {
@@ -25,7 +29,13 @@ afterAll(() => {
 });
 
 describe('UserContextProvider', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+    
     it('初期状態で正しく描画される', async () => {
+        mockSessionStorage.getItem.mockReturnValue(null);
+        
         const TestComponent = () => {
             const {isLoggedIn, userId, error} = useUser();
             return (
@@ -43,9 +53,11 @@ describe('UserContextProvider', () => {
             </UserContextProvider>
         );
         
-        expect(screen.getByTestId('logged-in')).toHaveTextContent('false');
-        expect(screen.getByTestId('user-id')).toHaveTextContent('null');
-        expect(screen.getByTestId('error')).toHaveTextContent('null');
+        await waitFor(() => {
+            expect(screen.getByTestId('logged-in')).toHaveTextContent('false');
+            expect(screen.getByTestId('user-id')).toHaveTextContent('null');
+            expect(screen.getByTestId('error')).toHaveTextContent('null');
+        });
     });
     
     it('アクセシビリティ違反がないこと', async () => {
@@ -61,12 +73,8 @@ describe('UserContextProvider', () => {
 });
 
 describe('セッションチェック', () => {
-    beforeEach(() => {
-        jest.clearAllMocks();
-    });
-    
     it('セッションが有効な場合、正しく状態が更新される', async () => {
-        (checkSessionModule.checkSession as jest.Mock).mockResolvedValue(true);
+        mockSessionStorage.getItem.mockReturnValue('valid-jwt');
         (global.fetch as jest.Mock).mockResolvedValue({
             ok: true,
             json: () => Promise.resolve({userId: 'test-user-id'}),
@@ -97,7 +105,7 @@ describe('セッションチェック', () => {
     });
     
     it('セッションが無効な場合、正しく状態が更新される', async () => {
-        (checkSessionModule.checkSession as jest.Mock).mockResolvedValue(false);
+        mockSessionStorage.getItem.mockReturnValue(null);
         
         const TestComponent = () => {
             const {isLoggedIn, userId, error} = useUser();
@@ -125,35 +133,8 @@ describe('セッションチェック', () => {
 });
 
 describe('エラーハンドリング', () => {
-    it('セッションチェック中にエラーが発生した場合、正しくエラー状態が設定される', async () => {
-        (checkSessionModule.checkSession as jest.Mock).mockRejectedValue(new Error('セッションチェックエラー'));
-        
-        const TestComponent = () => {
-            const {isLoggedIn, userId, error} = useUser();
-            return (
-                <div>
-                    <span data-testid="logged-in">{isLoggedIn.toString()}</span>
-                    <span data-testid="user-id">{userId || 'null'}</span>
-                    <span data-testid="error">{error || 'null'}</span>
-                </div>
-            );
-        };
-        
-        render(
-            <UserContextProvider>
-                <TestComponent/>
-            </UserContextProvider>
-        );
-        
-        await waitFor(() => {
-            expect(screen.getByTestId('logged-in')).toHaveTextContent('false');
-            expect(screen.getByTestId('user-id')).toHaveTextContent('null');
-            expect(screen.getByTestId('error')).toHaveTextContent('ユーザーIDの取得中にエラーが発生しました。');
-        });
-    });
-    
     it('ユーザーID取得中にエラーが発生した場合、正しくエラー状態が設定される', async () => {
-        (checkSessionModule.checkSession as jest.Mock).mockResolvedValue(true);
+        mockSessionStorage.getItem.mockReturnValue('valid-jwt');
         (global.fetch as jest.Mock).mockRejectedValue(new Error('ユーザーID取得エラー'));
         
         const TestComponent = () => {
@@ -215,7 +196,7 @@ describe('useUser フック', () => {
     });
     
     it('HTTPエラーが発生した場合、正しくエラー状態が設定される', async () => {
-        (checkSessionModule.checkSession as jest.Mock).mockResolvedValue(true);
+        mockSessionStorage.getItem.mockReturnValue('valid-jwt');
         (global.fetch as jest.Mock).mockResolvedValue({
             ok: false,
             status: 500,
@@ -252,7 +233,8 @@ describe('useUser フック', () => {
     });
     
     it('非Errorオブジェクトのエラーが発生した場合、正しくエラー状態が設定される', async () => {
-        (checkSessionModule.checkSession as jest.Mock).mockRejectedValue('非Errorオブジェクトのエラー');
+        mockSessionStorage.getItem.mockReturnValue('valid-jwt');
+        (global.fetch as jest.Mock).mockRejectedValue('非Errorオブジェクトのエラー');
         
         const TestComponent = () => {
             const {isLoggedIn, userId, error} = useUser();
@@ -272,7 +254,7 @@ describe('useUser フック', () => {
         );
         
         await waitFor(() => {
-            expect(screen.getByTestId('logged-in')).toHaveTextContent('false');
+            expect(screen.getByTestId('logged-in')).toHaveTextContent('true');
             expect(screen.getByTestId('user-id')).toHaveTextContent('null');
             expect(screen.getByTestId('error')).toHaveTextContent('ユーザーIDの取得中にエラーが発生しました。');
         });

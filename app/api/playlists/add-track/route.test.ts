@@ -1,6 +1,5 @@
 import {NextRequest} from 'next/server';
 import {POST} from './route';
-import {cookies} from 'next/headers';
 import {expect} from '@jest/globals';
 
 // モックの設定
@@ -33,11 +32,10 @@ describe('POST /api/playlists/add-track', () => {
         // モックの設定
         const mockRequest = {
             json: jest.fn().mockResolvedValue({playlistId: '1', trackId: '2'}),
+            headers: {
+                get: jest.fn().mockReturnValue('Bearer mock-jwt-token'),
+            },
         } as unknown as NextRequest;
-        
-        (cookies as jest.Mock).mockReturnValue({
-            get: jest.fn().mockReturnValue({value: 'mock-jwt-token'}),
-        });
         
         (global.fetch as jest.Mock).mockResolvedValue({
             status: 200,
@@ -57,7 +55,7 @@ describe('POST /api/playlists/add-track', () => {
                 method: 'POST',
                 headers: expect.objectContaining({
                     'Content-Type': 'application/json',
-                    'Cookie': 'JWT=mock-jwt-token',
+                    'Authorization': 'Bearer mock-jwt-token',
                 }),
                 body: JSON.stringify({playlistId: '1', trackId: '2'}),
             })
@@ -68,11 +66,10 @@ describe('POST /api/playlists/add-track', () => {
         // モックの設定
         const mockRequest = {
             json: jest.fn().mockResolvedValue({playlistId: '1', trackId: '2'}),
+            headers: {
+                get: jest.fn().mockReturnValue('Bearer mock-jwt-token'),
+            },
         } as unknown as NextRequest;
-        
-        (cookies as jest.Mock).mockReturnValue({
-            get: jest.fn().mockReturnValue({value: 'mock-jwt-token'}),
-        });
         
         (global.fetch as jest.Mock).mockResolvedValue({
             status: 400,
@@ -92,6 +89,9 @@ describe('POST /api/playlists/add-track', () => {
         // モックの設定
         const mockRequest = {
             json: jest.fn().mockRejectedValue(new Error('Invalid JSON')),
+            headers: {
+                get: jest.fn().mockReturnValue('Bearer mock-jwt-token'),
+            },
         } as unknown as NextRequest;
         
         // テスト実行
@@ -113,11 +113,10 @@ describe('POST /api/playlists/add-track', () => {
         // モックの設定
         const mockRequest = {
             json: jest.fn().mockResolvedValue({playlistId: '1', trackId: '2'}),
+            headers: {
+                get: jest.fn().mockReturnValue('Bearer mock-jwt-token'),
+            },
         } as unknown as NextRequest;
-        
-        (cookies as jest.Mock).mockReturnValue({
-            get: jest.fn().mockReturnValue({value: 'mock-jwt-token'}),
-        });
         
         (global.fetch as jest.Mock).mockResolvedValue({
             status: 200,
@@ -132,5 +131,23 @@ describe('POST /api/playlists/add-track', () => {
             'https://api.example.com/api/playlist/add-track',
             expect.anything()
         );
+    });
+    
+    it('異常系: JWTが見つからない場合', async () => {
+        // モックの設定
+        const mockRequest = {
+            json: jest.fn().mockResolvedValue({playlistId: '1', trackId: '2'}),
+            headers: {
+                get: jest.fn().mockReturnValue(null),
+            },
+        } as unknown as NextRequest;
+        
+        // テスト実行
+        const response = await POST(mockRequest);
+        const responseBody = await response.json();
+        
+        // アサーション
+        expect(response.status).toBe(401);
+        expect(responseBody).toEqual({error: 'JWTが見つかりません'});
     });
 });

@@ -1,5 +1,3 @@
-// app/components/PlaylistDetails.tsx
-
 "use client";
 
 import React, {useContext, useState, useEffect} from "react";
@@ -9,6 +7,7 @@ import GenreChart from "./GenreChart";
 import {RecommendationsTable} from "./RecommendationsTable";
 import {AudioFeatures} from "../types/audioFeaturesTypes";
 import {FavoriteContext} from "../context/FavoriteContext";
+import DOMPurify from 'dompurify';
 
 interface PlaylistDetailsProps {
     tracks: Track[];
@@ -60,18 +59,17 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
     }, [favorites, playlistId]);
     
     const handleStarClick = async () => {
-        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080'; // 環境変数を使用
-        // セッションストレージからJWTを取得
+        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
         const jwt = sessionStorage.getItem('JWT');
         try {
             const response = await fetch(
-                `${backendUrl}/api/playlists/favorite?playlistId=${playlistId}&playlistName=${encodeURIComponent(
+                `${backendUrl}/api/playlists/favorite?playlistId=${encodeURIComponent(playlistId)}&playlistName=${encodeURIComponent(
                     playlistName || ''
-                )}&totalTracks=${totalTracks}&playlistOwnerName=${encodeURIComponent(ownerName || '')}`, // バックエンドURLを付加
+                )}&totalTracks=${encodeURIComponent(totalTracks)}&playlistOwnerName=${encodeURIComponent(ownerName || '')}`,
                 {
                     method: isFavorite ? 'DELETE' : 'POST',
                     headers: {
-                        'Authorization': `Bearer ${jwt}`, // JWTをAuthorizationヘッダーに設定
+                        'Authorization': `Bearer ${jwt}`,
                     },
                 }
             );
@@ -90,17 +88,23 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
         }
     };
     
+    // DOMPurifyを使用して安全な文字列を作成
+    const sanitizedPlaylistName = DOMPurify.sanitize(playlistName || '');
+    const sanitizedOwnerName = DOMPurify.sanitize(ownerName || '');
+    
     return (
         <>
             {playlistName && (
                 <div className="text-center my-4 flex items-center justify-center">
-                    <h1 className="text-2xl font-bold mr-2">{playlistName} by {ownerName}</h1>
-                    <button onClick={handleStarClick} className="focus:outline-none">
-                        {isFavorite ? (
-                            <span className="text-yellow-400 text-2xl">★</span>
-                        ) : (
-                            <span className="text-gray-400 text-2xl">☆</span>
-                        )}
+                    <h1 className="text-2xl font-bold mr-2">
+                        {sanitizedPlaylistName}
+                    </h1>
+                    <span>by </span>
+                    <span>{sanitizedOwnerName}</span>
+                    <button onClick={handleStarClick} className="focus:outline-none ml-2">
+                        <span className={`text-2xl ${isFavorite ? 'text-yellow-400' : 'text-gray-400'}`}>
+                            {isFavorite ? '★' : '☆'}
+                        </span>
                     </button>
                 </div>
             )}

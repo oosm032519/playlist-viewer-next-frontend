@@ -6,22 +6,17 @@ import {useQuery} from '@tanstack/react-query';
 import {Playlist} from '../types/playlist';
 import {Alert, AlertDescription, AlertTitle} from "./ui/alert";
 import LoadingSpinner from "./LoadingSpinner";
+import DOMPurify from 'dompurify';
 
 interface FollowedPlaylistsProps {
     onPlaylistClick: (playlistId: string) => void;
 }
 
-/**
- * フォロー中のプレイリストデータをAPIから取得する非同期関数
- * @returns {Promise<Playlist[]>} プレイリストの配列を返す
- * @throws {Error} APIリクエストが失敗した場合にエラーを投げる
- */
 const fetchFollowedPlaylists = async (): Promise<Playlist[]> => {
-    // セッションストレージからJWTを取得
     const jwt = sessionStorage.getItem('JWT');
     const response = await fetch('/api/playlists/followed', {
         headers: {
-            'Authorization': `Bearer ${jwt}`, // JWTをAuthorizationヘッダーに設定
+            'Authorization': `Bearer ${jwt}`,
         },
     });
     
@@ -33,24 +28,16 @@ const fetchFollowedPlaylists = async (): Promise<Playlist[]> => {
     return Array.isArray(data) ? data : data.items || [];
 };
 
-/**
- * フォロー中のプレイリストを表示するコンポーネント
- * @param {FollowedPlaylistsProps} props - コンポーネントのプロパティ
- * @returns {JSX.Element} フォロー中のプレイリストを表示するJSX要素
- */
 const FollowedPlaylists: React.FC<FollowedPlaylistsProps> = ({onPlaylistClick}) => {
-    // React Queryを使用してフォロー中のプレイリストデータを取得
     const {data: playlists, isLoading, error} = useQuery<Playlist[], Error>({
         queryKey: ['followedPlaylists'],
         queryFn: fetchFollowedPlaylists,
     });
     
-    // データがロード中の場合、ローディングスピナーを表示
     if (isLoading) {
         return <LoadingSpinner loading={isLoading}/>;
     }
     
-    // エラーが発生した場合、エラーメッセージを表示
     if (error) {
         return (
             <Alert variant="destructive">
@@ -60,7 +47,6 @@ const FollowedPlaylists: React.FC<FollowedPlaylistsProps> = ({onPlaylistClick}) 
         );
     }
     
-    // フォロー中のプレイリストを表示
     return (
         <div className="mt-8">
             <h2 className="text-2xl font-bold mb-4">フォロー中のプレイリスト</h2>
@@ -68,26 +54,37 @@ const FollowedPlaylists: React.FC<FollowedPlaylistsProps> = ({onPlaylistClick}) 
                 <p>フォロー中のプレイリストはありません。</p>
             ) : (
                 <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {playlists && playlists.map((playlist) => (
-                        <li key={playlist.id} className="bg-gray-100 p-4 rounded-lg shadow">
-                            <div onClick={() => onPlaylistClick(playlist.id)}>
-                                {playlist.images && playlist.images.length > 0 ? (
-                                    <img
-                                        src={playlist.images[0].url}
-                                        alt={playlist.name}
-                                        className="w-full h-40 object-cover mb-2 cursor-pointer"
-                                    />
-                                ) : (
-                                    <div
-                                        className="w-full h-40 bg-gray-200 flex items-center justify-center mb-2">
-                                        <span className="text-gray-500">No Image</span>
-                                    </div>
-                                )}
-                                <h3 className="font-semibold cursor-pointer">{playlist.name}</h3>
-                                <p className="text-sm text-gray-600">トラック数: {playlist.tracks.total}</p>
-                            </div>
-                        </li>
-                    ))}
+                    {playlists && playlists.map((playlist) => {
+                        const sanitizedName = DOMPurify.sanitize(playlist.name);
+                        const sanitizedImageUrl = playlist.images && playlist.images.length > 0
+                            ? DOMPurify.sanitize(playlist.images[0].url)
+                            : '';
+                        const sanitizedTrackCount = DOMPurify.sanitize(playlist.tracks.total.toString());
+                        
+                        return (
+                            <li key={playlist.id} className="bg-gray-100 p-4 rounded-lg shadow">
+                                <div onClick={() => onPlaylistClick(playlist.id)}>
+                                    {sanitizedImageUrl ? (
+                                        <img
+                                            src={sanitizedImageUrl}
+                                            alt={sanitizedName}
+                                            className="w-full h-40 object-cover mb-2 cursor-pointer"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-40 bg-gray-200 flex items-center justify-center mb-2">
+                                            <span className="text-gray-500">No Image</span>
+                                        </div>
+                                    )}
+                                    <h3 className="font-semibold cursor-pointer">
+                                        {sanitizedName}
+                                    </h3>
+                                    <p className="text-sm text-gray-600">
+                                        トラック数: {sanitizedTrackCount}
+                                    </p>
+                                </div>
+                            </li>
+                        );
+                    })}
                 </ul>
             )}
         </div>

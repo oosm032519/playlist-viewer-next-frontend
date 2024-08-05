@@ -1,6 +1,6 @@
 "use client";
 
-import React, {useContext} from 'react';
+import React, {useContext, useMemo} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {
     Table,
@@ -21,6 +21,7 @@ import {
     useReactTable,
 } from '@tanstack/react-table';
 import {FavoriteContext} from '@/app/context/FavoriteContext';
+import DOMPurify from 'dompurify';
 
 interface FavoritePlaylist {
     playlistId: string;
@@ -31,12 +32,11 @@ interface FavoritePlaylist {
 }
 
 const fetchFavoritePlaylists = async (): Promise<FavoritePlaylist[]> => {
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080'; // 環境変数を使用
-    // セッションストレージからJWTを取得
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
     const jwt = sessionStorage.getItem('JWT');
-    const response = await fetch(`${backendUrl}/api/playlists/favorites`, { // バックエンドURLを付加
+    const response = await fetch(`${backendUrl}/api/playlists/favorites`, {
         headers: {
-            'Authorization': `Bearer ${jwt}`, // JWTをAuthorizationヘッダーに設定
+            'Authorization': `Bearer ${jwt}`,
         },
     });
     
@@ -59,18 +59,17 @@ const FavoritePlaylistsTable: React.FC = () => {
     
     const handleStarClick = async (playlist: FavoritePlaylist, isFavorite: boolean, event: React.MouseEvent) => {
         event.stopPropagation();
-        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080'; // 環境変数を使用
-        // セッションストレージからJWTを取得
+        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
         const jwt = sessionStorage.getItem('JWT');
         try {
             const response = await fetch(
-                `${backendUrl}/api/playlists/favorite?playlistId=${playlist.playlistId}&playlistName=${encodeURIComponent(
+                `${backendUrl}/api/playlists/favorite?playlistId=${encodeURIComponent(playlist.playlistId)}&playlistName=${encodeURIComponent(
                     playlist.playlistName
-                )}&totalTracks=${playlist.totalTracks}&playlistOwnerName=${encodeURIComponent(playlist.playlistOwnerName)}`, // バックエンドURLを付加
+                )}&totalTracks=${encodeURIComponent(playlist.totalTracks.toString())}&playlistOwnerName=${encodeURIComponent(playlist.playlistOwnerName)}`,
                 {
                     method: isFavorite ? 'DELETE' : 'POST',
                     headers: {
-                        'Authorization': `Bearer ${jwt}`, // JWTをAuthorizationヘッダーに設定
+                        'Authorization': `Bearer ${jwt}`,
                     },
                 }
             );
@@ -89,24 +88,39 @@ const FavoritePlaylistsTable: React.FC = () => {
         }
     };
     
-    const columns: ColumnDef<FavoritePlaylist>[] = React.useMemo(
+    const columns: ColumnDef<FavoritePlaylist>[] = useMemo(
         () => [
             {
                 accessorKey: 'playlistName',
                 header: 'プレイリスト名',
+                cell: ({getValue}) => {
+                    const value = getValue() as string;
+                    return <span>{DOMPurify.sanitize(value)}</span>;
+                },
             },
             {
                 accessorKey: 'playlistOwnerName',
                 header: '作成者',
+                cell: ({getValue}) => {
+                    const value = getValue() as string;
+                    return <span>{DOMPurify.sanitize(value)}</span>;
+                },
             },
             {
                 accessorKey: 'totalTracks',
                 header: '楽曲数',
+                cell: ({getValue}) => {
+                    const value = getValue() as number;
+                    return <span>{value}</span>;
+                },
             },
             {
                 accessorKey: 'addedAt',
                 header: 'お気に入り追加日時',
-                cell: ({getValue}) => format(new Date(getValue() as string), 'yyyy/MM/dd HH:mm'),
+                cell: ({getValue}) => {
+                    const value = getValue() as string;
+                    return <span>{format(new Date(value), 'yyyy/MM/dd HH:mm')}</span>;
+                },
             },
             {
                 id: 'favorite',

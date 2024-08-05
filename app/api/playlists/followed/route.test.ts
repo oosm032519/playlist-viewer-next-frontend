@@ -1,18 +1,17 @@
 import {NextRequest, NextResponse} from 'next/server';
-import {cookies} from 'next/headers';
 import {GET} from './route';
 import {expect} from '@jest/globals';
 
 // モックの設定
 jest.mock('next/server', () => ({
-    NextRequest: jest.fn(),
+    NextRequest: jest.fn().mockImplementation((input, init) => ({
+        url: input,
+        method: init?.method,
+        headers: new Map(Object.entries(init?.headers || {})),
+    })),
     NextResponse: {
         json: jest.fn(),
     },
-}));
-
-jest.mock('next/headers', () => ({
-    cookies: jest.fn(),
 }));
 
 // グローバルなfetch関数をモック
@@ -29,10 +28,6 @@ describe('GET handler for followed playlists', () => {
         const mockJwt = 'mock-jwt-token';
         const mockPlaylists = [{id: 1, name: 'Playlist 1'}, {id: 2, name: 'Playlist 2'}];
         
-        (cookies as jest.Mock).mockReturnValue({
-            get: jest.fn().mockReturnValue({value: mockJwt}),
-        });
-        
         (global.fetch as jest.Mock).mockResolvedValue({
             ok: true,
             json: jest.fn().mockResolvedValue(mockPlaylists),
@@ -41,6 +36,9 @@ describe('GET handler for followed playlists', () => {
         // リクエストオブジェクトの作成
         const req = new NextRequest('http://localhost:3000/api/playlists/followed', {
             method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${mockJwt}`,
+            },
         });
         
         // ハンドラーの呼び出し
@@ -51,9 +49,8 @@ describe('GET handler for followed playlists', () => {
             'http://localhost:8080/api/playlists/followed',
             expect.objectContaining({
                 method: 'GET',
-                credentials: 'include',
                 headers: {
-                    'Cookie': `JWT=${mockJwt}`,
+                    'Authorization': `Bearer ${mockJwt}`,
                 },
             })
         );
@@ -66,15 +63,14 @@ describe('GET handler for followed playlists', () => {
         const mockJwt = 'mock-jwt-token';
         const mockError = new Error('API error');
         
-        (cookies as jest.Mock).mockReturnValue({
-            get: jest.fn().mockReturnValue({value: mockJwt}),
-        });
-        
         (global.fetch as jest.Mock).mockRejectedValue(mockError);
         
         // リクエストオブジェクトの作成
         const req = new NextRequest('http://localhost:3000/api/playlists/followed', {
             method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${mockJwt}`,
+            },
         });
         
         // ハンドラーの呼び出し
@@ -85,9 +81,8 @@ describe('GET handler for followed playlists', () => {
             'http://localhost:8080/api/playlists/followed',
             expect.objectContaining({
                 method: 'GET',
-                credentials: 'include',
                 headers: {
-                    'Cookie': `JWT=${mockJwt}`,
+                    'Authorization': `Bearer ${mockJwt}`,
                 },
             })
         );
@@ -99,11 +94,6 @@ describe('GET handler for followed playlists', () => {
     });
     
     it('should handle missing JWT token', async () => {
-        // モックの設定
-        (cookies as jest.Mock).mockReturnValue({
-            get: jest.fn().mockReturnValue(undefined),
-        });
-        
         // リクエストオブジェクトの作成
         const req = new NextRequest('http://localhost:3000/api/playlists/followed', {
             method: 'GET',
@@ -113,22 +103,10 @@ describe('GET handler for followed playlists', () => {
         const response = await GET(req);
         
         // アサーション
-        expect(global.fetch).toHaveBeenCalledWith(
-            'http://localhost:8080/api/playlists/followed',
-            expect.objectContaining({
-                method: 'GET',
-                credentials: 'include',
-                headers: {
-                    'Cookie': 'JWT=undefined',
-                },
-            })
-        );
+        expect(global.fetch).not.toHaveBeenCalled();
         
-        // この場合、APIリクエストは失敗するはずなので、エラーレスポンスを期待します
         expect(NextResponse.json).toHaveBeenCalledWith(
-            expect.objectContaining({
-                error: expect.stringContaining('フォロー中のプレイリストの取得中にエラーが発生しました'),
-            }),
+            {error: 'フォロー中のプレイリストの取得中にエラーが発生しました: Failed to fetch playlists: Authorization header missing'},
             {status: 500}
         );
     });
@@ -141,10 +119,6 @@ describe('GET handler for followed playlists', () => {
         const mockJwt = 'mock-jwt-token';
         const mockPlaylists = [{id: 1, name: 'Playlist 1'}];
         
-        (cookies as jest.Mock).mockReturnValue({
-            get: jest.fn().mockReturnValue({value: mockJwt}),
-        });
-        
         (global.fetch as jest.Mock).mockResolvedValue({
             ok: true,
             json: jest.fn().mockResolvedValue(mockPlaylists),
@@ -153,6 +127,9 @@ describe('GET handler for followed playlists', () => {
         // リクエストオブジェクトの作成
         const req = new NextRequest('http://localhost:3000/api/playlists/followed', {
             method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${mockJwt}`,
+            },
         });
         
         // ハンドラーの呼び出し
@@ -161,7 +138,12 @@ describe('GET handler for followed playlists', () => {
         // アサーション
         expect(global.fetch).toHaveBeenCalledWith(
             'https://custom-backend.com/api/playlists/followed',
-            expect.anything()
+            expect.objectContaining({
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${mockJwt}`,
+                },
+            })
         );
         
         // 環境変数をリセット
