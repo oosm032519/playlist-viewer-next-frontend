@@ -150,4 +150,44 @@ describe('POST /api/playlists/add-track', () => {
         expect(response.status).toBe(401);
         expect(responseBody).toEqual({error: 'JWTが見つかりません'});
     });
+    
+    // 新しいテストケース: fetchがネットワークエラーを投げた場合
+    it('異常系: fetchがネットワークエラーを投げた場合', async () => {
+        const mockRequest = {
+            json: jest.fn().mockResolvedValue({playlistId: '1', trackId: '2'}),
+            headers: {
+                get: jest.fn().mockReturnValue('Bearer mock-jwt-token'),
+            },
+        } as unknown as NextRequest;
+        
+        (global.fetch as jest.Mock).mockRejectedValue(new Error('Network error'));
+        
+        const response = await POST(mockRequest);
+        const responseBody = await response.json();
+        
+        expect(response.status).toBe(500);
+        expect(responseBody).toEqual({
+            error: 'プレイリストへのトラック追加に失敗しました',
+            details: 'Network error',
+        });
+    });
+    
+    // 新しいテストケース: 不明なエラーが発生した場合
+    it('異常系: 不明なエラーが発生した場合', async () => {
+        const mockRequest = {
+            json: jest.fn().mockRejectedValue('Unknown error'),
+            headers: {
+                get: jest.fn().mockReturnValue('Bearer mock-jwt-token'),
+            },
+        } as unknown as NextRequest;
+        
+        const response = await POST(mockRequest);
+        const responseBody = await response.json();
+        
+        expect(response.status).toBe(500);
+        expect(responseBody).toEqual({
+            error: 'プレイリストへのトラック追加に失敗しました',
+            details: '不明なエラー',
+        });
+    });
 });
