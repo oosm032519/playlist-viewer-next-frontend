@@ -27,8 +27,6 @@ const LoginButton: React.FC = () => {
                 throw new Error('ログアウト処理に失敗しました');
             }
             
-            // セッションストレージからJWTトークンを削除
-            sessionStorage.removeItem('JWT');
             setIsLoggedIn(false);
             setUserId(null);
             console.log('ログアウトが成功しました');
