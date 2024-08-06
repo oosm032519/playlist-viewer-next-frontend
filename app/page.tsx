@@ -49,6 +49,7 @@ function HomeContent() {
                 console.log("ハッシュを削除します");
                 window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
                 console.log("ハッシュを削除しました");
+                window.location.reload(); // ページをリロード
             });
         }
         console.log("トークンの取得処理が完了しました");
