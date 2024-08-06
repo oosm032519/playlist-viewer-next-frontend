@@ -1,49 +1,49 @@
-// app/components/LoginButton.tsx
 "use client";
 
 import React from 'react';
 import {Button} from "./ui/button";
 import {useUser} from "../context/UserContext";
 
-/**
- * ログインボタンコンポーネント
- * ユーザーのログイン状態に応じて、ログインまたはログアウトを行うボタンを表示します。
- */
 const LoginButton: React.FC = () => {
-    const {isLoggedIn, setUserId, setIsLoggedIn} = useUser(); // UserContextからisLoggedInを取得
+    const {isLoggedIn, setUserId, setIsLoggedIn} = useUser();
     console.log('LoginButton コンポーネントがレンダリングされました', {isLoggedIn});
     
-    /**
-     * ログイン処理を開始する関数
-     * Spotifyの認証URLにリダイレクトします。
-     */
     const handleLogin = () => {
         console.log('ログイン処理を開始します');
         const loginUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/oauth2/authorization/spotify`;
         console.log('リダイレクト先:', {loginUrl});
-        
-        // リダイレクト
         window.location.href = loginUrl;
     };
     
-    /**
-     * ログアウト処理を行う関数
-     */
-    const handleLogout = () => {
+    const handleLogout = async () => {
         console.log('ログアウトを実行しています');
-        // セッションストレージからJWTトークンを削除
-        sessionStorage.removeItem('JWT');
-        setIsLoggedIn(false);
-        setUserId(null);
-        window.location.reload(); // ログアウト成功時にページをリロード
+        try {
+            const response = await fetch('/api/session/delete-jwt', {
+                method: 'DELETE',
+                credentials: 'include',
+            });
+            
+            if (!response.ok) {
+                throw new Error('ログアウト処理に失敗しました');
+            }
+            
+            // セッションストレージからJWTトークンを削除
+            sessionStorage.removeItem('JWT');
+            setIsLoggedIn(false);
+            setUserId(null);
+            console.log('ログアウトが成功しました');
+            window.location.reload(); // ログアウト成功時にページをリロード
+        } catch (error) {
+            console.error('ログアウト中にエラーが発生しました:', error);
+        }
     };
     
     return (
         <Button onClick={() => {
             console.log('ボタンがクリックされました', {isLoggedIn});
-            isLoggedIn ? handleLogout() : handleLogin(); // ログイン状態に応じて処理を分岐
+            isLoggedIn ? handleLogout() : handleLogin();
         }}>
-            {isLoggedIn ? 'ログアウト' : 'Spotifyでログイン'} {/* ボタンのラベルを動的に変更 */}
+            {isLoggedIn ? 'ログアウト' : 'Spotifyでログイン'}
         </Button>
     );
 };

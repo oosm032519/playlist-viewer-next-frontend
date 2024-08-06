@@ -33,7 +33,14 @@ interface FavoritePlaylist {
 
 const fetchFavoritePlaylists = async (): Promise<FavoritePlaylist[]> => {
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
-    const jwt = sessionStorage.getItem('JWT');
+    
+    // JWTを取得
+    const jwtResponse = await fetch('/api/session/get-jwt');
+    if (!jwtResponse.ok) {
+        throw new Error('JWTの取得に失敗しました');
+    }
+    const {jwt} = await jwtResponse.json();
+    
     const response = await fetch(`${backendUrl}/api/playlists/favorites`, {
         headers: {
             'Authorization': `Bearer ${jwt}`,
@@ -60,7 +67,15 @@ const FavoritePlaylistsTable: React.FC = () => {
     const handleStarClick = async (playlist: FavoritePlaylist, isFavorite: boolean, event: React.MouseEvent) => {
         event.stopPropagation();
         const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
-        const jwt = sessionStorage.getItem('JWT');
+        
+        // JWTを取得
+        const jwtResponse = await fetch('/api/session/get-jwt');
+        if (!jwtResponse.ok) {
+            console.error('JWTの取得に失敗しました');
+            return;
+        }
+        const {jwt} = await jwtResponse.json();
+        
         try {
             const response = await fetch(
                 `${backendUrl}/api/playlists/favorite?playlistId=${encodeURIComponent(playlist.playlistId)}&playlistName=${encodeURIComponent(

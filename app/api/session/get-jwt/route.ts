@@ -2,7 +2,7 @@ import {NextRequest, NextResponse} from 'next/server';
 import {kv} from '@vercel/kv';
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
-    console.log(`[${new Date().toISOString()}] GET リクエスト開始: /api/auth/get-jwt`);
+    console.log(`[${new Date().toISOString()}] GET リクエスト開始: /api/session/get-jwt`);
     
     try {
         // セッションIDを取得
@@ -25,6 +25,6 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         console.error(`[${new Date().toISOString()}] エラー発生:`, error);
         return NextResponse.json({error: "JWTの取得に失敗しました"}, {status: 500});
     } finally {
-        console.log(`[${new Date().toISOString()}] GET リクエスト終了: /api/auth/get-jwt`);
+        console.log(`[${new Date().toISOString()}] GET リクエスト終了: /api/session/get-jwt`);
     }
 }

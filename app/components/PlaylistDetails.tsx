@@ -60,8 +60,15 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
     
     const handleStarClick = async () => {
         const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
-        const jwt = sessionStorage.getItem('JWT');
+        
         try {
+            // get-jwt APIルートを使用してJWTを取得
+            const jwtResponse = await fetch('/api/get-jwt');
+            if (!jwtResponse.ok) {
+                throw new Error('JWTの取得に失敗しました');
+            }
+            const {jwt} = await jwtResponse.json();
+            
             const response = await fetch(
                 `${backendUrl}/api/playlists/favorite?playlistId=${encodeURIComponent(playlistId)}&playlistName=${encodeURIComponent(
                     playlistName || ''
