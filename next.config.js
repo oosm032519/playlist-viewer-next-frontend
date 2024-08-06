@@ -118,25 +118,6 @@ const nextConfig = {
     // ビルド出力の最適化
     output: 'standalone',
 
-    // webpack設定のカスタマイズ
-    webpack: (config, {dev, isServer}) => {
-        // 本番環境でのみ適用される設定
-        if (!dev && !isServer) {
-            Object.assign(config.resolve.alias, {
-                react: 'preact/compat',
-                'react-dom/test-utils': 'preact/test-utils',
-                'react-dom': 'preact/compat',
-            });
-        }
-
-        // セキュリティ強化: ソースマップの生成を制限
-        if (!dev) {
-            config.devtool = 'hidden-source-map';
-        }
-
-        return config;
-    },
-
     // 環境変数の検証
     env: {
         NEXT_PUBLIC_BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL,
