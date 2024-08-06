@@ -1,4 +1,3 @@
-// app/components/FollowedPlaylists.tsx
 "use client";
 
 import React from 'react';
@@ -13,18 +12,23 @@ interface FollowedPlaylistsProps {
 }
 
 const fetchFollowedPlaylists = async (): Promise<Playlist[]> => {
-    const jwt = sessionStorage.getItem('JWT');
-    const response = await fetch('/api/playlists/followed', {
+    const response = await fetch('/api/session/get-jwt');
+    if (!response.ok) {
+        throw new Error('Failed to get JWT token');
+    }
+    const {jwt} = await response.json();
+    
+    const playlistsResponse = await fetch('/api/playlists/followed', {
         headers: {
             'Authorization': `Bearer ${jwt}`,
         },
     });
     
-    if (!response.ok) {
-        throw new Error(`API request failed with status ${response.status}`);
+    if (!playlistsResponse.ok) {
+        throw new Error(`API request failed with status ${playlistsResponse.status}`);
     }
     
-    const data = await response.json();
+    const data = await playlistsResponse.json();
     return Array.isArray(data) ? data : data.items || [];
 };
 
