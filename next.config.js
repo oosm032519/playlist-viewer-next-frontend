@@ -100,16 +100,6 @@ const nextConfig = {
         ];
     },
 
-    // リライトルールの強化
-    async rewrites() {
-        return [
-            {
-                source: '/api/:path*',
-                destination: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/:path*`,
-            },
-        ];
-    },
-
     // 追加のセキュリティ設定
     poweredByHeader: false, // 'X-Powered-By' ヘッダーを無効化
     compress: true, // レスポンスの圧縮を有効化
