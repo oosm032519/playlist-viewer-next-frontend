@@ -22,7 +22,7 @@ export const UserContextProvider: React.FC<React.PropsWithChildren<{}>> = ({chil
         const initializeSession = async () => {
             try {
                 console.log("セッション初期化開始");
-                const response = await fetch("/api/auth/get-jwt", {
+                const response = await fetch("/api/session/get-jwt", {
                     method: 'GET',
                     credentials: 'include',
                 });
