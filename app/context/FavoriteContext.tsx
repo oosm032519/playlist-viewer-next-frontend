@@ -43,7 +43,7 @@ export const FavoriteProvider: React.FC<{ children: React.ReactNode }> = ({
     const fetchFavorites = useCallback(async () => {
         try {
             // get-jwt APIルートを使用してJWTを取得
-            const jwtResponse = await fetch('/api/get-jwt');
+            const jwtResponse = await fetch('/api/session/get-jwt');
             if (!jwtResponse.ok) {
                 throw new Error('JWTの取得に失敗しました。');
             }
