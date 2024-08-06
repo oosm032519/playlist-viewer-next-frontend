@@ -28,23 +28,30 @@ function HomeContent() {
 
     // URLフラグメントからJWTトークンを取得
     useEffect(() => {
-        console.log("トークンの取得処理を開始します"); // トークンの取得処理を開始
+        console.log("トークンの取得処理を開始します");
         const hash = window.location.hash;
-        console.log("URLハッシュ", hash); // URLハッシュをログ出力
-        const urlParams = new URLSearchParams(hash.substring(1)); // '#' を削除
-        console.log("URLパラメータ", urlParams); // URLパラメータをログ出力
+        console.log("URLハッシュ", hash);
+        const urlParams = new URLSearchParams(hash.substring(1));
+        console.log("URLパラメータ", urlParams);
         const token = urlParams.get('token');
-        console.log("JWTトークン", token); // トークンをログ出力
+        console.log("JWTトークン", token);
         if (token) {
-            console.log("トークンをセッションストレージに保存します"); // トークンをセッションストレージに保存
-            sessionStorage.setItem('JWT', token);
-            console.log("トークンをセッションストレージに保存しました"); // トークンをセッションストレージに保存
-            // トークンを取得したらハッシュを削除
-            console.log("ハッシュを削除します"); // ハッシュを削除
-            window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
-            console.log("ハッシュを削除しました"); // ハッシュを削除
+            console.log("トークンをVercel KVに保存します");
+            fetch('/api/session/set-jwt', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({token}),
+            }).then(() => {
+                console.log("トークンをVercel KVに保存しました");
+                // トークンを取得したらハッシュを削除
+                console.log("ハッシュを削除します");
+                window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+                console.log("ハッシュを削除しました");
+            });
         }
-        console.log("トークンの取得処理が完了しました"); // トークンの取得処理が完了
+        console.log("トークンの取得処理が完了しました");
     }, []);
     
     const handlePlaylistClick = async (playlistId: string): Promise<void> => {
