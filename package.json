@@ -59,6 +59,7 @@
     "@types/react-test-renderer": "^18.3.0",
     "autoprefixer": "^10.4.19",
     "axios-mock-adapter": "^1.22.0",
+    "critters": "^0.0.24",
     "cypress": "^13.13.0",
     "eslint": "^8.57.0",
     "eslint-plugin-react": "^7.34.3",
