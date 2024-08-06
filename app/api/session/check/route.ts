@@ -1,6 +1,23 @@
-// app/api/session/check/route.ts
-
 import {NextRequest, NextResponse} from 'next/server';
+
+/**
+ * レスポンスを作成し、キャッシュ制御ヘッダーを設定する関数
+ *
+ * @param {any} body - レスポンスボディ
+ * @param {number} status - HTTPステータスコード（デフォルト: 200）
+ * @returns {NextResponse} - キャッシュ制御ヘッダーが設定されたNextResponse
+ */
+function createResponse(body: any, status: number = 200): NextResponse {
+    const response = NextResponse.json(body, {status});
+    
+    // キャッシュ制御ヘッダーを設定
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    response.headers.set('Surrogate-Control', 'no-store');
+    
+    return response;
+}
 
 /**
  * セッションの状態をチェックするためのGETリクエストを処理します。
@@ -22,7 +39,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         
         // Authorization ヘッダーが存在しない場合エラー
         if (!authorizationHeader) {
-            return NextResponse.json({status: 'error', message: 'Authorization ヘッダーがありません'}, {status: 401});
+            return createResponse({status: 'error', message: 'Authorization ヘッダーがありません'}, 401);
         }
         
         // セッションチェックのためのAPIリクエストを送信
@@ -42,14 +59,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         
         // セッションの状態を含むレスポンスを返す
         console.log(`[${new Date().toISOString()}] セッションの状態を含むレスポンスを返す`);
-        return NextResponse.json(data);
+        return createResponse(data);
     } catch (error) {
         // エラーログをコンソールに出力
         console.error(`[${new Date().toISOString()}] セッションチェックエラー:`, error);
         
         // エラーレスポンスを返す
         console.log(`[${new Date().toISOString()}] エラーレスポンスを返す`);
-        return NextResponse.json({status: 'error', message: 'セッションチェックに失敗しました'}, {status: 500});
+        return createResponse({status: 'error', message: 'セッションチェックに失敗しました'}, 500);
     } finally {
         console.log(`[${new Date().toISOString()}] GET /api/session/check - リクエスト終了`);
     }

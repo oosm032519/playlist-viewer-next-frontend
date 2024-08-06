@@ -1,3 +1,5 @@
+// app/api/session/get-jwt/route.ts
+
 import {NextRequest, NextResponse} from 'next/server';
 import {kv} from '@vercel/kv';
 
