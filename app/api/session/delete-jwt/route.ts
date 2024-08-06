@@ -7,7 +7,6 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     console.log(`[${new Date().toISOString()}] DELETE リクエスト開始: /api/session/delete-jwt`);
     
     try {
-        // セッションIDを取得
         const sessionId = request.cookies.get(SESSION_COOKIE_NAME)?.value;
         
         if (!sessionId) {
@@ -15,14 +14,20 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
             return NextResponse.json({error: "セッションIDが見つかりません"}, {status: 401});
         }
         
-        // Vercel KVからJWTトークンを削除
-        await kv.del(`session:${sessionId}`);
+        console.log(`[${new Date().toISOString()}] Vercel KVからJWTトークンを削除開始: ${sessionId}`);
+        const deleteResult = await kv.del(`session:${sessionId}`);
+        console.log(`[${new Date().toISOString()}] 削除結果:`, deleteResult);
         
-        console.log(`[${new Date().toISOString()}] JWTトークンを削除しました`);
+        if (deleteResult !== 1) {
+            console.log(`[${new Date().toISOString()}] JWTトークンの削除に失敗しました`);
+            return NextResponse.json({error: "JWTトークンの削除に失敗しました"}, {status: 500});
+        }
         
-        // セッションCookieを削除
+        console.log(`[${new Date().toISOString()}] JWTトークンを正常に削除しました`);
+        
         const response = NextResponse.json({success: true});
         response.cookies.delete(SESSION_COOKIE_NAME);
+        console.log(`[${new Date().toISOString()}] Cookieを削除しました`);
         
         return response;
     } catch (error) {
