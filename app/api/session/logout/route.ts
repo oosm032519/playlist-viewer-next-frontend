@@ -1,4 +1,4 @@
-// app/api/session/delete-jwt/route.ts
+// app/api/session/delete-jwt/route.ts.ts
 
 import {NextRequest, NextResponse} from 'next/server';
 import {kv} from '@vercel/kv';

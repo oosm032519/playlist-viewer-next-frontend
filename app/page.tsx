@@ -15,46 +15,48 @@ import {Toaster} from "@/app/components/ui/toaster";
 import {FavoriteProvider} from '@/app/context/FavoriteContext'
 import FavoritePlaylistsTable from '@/app/components/FavoritePlaylistsTable'
 import TestCookie from '@/app/components/TestCookie'
+import {useRouter} from 'next/navigation'
 
 function HomeContent() {
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
-    const {isLoggedIn, userId, error} = useUser();
+    const {isLoggedIn, userId, error, setIsLoggedIn} = useUser();
     const {setSelectedPlaylistId} = usePlaylist();
+    const router = useRouter();
+    
+    useEffect(() => {
+        const hash = window.location.hash;
+        if (hash.startsWith('#token=')) {
+            const token = hash.substring(7);
+            fetchSessionId(token);
+        }
+    }, []);
+    
+    const fetchSessionId = async (token: string) => {
+        try {
+            const response = await fetch('/api/session/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({token}),
+            });
+            
+            if (response.ok) {
+                setIsLoggedIn(true);
+                router.replace('/'); // URLからトークンを削除
+            } else {
+                console.error('Failed to fetch session ID');
+            }
+        } catch (error) {
+            console.error('Error fetching session ID:', error);
+        }
+    };
     
     const handleSearch = (playlists: Playlist[]) => {
         console.log("handleSearch: プレイリスト検索結果", playlists); // 検索結果をログ出力
         setPlaylists(playlists);
         setSelectedPlaylistId(null);
     };
-    
-    // URLフラグメントからJWTトークンを取得
-    useEffect(() => {
-        console.log("トークンの取得処理を開始します");
-        const hash = window.location.hash;
-        console.log("URLハッシュ", hash);
-        const urlParams = new URLSearchParams(hash.substring(1));
-        console.log("URLパラメータ", urlParams);
-        const token = urlParams.get('token');
-        console.log("JWTトークン", token);
-        if (token) {
-            console.log("トークンをVercel KVに保存します");
-            fetch('/api/session/set-jwt', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({token}),
-            }).then(() => {
-                console.log("トークンをVercel KVに保存しました");
-                // トークンを取得したらハッシュを削除
-                console.log("ハッシュを削除します");
-                window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
-                console.log("ハッシュを削除しました");
-                window.location.reload(); // ページをリロード
-            });
-        }
-        console.log("トークンの取得処理が完了しました");
-    }, []);
     
     const handlePlaylistClick = async (playlistId: string): Promise<void> => {
         console.log("handlePlaylistClick: 選択されたプレイリストID", playlistId); // プレイリストIDログ

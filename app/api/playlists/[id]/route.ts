@@ -1,4 +1,4 @@
-// app/api/playlists/[id]/route.ts
+// app/api/playlists/[id]/route.ts.ts
 
 import {NextResponse} from 'next/server';
 

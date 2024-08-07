@@ -1,4 +1,4 @@
-// app/api/session/check/route.test.ts
+// app/api/session/check/route.ts.test.ts
 
 import {NextRequest} from 'next/server';
 import {GET} from './route';

@@ -1,4 +1,4 @@
-// app/api/playlists/[id]/route.test.ts
+// app/api/playlists/[id]/route.ts.test.ts
 
 import {GET} from './route';
 import fetchMock from 'jest-fetch-mock';

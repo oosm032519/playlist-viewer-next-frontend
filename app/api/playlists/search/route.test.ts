@@ -1,4 +1,4 @@
-// app/api/playlists/search/route.ts
+// app/api/playlists/search/route.ts.ts
 
 import {GET} from './route';
 import {expect} from '@jest/globals';
