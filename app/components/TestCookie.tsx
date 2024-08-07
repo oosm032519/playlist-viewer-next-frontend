@@ -10,7 +10,9 @@ const TestCookie = () => {
     useEffect(() => {
         const fetchCookie = async () => {
             try {
-                const response = await fetch('/api/test-cookie');
+                const response = await fetch('/api/test-cookie', {
+                    credentials: 'include'
+                });
                 if (response.ok) {
                     const data = await response.json();
                     setCookieValue(data.testCookie);
