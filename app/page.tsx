@@ -14,6 +14,7 @@ import {Playlist} from "./types/playlist";
 import {Toaster} from "@/app/components/ui/toaster";
 import {FavoriteProvider} from '@/app/context/FavoriteContext'
 import FavoritePlaylistsTable from '@/app/components/FavoritePlaylistsTable'
+import TestCookie from '@/app/components/TestCookie'
 
 function HomeContent() {
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
@@ -25,7 +26,7 @@ function HomeContent() {
         setPlaylists(playlists);
         setSelectedPlaylistId(null);
     };
-
+    
     // URLフラグメントからJWTトークンを取得
     useEffect(() => {
         console.log("トークンの取得処理を開始します");
@@ -79,6 +80,7 @@ function HomeContent() {
                             userId={userId || undefined}
                             onPlaylistClick={handlePlaylistClick}
                         />
+                        <TestCookie/> {/* 追加 */}
                     </div>
                     {isLoggedIn && <FavoritePlaylistsTable/>}
                 </CardContent>
