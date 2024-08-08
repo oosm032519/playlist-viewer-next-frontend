@@ -15,22 +15,12 @@ import {Toaster} from "@/app/components/ui/toaster";
 import {FavoriteProvider} from '@/app/context/FavoriteContext'
 import FavoritePlaylistsTable from '@/app/components/FavoritePlaylistsTable'
 import TestCookie from '@/app/components/TestCookie'
-import {useRouter} from 'next/navigation'
 
 function HomeContent() {
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
     const {isLoggedIn, userId, error, setIsLoggedIn} = useUser();
     const {setSelectedPlaylistId} = usePlaylist();
-    const router = useRouter();
-    
-    useEffect(() => {
-        const hash = window.location.hash;
-        if (hash.startsWith('#token=')) {
-            const token = hash.substring(7);
-            fetchSessionId(token);
-        }
-    }, []);
-    
+
     const handleSearch = (playlists: Playlist[]) => {
         console.log("handleSearch: プレイリスト検索結果", playlists); // 検索結果をログ出力
         setPlaylists(playlists);
