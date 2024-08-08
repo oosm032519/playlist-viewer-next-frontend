@@ -1,3 +1,5 @@
+// app/components/FavoritePlaylistsTable.tsx
+
 "use client";
 
 import React, {useContext, useMemo} from 'react';
@@ -32,10 +34,9 @@ interface FavoritePlaylist {
 }
 
 const fetchFavoritePlaylists = async (): Promise<FavoritePlaylist[]> => {
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
-    
-    const response = await fetch(`${backendUrl}/api/playlists/favorites`, {
-        credentials: 'include', // Cookieを含める
+    const response = await fetch('/api/playlists/favorites', {
+        method: 'GET',
+        credentials: 'include',
     });
     
     if (!response.ok) {
@@ -57,27 +58,32 @@ const FavoritePlaylistsTable: React.FC = () => {
     
     const handleStarClick = async (playlist: FavoritePlaylist, isFavorite: boolean, event: React.MouseEvent) => {
         event.stopPropagation();
-        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
         
         try {
-            const response = await fetch(
-                `${backendUrl}/api/playlists/favorite?playlistId=${encodeURIComponent(playlist.playlistId)}&playlistName=${encodeURIComponent(
-                    playlist.playlistName
-                )}&totalTracks=${encodeURIComponent(playlist.totalTracks.toString())}&playlistOwnerName=${encodeURIComponent(playlist.playlistOwnerName)}`,
-                {
-                    method: isFavorite ? 'DELETE' : 'POST',
-                    credentials: 'include', // Cookieを含める
-                }
-            );
+            const response = await fetch('/api/playlists/favorite', {
+                method: isFavorite ? 'DELETE' : 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    playlistId: playlist.playlistId,
+                    playlistName: playlist.playlistName,
+                    totalTracks: playlist.totalTracks,
+                    playlistOwnerName: playlist.playlistOwnerName
+                }),
+                credentials: 'include',
+            });
             
-            if (response.ok) {
-                if (isFavorite) {
-                    removeFavorite(playlist.playlistId);
-                } else {
-                    addFavorite(playlist.playlistId, playlist.playlistName, playlist.totalTracks);
-                }
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('エラーレスポンス:', errorText);
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            if (isFavorite) {
+                removeFavorite(playlist.playlistId);
             } else {
-                console.error('お気に入り登録/解除に失敗しました。');
+                addFavorite(playlist.playlistId, playlist.playlistName, playlist.totalTracks);
             }
         } catch (error) {
             console.error('お気に入り登録/解除中にエラーが発生しました。', error);
