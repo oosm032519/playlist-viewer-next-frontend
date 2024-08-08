@@ -20,8 +20,7 @@ const LoginButton: React.FC = () => {
     const handleLogout = async () => {
         console.log('ログアウトを実行しています');
         try {
-            const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
-            const response = await fetch(`${backendUrl}/api/session/logout`, {
+            const response = await fetch(`/api/session/logout`, {
                 method: 'POST',
                 credentials: 'include'
             });
