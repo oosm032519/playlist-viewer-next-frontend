@@ -29,7 +29,7 @@ const fetchTestCookie = async () => {
     }
 };
 
-const sendTestCookie = async (cookie: string) => {
+const sendTestCookie = async (cookie: string, jsessionid: string) => {
     const fullUrl = `${BACKEND_URL}/api/test-cookie`;
     console.log(`フルURL: ${fullUrl}`);
     
@@ -40,7 +40,7 @@ const sendTestCookie = async (cookie: string) => {
             credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
-                'Cookie': `testCookie=${cookie}`
+                'Cookie': `testCookie=${cookie}; JSESSIONID=${jsessionid}`
             },
         });
         console.log(`レスポンスステータス: ${response.status}`);
@@ -109,13 +109,17 @@ export async function POST(request: Request) {
         }
         
         const testCookie = cookie.split(';').find(c => c.trim().startsWith('testCookie='));
-        if (!testCookie) {
-            return NextResponse.json({error: "testCookieが見つかりません"}, {status: 400});
+        const jsessionid = cookie.split(';').find(c => c.trim().startsWith('JSESSIONID='));
+        
+        if (!testCookie || !jsessionid) {
+            return NextResponse.json({error: "必要なCookieが見つかりません"}, {status: 400});
         }
         
-        const cookieValue = testCookie.split('=')[1];
+        const testCookieValue = testCookie.split('=')[1];
+        const jsessionidValue = jsessionid.split('=')[1];
+        
         console.log('sendTestCookie関数を呼び出し');
-        const data = await sendTestCookie(cookieValue);
+        const data = await sendTestCookie(testCookieValue, jsessionidValue);
         console.log('送信されたデータ:', data);
         console.log('NextResponseを作成中...');
         
