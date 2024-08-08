@@ -11,7 +11,7 @@ export async function POST(request: NextRequest): Promise<Response> {
         const trackIds: string[] = await request.json();
         
         // バックエンドAPIのエンドポイントURLを環境変数から取得、デフォルトはローカルホスト
-        const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
+        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
         
         // sessionIdを取得
         const sessionId = request.cookies.get('sessionId')?.value;
