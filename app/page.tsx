@@ -13,7 +13,6 @@ import {Playlist} from "./types/playlist";
 import {Toaster} from "@/app/components/ui/toaster";
 import {FavoriteProvider, FavoriteContext} from '@/app/context/FavoriteContext'
 import FavoritePlaylistsTable from '@/app/components/FavoritePlaylistsTable'
-import TestCookie from '@/app/components/TestCookie'
 
 function HomeContent() {
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
@@ -100,7 +99,6 @@ function HomeContent() {
                         />
                     </div>
                     {isLoggedIn && <FavoritePlaylistsTable/>}
-                    <TestCookie/>
                 </CardContent>
             </Card>
         </main>
