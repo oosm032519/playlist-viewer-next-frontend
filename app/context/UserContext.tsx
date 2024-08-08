@@ -1,3 +1,5 @@
+// app/context/UserContext.tsx
+
 "use client";
 
 import React, {createContext, useContext, useState, useEffect} from "react";
@@ -22,42 +24,31 @@ export const UserContextProvider: React.FC<React.PropsWithChildren<{}>> = ({chil
         const initializeSession = async () => {
             try {
                 console.log("セッション初期化開始");
-                const response = await fetch("/api/session/get-jwt", {
+                const response = await fetch("/api/session/check", {
                     method: 'GET',
-                    credentials: 'include',
+                    credentials: 'include', // Cookieを含める
                 });
                 
                 if (!response.ok) {
-                    console.log(`JWT取得エラー: ${response.status}`);
+                    console.log(`セッションチェックエラー: ${response.status}`);
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
                 const data = await response.json();
-                console.log("JWT取得成功:", data);
+                console.log("セッションチェック成功:", data);
                 
-                if (data.jwt) {
-                    console.log("JWTが存在します。ログイン状態を設定します。");
+                if (data.status === 'success') {
+                    console.log("ログイン状態です。");
                     setIsLoggedIn(true);
-                    
-                    const userResponse = await fetch("/api/session/check", {
-                        headers: {
-                            'Authorization': `Bearer ${data.jwt}`,
-                        },
-                    });
-                    
-                    if (!userResponse.ok) {
-                        console.log(`ユーザー情報取得エラー: ${userResponse.status}`);
-                        throw new Error(`HTTP error! status: ${userResponse.status}`);
-                    }
-                    
-                    const userData = await userResponse.json();
-                    console.log("ユーザー情報取得成功:", userData);
-                    setUserId(userData.userId);
+                    setUserId(data.userId);
                 } else {
-                    console.log("JWTが存在しません。未ログイン状態です。");
+                    console.log("未ログイン状態です。");
+                    setIsLoggedIn(false);
+                    setUserId(null);
                 }
             } catch (error) {
-                console.debug("セッション初期化中にエラーが発生しました:", error);
+                console.error("セッション初期化中にエラーが発生しました:", error);
+                setError("セッション初期化に失敗しました");
             }
         };
         

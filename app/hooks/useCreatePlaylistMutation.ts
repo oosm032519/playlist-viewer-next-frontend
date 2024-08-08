@@ -1,3 +1,5 @@
+// app/hooks/useCreatePlaylistMutation.ts
+
 import {useMutation} from '@tanstack/react-query';
 import {useState} from "react";
 
@@ -6,15 +8,13 @@ export const useCreatePlaylistMutation = (tracks: any[], toast: any) => {
     
     const createPlaylistMutation = useMutation({
         mutationFn: async (trackIds: string[]) => {
-            // セッションストレージからJWTを取得
-            const jwt = sessionStorage.getItem('JWT');
             const response = await fetch('/api/playlists/create', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${jwt}`, // JWTをAuthorizationヘッダーに設定
                 },
                 body: JSON.stringify(trackIds),
+                credentials: 'include', // Cookieを含める
             });
             
             if (!response.ok) {

@@ -62,22 +62,13 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
         const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
         
         try {
-            // get-jwt APIルートを使用してJWTを取得
-            const jwtResponse = await fetch('/api/session/get-jwt');
-            if (!jwtResponse.ok) {
-                throw new Error('JWTの取得に失敗しました');
-            }
-            const {jwt} = await jwtResponse.json();
-            
             const response = await fetch(
                 `${backendUrl}/api/playlists/favorite?playlistId=${encodeURIComponent(playlistId)}&playlistName=${encodeURIComponent(
                     playlistName || ''
                 )}&totalTracks=${encodeURIComponent(totalTracks)}&playlistOwnerName=${encodeURIComponent(ownerName || '')}`,
                 {
                     method: isFavorite ? 'DELETE' : 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${jwt}`,
-                    },
+                    credentials: 'include', // これによりCookieが自動的に送信されます
                 }
             );
             

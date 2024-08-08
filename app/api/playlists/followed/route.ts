@@ -1,4 +1,5 @@
-// app/api/playlists/followed/route.ts.ts
+// app/api/playlists/followed/route.ts
+
 import {NextRequest, NextResponse} from 'next/server';
 
 /**
@@ -16,19 +17,20 @@ const getFollowedPlaylists = async (req: NextRequest): Promise<any> => {
     try {
         console.log('APIリクエストを送信します:', apiUrl);
         
-        // リクエストヘッダーからJWTを取得
-        const jwt = req.headers.get('Authorization')?.split(' ')[1]; // 'Bearer <token>' からトークン部分を抽出
-        console.log('JWTトークン:', jwt);
+        // リクエストからCookieを取得
+        const cookie = req.headers.get('Cookie');
+        console.log('Cookie:', cookie);
         
-        if (!jwt) {
-            throw new Error('Authorization header missing');
+        if (!cookie) {
+            throw new Error('Cookie missing');
         }
         
         const response = await fetch(apiUrl, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${jwt}`, // JWTをAuthorizationヘッダーに設定
+                'Cookie': cookie, // CookieをそのままヘッダーにセットS
             },
+            credentials: 'include', // クレデンシャルを含める
         });
         
         if (!response.ok) {

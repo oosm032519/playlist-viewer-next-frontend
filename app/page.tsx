@@ -31,27 +31,6 @@ function HomeContent() {
         }
     }, []);
     
-    const fetchSessionId = async (token: string) => {
-        try {
-            const response = await fetch('/api/session/create', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({token}),
-            });
-            
-            if (response.ok) {
-                setIsLoggedIn(true);
-                router.replace('/'); // URLからトークンを削除
-            } else {
-                console.error('Failed to fetch session ID');
-            }
-        } catch (error) {
-            console.error('Error fetching session ID:', error);
-        }
-    };
-    
     const handleSearch = (playlists: Playlist[]) => {
         console.log("handleSearch: プレイリスト検索結果", playlists); // 検索結果をログ出力
         setPlaylists(playlists);

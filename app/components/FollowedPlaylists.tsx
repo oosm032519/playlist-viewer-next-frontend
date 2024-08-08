@@ -1,4 +1,4 @@
-"use client";
+// app/components/FollowedPlaylists.tsx
 
 import React from 'react';
 import {useQuery} from '@tanstack/react-query';
@@ -12,16 +12,8 @@ interface FollowedPlaylistsProps {
 }
 
 const fetchFollowedPlaylists = async (): Promise<Playlist[]> => {
-    const response = await fetch('/api/session/get-jwt');
-    if (!response.ok) {
-        throw new Error('Failed to get JWT token');
-    }
-    const {jwt} = await response.json();
-    
     const playlistsResponse = await fetch('/api/playlists/followed', {
-        headers: {
-            'Authorization': `Bearer ${jwt}`,
-        },
+        credentials: 'include', // クレデンシャルを含める
     });
     
     if (!playlistsResponse.ok) {

@@ -1,4 +1,4 @@
-// app/api/playlists/remove-track/route.ts.ts
+// app/api/playlists/remove-track/route.ts
 
 import {NextRequest} from "next/server";
 
@@ -11,13 +11,12 @@ export async function POST(request: NextRequest): Promise<Response> {
         const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
         console.log(`Using backend URL: ${backendUrl}`);
         
-        // AuthorizationヘッダーからJWTを取得
-        const authorizationHeader = request.headers.get('Authorization');
-        const jwt = authorizationHeader ? authorizationHeader.split(' ')[1] : null;
-        console.log(`[${new Date().toISOString()}] AuthorizationヘッダーからJWTを取得: ${jwt}`);
+        // リクエストからCookieを取得
+        const cookie = request.headers.get('Cookie');
+        console.log(`[${new Date().toISOString()}] Cookieを取得: ${cookie}`);
         
-        if (!jwt) {
-            return new Response(JSON.stringify({error: "JWTが見つかりません"}), {
+        if (!cookie) {
+            return new Response(JSON.stringify({error: "Cookieが見つかりません"}), {
                 status: 401,
                 headers: {'Content-Type': 'application/json'}
             });
@@ -27,9 +26,10 @@ export async function POST(request: NextRequest): Promise<Response> {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${jwt}`, // JWTをAuthorizationヘッダーに設定
+                'Cookie': cookie, // CookieをそのままCookieヘッダーに設定
             },
             body: JSON.stringify({playlistId, trackId}),
+            credentials: 'include', // クレデンシャルを含める
         });
         
         // レスポンスがOKかどうかを確認

@@ -1,3 +1,5 @@
+// app/api/playlists/add-track/route.ts
+
 import {NextRequest} from "next/server";
 
 export async function POST(request: NextRequest): Promise<Response> {
@@ -9,30 +11,14 @@ export async function POST(request: NextRequest): Promise<Response> {
         const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
         console.log(`[${new Date().toISOString()}] バックエンドURL: ${backendUrl}`);
         
-        // JWTトークンを取得するAPIを呼び出す
-        const jwtResponse = await fetch('/api/session/get-jwt', {
-            method: 'GET',
-            headers: {
-                'Cookie': request.headers.get('cookie') || '',
-            },
-        });
-        
-        if (!jwtResponse.ok) {
-            const errorData = await jwtResponse.json();
-            return new Response(JSON.stringify(errorData), {
-                status: jwtResponse.status,
-                headers: {'Content-Type': 'application/json'}
-            });
-        }
-        
-        const {jwt} = await jwtResponse.json();
+        const cookies = request.headers.get('cookie') || '';
         
         console.log(`[${new Date().toISOString()}] バックエンドAPIリクエスト開始: ${backendUrl}/api/playlist/add-track`);
         const response = await fetch(`${backendUrl}/api/playlist/add-track`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${jwt}`,
+                'Cookie': cookies,
             },
             body: JSON.stringify({playlistId, trackId}),
         });
