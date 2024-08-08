@@ -63,7 +63,7 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
         
         try {
             const response = await fetch(
-                `${backendUrl}/api/playlists/favorite?playlistId=${encodeURIComponent(playlistId)}&playlistName=${encodeURIComponent(
+                `/api/playlists/favorite?playlistId=${encodeURIComponent(playlistId)}&playlistName=${encodeURIComponent(
                     playlistName || ''
                 )}&totalTracks=${encodeURIComponent(totalTracks)}&playlistOwnerName=${encodeURIComponent(ownerName || '')}`,
                 {

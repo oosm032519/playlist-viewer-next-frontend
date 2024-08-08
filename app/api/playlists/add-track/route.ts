@@ -8,7 +8,7 @@ export async function POST(request: NextRequest): Promise<Response> {
         const {playlistId, trackId} = await request.json();
         console.log(`[${new Date().toISOString()}] リクエストボディ解析完了: playlistId=${playlistId}, trackId=${trackId}`);
         
-        const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
+        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
         console.log(`[${new Date().toISOString()}] バックエンドURL: ${backendUrl}`);
         
         const cookies = request.headers.get('cookie') || '';

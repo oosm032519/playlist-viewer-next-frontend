@@ -42,7 +42,7 @@ export const FavoriteProvider: React.FC<{ children: React.ReactNode }> = ({
     
     const fetchFavorites = useCallback(async () => {
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/playlists/favorites`, {
+            const response = await fetch(`/api/playlists/favorites`, {
                 credentials: 'include', // Cookieを含める
             });
             
