@@ -1,3 +1,5 @@
+// app/components/LoginButton.tsx
+
 "use client";
 
 import React from 'react';
@@ -18,19 +20,20 @@ const LoginButton: React.FC = () => {
     const handleLogout = async () => {
         console.log('ログアウトを実行しています');
         try {
-            const response = await fetch('/api/session/delete-jwt', {
-                method: 'DELETE',
-                credentials: 'include',
+            const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
+            const response = await fetch(`${backendUrl}/api/session/logout`, {
+                method: 'POST',
+                credentials: 'include'
             });
             
-            if (!response.ok) {
-                throw new Error('ログアウト処理に失敗しました');
+            if (response.ok) {
+                setIsLoggedIn(false);
+                setUserId(null);
+                console.log('ログアウトが成功しました');
+                window.location.reload(); // ログアウト成功時にページをリロード
+            } else {
+                console.error('ログアウト中にエラーが発生しました:', response.statusText);
             }
-            
-            setIsLoggedIn(false);
-            setUserId(null);
-            console.log('ログアウトが成功しました');
-            window.location.reload(); // ログアウト成功時にページをリロード
         } catch (error) {
             console.error('ログアウト中にエラーが発生しました:', error);
         }

@@ -1,53 +1,44 @@
-// app/api/session/delete-jwt/route.ts.ts
+// app/api/session/logout/route.ts
 
-import {NextRequest, NextResponse} from 'next/server';
-import {kv} from '@vercel/kv';
+import {NextRequest, NextResponse} from "next/server";
 
-const SESSION_COOKIE_NAME = 'session_id';
-
-function createResponse(body: any, status: number = 200): NextResponse {
-    const response = NextResponse.json(body, {status});
-    
-    // キャッシュ制御ヘッダーを設定
-    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    response.headers.set('Pragma', 'no-cache');
-    response.headers.set('Expires', '0');
-    response.headers.set('Surrogate-Control', 'no-store');
-    
-    return response;
-}
-
-export async function DELETE(request: NextRequest): Promise<NextResponse> {
-    console.log(`[${new Date().toISOString()}] DELETE リクエスト開始: /api/session/delete-jwt`);
-    
+export async function POST(request: NextRequest): Promise<Response> {
+    console.log(`[${new Date().toISOString()}] POST リクエスト開始: /api/session/logout`);
     try {
-        const sessionId = request.cookies.get(SESSION_COOKIE_NAME)?.value;
+        // バックエンドのログアウトAPIにリクエストを転送
+        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
+        const cookies = request.headers.get('cookie') || '';
         
-        if (!sessionId) {
-            console.log(`[${new Date().toISOString()}] セッションIDが見つかりません`);
-            return createResponse({error: "セッションIDが見つかりません"}, 401);
-        }
+        console.log(`[${new Date().toISOString()}] バックエンドAPIリクエスト開始: ${backendUrl}/api/session/logout`);
+        const response = await fetch(`${backendUrl}/api/session/logout`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Cookie': cookies,
+            },
+        });
+        console.log(`[${new Date().toISOString()}] バックエンドAPIレスポンス受信: ステータス=${response.status}`);
         
-        console.log(`[${new Date().toISOString()}] Vercel KVからJWTトークンを削除開始: ${sessionId}`);
-        const deleteResult = await kv.del(`session:${sessionId}`);
-        console.log(`[${new Date().toISOString()}] 削除結果:`, deleteResult);
+        // バックエンドからのレスポンスをNextResponseに変換
+        const nextResponse = NextResponse.json(null, {
+            status: response.status,
+        });
         
-        if (deleteResult !== 1) {
-            console.log(`[${new Date().toISOString()}] JWTトークンの削除に失敗しました`);
-            return createResponse({error: "JWTトークンの削除に失敗しました"}, 500);
-        }
+        // sessionId Cookieを削除
+        nextResponse.cookies.set({
+            name: 'sessionId',
+            value: '',
+            path: '/',
+            maxAge: 0,
+        });
         
-        console.log(`[${new Date().toISOString()}] JWTトークンを正常に削除しました`);
+        console.log(`[${new Date().toISOString()}] sessionId Cookieを削除しました`);
         
-        const response = createResponse({success: true});
-        response.cookies.delete(SESSION_COOKIE_NAME);
-        console.log(`[${new Date().toISOString()}] Cookieを削除しました`);
-        
-        return response;
+        return nextResponse;
     } catch (error) {
         console.error(`[${new Date().toISOString()}] エラー発生:`, error);
-        return createResponse({error: "JWTの削除に失敗しました"}, 500);
+        return new Response(null, {status: 500});
     } finally {
-        console.log(`[${new Date().toISOString()}] DELETE リクエスト終了: /api/session/delete-jwt`);
+        console.log(`[${new Date().toISOString()}] POST リクエスト終了: /api/session/logout`);
     }
 }
