@@ -1,5 +1,3 @@
-// app/api/playlists/followed/route.ts
-
 import {NextRequest, NextResponse} from 'next/server';
 
 /**
@@ -25,10 +23,16 @@ const getFollowedPlaylists = async (req: NextRequest): Promise<any> => {
             throw new Error('Cookie missing');
         }
         
+        // JSESSIONIDを抽出
+        const jsessionid = cookie.split('; ').find(row => row.startsWith('JSESSIONID'))?.split('=')[1];
+        if (!jsessionid) {
+            throw new Error('JSESSIONID missing');
+        }
+        
         const response = await fetch(apiUrl, {
             method: 'GET',
             headers: {
-                'Cookie': cookie, // CookieをそのままヘッダーにセットS
+                'Cookie': `JSESSIONID=${jsessionid}`, // JSESSIONIDのみをヘッダーにセット
             },
             credentials: 'include', // クレデンシャルを含める
         });

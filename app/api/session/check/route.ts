@@ -1,5 +1,3 @@
-// app/api/session/check/route.ts
-
 import {NextRequest, NextResponse} from 'next/server';
 
 function createResponse(body: any, status: number = 200): NextResponse {
@@ -20,17 +18,18 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
         console.log(`[${new Date().toISOString()}] 環境変数からバックエンドURLを取得: ${backendUrl}`);
         
-        // Cookieをそのまま転送
+        // JSESSIONIDのみを取得
         const cookies = request.headers.get('cookie');
-        console.log(`[${new Date().toISOString()}] リクエストヘッダーからCookieを取得: ${cookies}`);
+        const jsessionid = cookies?.split(';').find(c => c.trim().startsWith('JSESSIONID='))?.split('=')[1];
+        console.log(`[${new Date().toISOString()}] リクエストヘッダーからJSESSIONIDを取得: ${jsessionid}`);
         
         // セッションチェックのためのAPIリクエストを送信
         console.log(`[${new Date().toISOString()}] セッションチェックのためのAPIリクエストを送信: ${backendUrl}/api/session/check`);
         const response = await fetch(`${backendUrl}/api/session/check`, {
             headers: {
-                'Cookie': cookies || '', // Cookieをヘッダーに設定
+                'Cookie': jsessionid ? `JSESSIONID=${jsessionid}` : '', // JSESSIONIDのみをヘッダーに設定
             },
-            credentials: 'include', // Cookieを含める
+            credentials: 'omit', // Cookieを含める
         });
         
         console.log(`[${new Date().toISOString()}] APIレスポンスステータス: ${response.status}`);
