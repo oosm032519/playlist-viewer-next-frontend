@@ -1,8 +1,6 @@
-// app/page.tsx
-
 "use client";
 
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useState, useContext} from "react";
 import {Card, CardHeader, CardTitle, CardContent} from "./components/ui/card";
 import PlaylistSearchForm from "./components/PlaylistSearchForm";
 import PlaylistIdForm from "./components/PlaylistIdForm";
@@ -13,14 +11,19 @@ import ErrorAlert from "./components/ErrorAlert";
 import PlaylistDisplay from "./components/PlaylistDisplay";
 import {Playlist} from "./types/playlist";
 import {Toaster} from "@/app/components/ui/toaster";
-import {FavoriteProvider} from '@/app/context/FavoriteContext'
+import {FavoriteProvider, FavoriteContext} from '@/app/context/FavoriteContext'
 import FavoritePlaylistsTable from '@/app/components/FavoritePlaylistsTable'
 import TestCookie from '@/app/components/TestCookie'
 
 function HomeContent() {
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
-    const {isLoggedIn, userId, error, setIsLoggedIn} = useUser();
+    const {isLoggedIn, userId, error, setIsLoggedIn, setUserId} = useUser();
     const {setSelectedPlaylistId} = usePlaylist();
+    const {fetchFavorites} = useContext(FavoriteContext);
+    
+    useEffect(() => {
+        fetchFavorites();
+    }, [fetchFavorites]);
     
     useEffect(() => {
         const hash = window.location.hash.substring(1);
@@ -37,16 +40,33 @@ function HomeContent() {
                 credentials: 'include',
             })
                 .then(response => response.json())
-                .then(data => {
+                .then(async (data) => {
                     if (data.sessionId) {
-                        setIsLoggedIn(true);
+                        // セッションIDをCookieに保存
+                        document.cookie = `sessionId=${data.sessionId}; path=/; SameSite=None; Secure`;
+                        
                         // URLフラグメントを削除
                         window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+                        
+                        try {
+                            // セッションチェックリクエストを送信
+                            const response = await fetch('/api/session/check', {
+                                credentials: 'include',
+                            });
+                            const sessionData = await response.json();
+                            console.log("セッションチェック結果:", sessionData);
+                            if (sessionData.status === 'success') {
+                                setIsLoggedIn(true); // セッションチェック成功後に状態を更新
+                                setUserId(sessionData.userId);
+                            }
+                        } catch (error) {
+                            console.error('セッションチェックエラー:', error);
+                        }
                     }
                 })
                 .catch(error => console.error('Error:', error));
         }
-    }, []);
+    }, [setIsLoggedIn, setUserId]);
     
     const handleSearch = (playlists: Playlist[]) => {
         console.log("handleSearch: プレイリスト検索結果", playlists);

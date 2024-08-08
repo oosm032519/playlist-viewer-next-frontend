@@ -1,8 +1,6 @@
-// app/components/FavoritePlaylistsTable.tsx
-
 "use client";
 
-import React, {useContext, useMemo} from 'react';
+import React, {useContext, useMemo, useEffect} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {
     Table,
@@ -24,6 +22,7 @@ import {
 } from '@tanstack/react-table';
 import {FavoriteContext} from '@/app/context/FavoriteContext';
 import DOMPurify from 'dompurify';
+import {useUser} from '@/app/context/UserContext'
 
 interface FavoritePlaylist {
     playlistId: string;
@@ -49,9 +48,11 @@ const fetchFavoritePlaylists = async (): Promise<FavoritePlaylist[]> => {
 const FavoritePlaylistsTable: React.FC = () => {
     const {setSelectedPlaylistId} = usePlaylist();
     const {favorites, addFavorite, removeFavorite} = useContext(FavoriteContext);
-    const {data: playlists, isLoading, error} = useQuery<FavoritePlaylist[], Error>({
+    const {isLoggedIn} = useUser();
+    const {data: playlists, isLoading, error, refetch} = useQuery<FavoritePlaylist[], Error>({
         queryKey: ['favoritePlaylists'],
         queryFn: fetchFavoritePlaylists,
+        enabled: isLoggedIn, // isLoggedInがtrueの場合のみクエリを実行
     });
     
     const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -85,6 +86,7 @@ const FavoritePlaylistsTable: React.FC = () => {
             } else {
                 addFavorite(playlist.playlistId, playlist.playlistName, playlist.totalTracks);
             }
+            refetch();
         } catch (error) {
             console.error('お気に入り登録/解除中にエラーが発生しました。', error);
         }

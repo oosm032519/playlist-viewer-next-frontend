@@ -1,6 +1,6 @@
 "use client";
 
-import React, {useContext, useState, useEffect} from "react";
+import React, {useContext, useState, useEffect, useCallback} from "react";
 import {Track} from "../types/track";
 import {PlaylistDetailsTable} from "./PlaylistDetailsTable";
 import GenreChart from "./GenreChart";
@@ -8,6 +8,7 @@ import {RecommendationsTable} from "./RecommendationsTable";
 import {AudioFeatures} from "../types/audioFeaturesTypes";
 import {FavoriteContext} from "../context/FavoriteContext";
 import DOMPurify from 'dompurify';
+import {useUser} from '@/app/context/UserContext'
 
 interface PlaylistDetailsProps {
     tracks: Track[];
@@ -52,23 +53,35 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                                                              ownerName,
                                                          }) => {
     const {favorites, addFavorite, removeFavorite} = useContext(FavoriteContext);
+    const {isLoggedIn} = useUser();
     const [isFavorite, setIsFavorite] = useState(false);
     
-    useEffect(() => {
+    const checkFavoriteStatus = useCallback(() => {
         setIsFavorite(playlistId in favorites);
     }, [favorites, playlistId]);
     
+    useEffect(() => {
+        if (isLoggedIn) {
+            checkFavoriteStatus();
+        }
+    }, [isLoggedIn, checkFavoriteStatus]);
+    
     const handleStarClick = async () => {
-        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
-        
         try {
             const response = await fetch(
-                `/api/playlists/favorite?playlistId=${encodeURIComponent(playlistId)}&playlistName=${encodeURIComponent(
-                    playlistName || ''
-                )}&totalTracks=${encodeURIComponent(totalTracks)}&playlistOwnerName=${encodeURIComponent(ownerName || '')}`,
+                `/api/playlists/favorite`,
                 {
                     method: isFavorite ? 'DELETE' : 'POST',
-                    credentials: 'include', // これによりCookieが自動的に送信されます
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        playlistId,
+                        playlistName: playlistName || '',
+                        totalTracks,
+                        playlistOwnerName: ownerName || '',
+                    }),
+                    credentials: 'include',
                 }
             );
             
@@ -78,6 +91,7 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                 } else {
                     addFavorite(playlistId, playlistName || '', totalTracks);
                 }
+                setIsFavorite(!isFavorite);
             } else {
                 console.error('お気に入り登録/解除に失敗しました。');
             }
