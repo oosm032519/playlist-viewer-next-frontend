@@ -1,4 +1,5 @@
 // app/page.tsx
+
 "use client";
 
 import React, {useEffect, useState} from "react";
@@ -20,15 +21,41 @@ function HomeContent() {
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
     const {isLoggedIn, userId, error, setIsLoggedIn} = useUser();
     const {setSelectedPlaylistId} = usePlaylist();
-
+    
+    useEffect(() => {
+        const hash = window.location.hash.substring(1);
+        const params = new URLSearchParams(hash);
+        const temporaryToken = params.get('token');
+        
+        if (temporaryToken) {
+            fetch('/api/session/sessionId', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({temporaryToken}),
+                credentials: 'include',
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.sessionId) {
+                        setIsLoggedIn(true);
+                        // URLフラグメントを削除
+                        window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    }, []);
+    
     const handleSearch = (playlists: Playlist[]) => {
-        console.log("handleSearch: プレイリスト検索結果", playlists); // 検索結果をログ出力
+        console.log("handleSearch: プレイリスト検索結果", playlists);
         setPlaylists(playlists);
         setSelectedPlaylistId(null);
     };
     
     const handlePlaylistClick = async (playlistId: string): Promise<void> => {
-        console.log("handlePlaylistClick: 選択されたプレイリストID", playlistId); // プレイリストIDログ
+        console.log("handlePlaylistClick: 選択されたプレイリストID", playlistId);
         setSelectedPlaylistId(playlistId);
     };
     
@@ -45,15 +72,15 @@ function HomeContent() {
                         <LoginButton/>
                         <PlaylistIdForm onPlaylistSelect={handlePlaylistClick}/>
                         <PlaylistSearchForm onSearch={handleSearch}/>
-                        {error && <ErrorAlert error={error}/>} {/* エラー発生時にエラー内容をログ出力 */}
+                        {error && <ErrorAlert error={error}/>}
                         <PlaylistDisplay
                             playlists={playlists}
                             userId={userId || undefined}
                             onPlaylistClick={handlePlaylistClick}
                         />
-                        <TestCookie/> {/* 追加 */}
                     </div>
                     {isLoggedIn && <FavoritePlaylistsTable/>}
+                    <TestCookie/>
                 </CardContent>
             </Card>
         </main>

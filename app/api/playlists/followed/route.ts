@@ -23,16 +23,16 @@ const getFollowedPlaylists = async (req: NextRequest): Promise<any> => {
             throw new Error('Cookie missing');
         }
         
-        // JSESSIONIDを抽出
-        const jsessionid = cookie.split('; ').find(row => row.startsWith('JSESSIONID'))?.split('=')[1];
-        if (!jsessionid) {
-            throw new Error('JSESSIONID missing');
+        // sessionIdを抽出
+        const sessionId = cookie.split('; ').find(row => row.startsWith('sessionId'))?.split('=')[1];
+        if (!sessionId) {
+            throw new Error('sessionId missing');
         }
         
         const response = await fetch(apiUrl, {
             method: 'GET',
             headers: {
-                'Cookie': `JSESSIONID=${jsessionid}`, // JSESSIONIDのみをヘッダーにセット
+                'Cookie': `sessionId=${sessionId}`, // sessionIdのみをヘッダーにセット
             },
             credentials: 'include', // クレデンシャルを含める
         });

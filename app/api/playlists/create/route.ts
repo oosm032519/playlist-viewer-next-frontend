@@ -13,18 +13,18 @@ export async function POST(request: NextRequest): Promise<Response> {
         // バックエンドAPIのエンドポイントURLを環境変数から取得、デフォルトはローカルホスト
         const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
         
-        // JSESSIONIDを取得
-        const jsessionid = request.cookies.get('JSESSIONID')?.value;
+        // sessionIdを取得
+        const sessionId = request.cookies.get('sessionId')?.value;
         
         // バックエンドAPIに対してプレイリスト作成リクエストを送信
         const response = await fetch(`${backendUrl}/api/playlists/create`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Cookie': jsessionid ? `JSESSIONID=${jsessionid}` : ''
+                'Cookie': sessionId ? `sessionId=${sessionId}` : ''
             },
             body: JSON.stringify(trackIds),
-            credentials: 'omit', // Cookieを含めない
+            credentials: 'include',
         });
         
         // レスポンスが正常でない場合はエラーをスロー
