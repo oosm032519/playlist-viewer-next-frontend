@@ -10,7 +10,7 @@ import {FavoriteContext} from '../context/FavoriteContext';
 import {UserContextProvider} from '../context/UserContext';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import userEvent from '@testing-library/user-event';
-import {expect} from '@jest/globals'
+import {expect} from '@jest/globals';
 
 // モックデータ
 const mockTracks: Track[] = [
@@ -59,7 +59,32 @@ const mockGenreCounts = {
 };
 
 const mockRecommendations: Track[] = [
-    // ... recommendations data
+    {
+        previewUrl: 'https://example.com/preview2.mp3',
+        id: 'track2',
+        name: 'Track 2',
+        artists: [{externalUrls: {}, name: 'Artist 2'}],
+        album: {
+            externalUrls: {},
+            name: 'Album 2',
+            images: [{url: 'https://example.com/album2.jpg'}],
+        },
+        durationMs: 200000,
+        audioFeatures: {
+            danceability: 0.6,
+            energy: 0.7,
+            key: 2,
+            loudness: -6,
+            mode: 'minor',
+            speechiness: 0.2,
+            acousticness: 0.3,
+            instrumentalness: 0.1,
+            liveness: 0.4,
+            valence: 0.7,
+            tempo: 130,
+            timeSignature: 4,
+        },
+    },
 ];
 
 // FavoriteContextのモック値
@@ -77,17 +102,20 @@ global.ResizeObserver = jest.fn().mockImplementation(() => ({
     disconnect: jest.fn(),
 }));
 
-// fetchのモック
-global.fetch = jest.fn(() =>
-    Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({status: 'success', userId: 'testUserId'}),
-    })
-) as jest.Mock;
-
 describe('PlaylistDetails', () => {
+    const queryClient = new QueryClient();
+    
+    beforeEach(() => {
+        jest.clearAllMocks();
+        global.fetch = jest.fn(() =>
+            Promise.resolve({
+                ok: true,
+                json: () => Promise.resolve({status: 'success', userId: 'testUserId'}),
+            })
+        ) as jest.Mock;
+    });
+    
     it('プレイリストの詳細を表示する', async () => {
-        const queryClient = new QueryClient();
         render(
             <QueryClientProvider client={queryClient}>
                 <UserContextProvider>
@@ -110,33 +138,18 @@ describe('PlaylistDetails', () => {
             </QueryClientProvider>
         );
         
-        // 非同期処理が完了するまで待機
         await screen.findByText('My Playlist');
         
-        // プレイリスト名が表示されていることを確認
         expect(screen.getByText('My Playlist')).toBeInTheDocument();
-        
-        // 作成者名が表示されていることを確認
-        expect(screen.getByText('User 123')).toBeInTheDocument(); // 正規表現を使用
-        
-        // 楽曲数が表示されていることを確認
+        expect(screen.getByText('User 123')).toBeInTheDocument();
         expect(screen.getByText('楽曲数: 1')).toBeInTheDocument();
-        
-        // 総再生時間が表示されていることを確認
         expect(screen.getByText('総再生時間: 3:00')).toBeInTheDocument();
-        
-        // トラックテーブルが表示されていることを確認
         expect(screen.getByText('Track 1')).toBeInTheDocument();
-        
-        // ジャンル分布チャートが表示されていることを確認
         expect(screen.getByText('ジャンル分布:')).toBeInTheDocument();
-        
-        // おすすめテーブルが表示されていることを確認
         expect(screen.getByText('おすすめ:')).toBeInTheDocument();
     });
     
     it('お気に入りボタンのクリックを処理する', async () => {
-        const queryClient = new QueryClient();
         render(
             <QueryClientProvider client={queryClient}>
                 <UserContextProvider>
@@ -159,26 +172,145 @@ describe('PlaylistDetails', () => {
             </QueryClientProvider>
         );
         
-        // 非同期処理が完了するまで待機
         await screen.findByText('My Playlist');
         
-        // お気に入りボタンをクリック
         const starButton = screen.getByText('☆');
         await userEvent.click(starButton);
         
-        // addFavorite関数が呼び出されたことを確認
         expect(mockFavoriteContextValue.addFavorite).toHaveBeenCalledWith('playlist123', 'My Playlist', 1);
-        
-        // お気に入りボタンが星印に変わることを確認
         expect(screen.getByText('★')).toBeInTheDocument();
         
-        // 再度お気に入りボタンをクリック
         await userEvent.click(starButton);
         
-        // removeFavorite関数が呼び出されたことを確認
         expect(mockFavoriteContextValue.removeFavorite).toHaveBeenCalledWith('playlist123');
-        
-        // お気に入りボタンが空の星印に戻ることを確認
         expect(screen.getByText('☆')).toBeInTheDocument();
+    });
+    
+    it('ジャンル分布が空の場合の処理を確認する', async () => {
+        render(
+            <QueryClientProvider client={queryClient}>
+                <UserContextProvider>
+                    <FavoriteContext.Provider value={mockFavoriteContextValue}>
+                        <PlaylistDetails
+                            tracks={mockTracks}
+                            genreCounts={{}}
+                            recommendations={mockRecommendations}
+                            playlistName="My Playlist"
+                            ownerId="user123"
+                            userId="user123"
+                            playlistId="playlist123"
+                            totalDuration="3:00"
+                            averageAudioFeatures={mockAverageAudioFeatures}
+                            totalTracks={mockTracks.length}
+                            ownerName="User 123"
+                        />
+                    </FavoriteContext.Provider>
+                </UserContextProvider>
+            </QueryClientProvider>
+        );
+        
+        await screen.findByText('My Playlist');
+        
+        expect(screen.queryByText('ジャンル分布:')).not.toBeInTheDocument();
+    });
+    
+    it('プレイリスト名がnullの場合の処理を確認する', async () => {
+        render(
+            <QueryClientProvider client={queryClient}>
+                <UserContextProvider>
+                    <FavoriteContext.Provider value={mockFavoriteContextValue}>
+                        <PlaylistDetails
+                            tracks={mockTracks}
+                            genreCounts={mockGenreCounts}
+                            recommendations={mockRecommendations}
+                            playlistName={null}
+                            ownerId="user123"
+                            userId="user123"
+                            playlistId="playlist123"
+                            totalDuration="3:00"
+                            averageAudioFeatures={mockAverageAudioFeatures}
+                            totalTracks={mockTracks.length}
+                            ownerName="User 123"
+                        />
+                    </FavoriteContext.Provider>
+                </UserContextProvider>
+            </QueryClientProvider>
+        );
+        
+        expect(screen.queryByText('My Playlist')).not.toBeInTheDocument();
+    });
+    
+    it('お気に入り登録/解除の失敗を処理する', async () => {
+        global.fetch = jest.fn(() =>
+            Promise.resolve({
+                ok: false,
+            })
+        ) as jest.Mock;
+        
+        console.error = jest.fn();
+        
+        render(
+            <QueryClientProvider client={queryClient}>
+                <UserContextProvider>
+                    <FavoriteContext.Provider value={mockFavoriteContextValue}>
+                        <PlaylistDetails
+                            tracks={mockTracks}
+                            genreCounts={mockGenreCounts}
+                            recommendations={mockRecommendations}
+                            playlistName="My Playlist"
+                            ownerId="user123"
+                            userId="user123"
+                            playlistId="playlist123"
+                            totalDuration="3:00"
+                            averageAudioFeatures={mockAverageAudioFeatures}
+                            totalTracks={mockTracks.length}
+                            ownerName="User 123"
+                        />
+                    </FavoriteContext.Provider>
+                </UserContextProvider>
+            </QueryClientProvider>
+        );
+        
+        await screen.findByText('My Playlist');
+        
+        const starButton = screen.getByText('☆');
+        await userEvent.click(starButton);
+        
+        expect(console.error).toHaveBeenCalledWith('お気に入り登録/解除に失敗しました。');
+    });
+    
+    it('お気に入り登録/解除中にエラーが発生した場合の処理を確認する', async () => {
+        global.fetch = jest.fn(() => Promise.reject(new Error('Network error'))) as jest.Mock;
+        
+        console.error = jest.fn();
+        
+        render(
+            <QueryClientProvider client={queryClient}>
+                <UserContextProvider>
+                    <FavoriteContext.Provider value={mockFavoriteContextValue}>
+                        <PlaylistDetails
+                            tracks={mockTracks}
+                            genreCounts={mockGenreCounts}
+                            recommendations={mockRecommendations}
+                            playlistName="My Playlist"
+                            ownerId="user123"
+                            userId="user123"
+                            playlistId="playlist123"
+                            totalDuration="3:00"
+                            averageAudioFeatures={mockAverageAudioFeatures}
+                            totalTracks={mockTracks.length}
+                            ownerName="User 123"
+                        />
+                    </FavoriteContext.Provider>
+                </UserContextProvider>
+            </QueryClientProvider>
+        );
+        
+        await screen.findByText('My Playlist');
+        
+        const starButton = screen.getByText('☆');
+        await userEvent.click(starButton);
+        
+        expect(console.error).toHaveBeenCalledWith('お気に入り登録/解除中にエラーが発生しました。', expect.any(Error));
     });
 });

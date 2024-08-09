@@ -158,7 +158,35 @@ describe('FavoritePlaylistsTable', () => {
         });
     });
     
-    test('handles favorite/unfavorite action', async () => {
+    test('handles favorite action', async () => {
+        (useQuery as jest.Mock).mockReturnValue({
+            isLoading: false,
+            error: null,
+            data: mockFavoritePlaylists,
+            refetch: jest.fn(),
+        });
+        
+        (global.fetch as jest.Mock).mockResolvedValue({
+            ok: true,
+            json: jest.fn().mockResolvedValue({}),
+        });
+        
+        renderComponent(true, {});
+        
+        await waitFor(() => {
+            expect(screen.getByText('Test Playlist 1')).toBeInTheDocument();
+        });
+        
+        const favoriteButtons = screen.getAllByRole('button');
+        fireEvent.click(favoriteButtons[0]);
+        
+        await waitFor(() => {
+            expect(global.fetch).toHaveBeenCalledWith('/api/playlists/favorite', expect.any(Object));
+            expect(mockFavoriteContext.addFavorite).toHaveBeenCalledWith('1', 'Test Playlist 1', 10);
+        });
+    });
+    
+    test('handles unfavorite action', async () => {
         (useQuery as jest.Mock).mockReturnValue({
             isLoading: false,
             error: null,
@@ -184,13 +212,39 @@ describe('FavoritePlaylistsTable', () => {
             expect(global.fetch).toHaveBeenCalledWith('/api/playlists/favorite', expect.any(Object));
             expect(mockFavoriteContext.removeFavorite).toHaveBeenCalledWith('1');
         });
+    });
+    
+    test('handles API error when favoriting/unfavoriting', async () => {
+        (useQuery as jest.Mock).mockReturnValue({
+            isLoading: false,
+            error: null,
+            data: mockFavoritePlaylists,
+            refetch: jest.fn(),
+        });
         
-        fireEvent.click(favoriteButtons[1]);
+        (global.fetch as jest.Mock).mockResolvedValue({
+            ok: false,
+            status: 500,
+            text: jest.fn().mockResolvedValue('Internal Server Error'),
+        });
+        
+        const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {
+        });
+        
+        renderComponent(true, {});
         
         await waitFor(() => {
-            expect(global.fetch).toHaveBeenCalledWith('/api/playlists/favorite', expect.any(Object));
-            expect(mockFavoriteContext.addFavorite).toHaveBeenCalledWith('2', 'Test Playlist 2', 20);
+            expect(screen.getByText('Test Playlist 1')).toBeInTheDocument();
         });
+        
+        const favoriteButtons = screen.getAllByRole('button');
+        fireEvent.click(favoriteButtons[0]);
+        
+        await waitFor(() => {
+            expect(consoleSpy).toHaveBeenCalledWith('お気に入り登録/解除中にエラーが発生しました。', expect.any(Error));
+        });
+        
+        consoleSpy.mockRestore();
     });
     
     test('sorts table when clicking on header', async () => {

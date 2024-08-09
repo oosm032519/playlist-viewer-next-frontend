@@ -200,4 +200,42 @@ describe('GET handler for followed playlists', () => {
             {status: 500}
         );
     });
+    
+    it('should handle unknown errors in GET handler', async () => {
+        const mockSessionId = 'mock-session-id';
+        
+        (global.fetch as jest.Mock).mockRejectedValue('Unknown error');
+        
+        const req = new NextRequest('http://localhost:3000/api/playlists/followed', {
+            method: 'GET',
+            headers: {
+                'Cookie': `sessionId=${mockSessionId}`,
+            },
+        });
+        
+        await GET(req);
+        
+        expect(NextResponse.json).toHaveBeenCalledWith(
+            {error: 'フォロー中のプレイリストの取得中にエラーが発生しました: Failed to fetch playlists: Unknown error'},
+            {status: 500}
+        );
+    });
+    
+    it('should handle missing sessionId', async () => {
+        const req = new NextRequest('http://localhost:3000/api/playlists/followed', {
+            method: 'GET',
+            headers: {
+                'Cookie': 'someCookie=someValue',
+            },
+        });
+        
+        await GET(req);
+        
+        expect(global.fetch).not.toHaveBeenCalled();
+        
+        expect(NextResponse.json).toHaveBeenCalledWith(
+            {error: 'フォロー中のプレイリストの取得中にエラーが発生しました: Failed to fetch playlists: sessionId missing'},
+            {status: 500}
+        );
+    });
 });

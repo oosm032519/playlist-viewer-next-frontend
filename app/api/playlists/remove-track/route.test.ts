@@ -129,4 +129,21 @@ describe('POST /api/playlists/remove-track', () => {
             details: "不明なエラー",
         });
     });
+    
+    // 新しいテストケース: Cookieが見つからない場合
+    it('Cookieが見つからない場合、401エラーを返すこと', async () => {
+        const mockRequestBody = {playlistId: '123', trackId: '456'};
+        const mockRequest = {
+            json: jest.fn().mockResolvedValue(mockRequestBody),
+            headers: {
+                get: jest.fn().mockReturnValue(null) // Cookieがない場合
+            }
+        } as unknown as NextRequest;
+        
+        const response = await POST(mockRequest);
+        const responseBody = await response.json();
+        
+        expect(response.status).toBe(401);
+        expect(responseBody).toEqual({error: "Cookieが見つかりません"});
+    });
 });
