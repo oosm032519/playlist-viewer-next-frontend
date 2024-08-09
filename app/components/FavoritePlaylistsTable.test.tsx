@@ -58,6 +58,7 @@ const mockFavoriteContext = {
     favorites: {},
     addFavorite: jest.fn(),
     removeFavorite: jest.fn(),
+    fetchFavorites: jest.fn(),
 };
 
 const mockQueryClient = new QueryClient({
