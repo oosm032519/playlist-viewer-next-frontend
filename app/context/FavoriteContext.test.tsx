@@ -18,12 +18,21 @@ jest.mock('./UserContext', () => ({
 }));
 
 // フェッチのモック
-global.fetch = jest.fn(() =>
-    Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve([]),
-    })
-);
+const createMockResponse = (body: any): Response => ({
+    ok: true,
+    json: () => Promise.resolve(body),
+    headers: new Headers(),
+    redirected: false,
+    status: 200,
+    statusText: "OK",
+    type: 'default' as ResponseType,
+    url: '',
+    body: null,
+    bodyUsed: false,
+    text: () => Promise.resolve(''),
+} as unknown as Response);
+
+global.fetch = jest.fn(() => Promise.resolve(createMockResponse([])));
 
 describe('FavoriteProvider', () => {
     // テスト前の準備
@@ -79,17 +88,12 @@ describe('FavoriteProvider', () => {
     
     // お気に入り削除のテスト
     it('should remove a favorite', async () => {
-        global.fetch = jest.fn(() =>
-            Promise.resolve({
-                ok: true,
-                json: () => Promise.resolve([{
-                    playlistId: '1',
-                    playlistName: 'Test Playlist',
-                    totalTracks: 10,
-                    addedAt: '2023-01-01T00:00:00.000Z'
-                }]),
-            })
-        );
+        global.fetch = jest.fn(() => Promise.resolve(createMockResponse([{
+            playlistId: '1',
+            playlistName: 'Test Playlist',
+            totalTracks: 10,
+            addedAt: '2023-01-01T00:00:00.000Z'
+        }])));
         
         await act(async () => {
             render(
@@ -123,17 +127,12 @@ describe('FavoriteProvider', () => {
     
     // お気に入りフェッチのテスト
     it('should fetch favorites when logged in', async () => {
-        global.fetch = jest.fn(() =>
-            Promise.resolve({
-                ok: true,
-                json: () => Promise.resolve([{
-                    playlistId: '1',
-                    playlistName: 'Test Playlist',
-                    totalTracks: 10,
-                    addedAt: '2023-01-01T00:00:00.000Z'
-                }]),
-            })
-        );
+        global.fetch = jest.fn(() => Promise.resolve(createMockResponse([{
+            playlistId: '1',
+            playlistName: 'Test Playlist',
+            totalTracks: 10,
+            addedAt: '2023-01-01T00:00:00.000Z'
+        }])));
         
         await act(async () => {
             render(
