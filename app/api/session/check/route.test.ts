@@ -1,4 +1,4 @@
-// app/api/session/check/route.ts.test.ts
+// app/api/session/check/route.test.ts
 
 import {NextRequest} from 'next/server';
 import {GET} from './route';
@@ -14,6 +14,9 @@ jest.mock('next/server', () => {
                 return {
                     status: init?.status || 200,
                     json: async () => body,
+                    headers: {
+                        set: jest.fn(),
+                    },
                 };
             }),
         },
@@ -47,7 +50,7 @@ describe('GET /api/session/check', () => {
         const request = new NextRequest('http://localhost:3000/api/session/check', {
             method: 'GET',
             headers: {
-                'Authorization': 'Bearer test-jwt-token'
+                'cookie': 'session=test-session-cookie'
             }
         });
         
@@ -61,33 +64,49 @@ describe('GET /api/session/check', () => {
             'http://test-backend.com/api/session/check',
             expect.objectContaining({
                 headers: {
-                    'Authorization': 'Bearer test-jwt-token',
+                    'Cookie': 'session=test-session-cookie',
                 },
+                credentials: 'include',
             })
         );
         
         expect(console.log).toHaveBeenCalledWith(expect.stringContaining('GET /api/session/check - リクエスト開始'));
         expect(console.log).toHaveBeenCalledWith(expect.stringContaining('環境変数からバックエンドURLを取得: http://test-backend.com'));
-        expect(console.log).toHaveBeenCalledWith(expect.stringContaining('リクエストヘッダーから Authorization ヘッダーを取得: Bearer test-jwt-token'));
-        expect(console.log).toHaveBeenCalledWith(expect.stringContaining('セッションチェックのためのAPIリクエストを送信: http://test-backend.com/api/session/check'));
+        expect(console.log).toHaveBeenCalledWith(expect.stringContaining('受け取ったCookie: session=test-session-cookie'));
         expect(console.log).toHaveBeenCalledWith(expect.stringContaining('APIレスポンスステータス: 200'));
         expect(console.log).toHaveBeenCalledWith(expect.stringContaining('APIレスポンスデータを取得: {"status":"active"}'));
         expect(console.log).toHaveBeenCalledWith(expect.stringContaining('セッションの状態を含むレスポンスを返す'));
         expect(console.log).toHaveBeenCalledWith(expect.stringContaining('GET /api/session/check - リクエスト終了'));
     });
     
-    it('Authorization ヘッダーが存在しない場合、401エラーを返すべき', async () => {
+    it('Cookie ヘッダーが存在しない場合でも正常に動作すべき', async () => {
+        (global.fetch as jest.Mock).mockResolvedValue({
+            status: 200,
+            ok: true,
+            json: jest.fn().mockResolvedValue({status: 'inactive'}),
+        });
+        
         const request = new NextRequest('http://localhost:3000/api/session/check', {
             method: 'GET',
         });
         
         const response = await GET(request);
         
-        expect(response.status).toBe(401);
+        expect(response.status).toBe(200);
         const responseData = await response.json();
-        expect(responseData).toEqual({status: 'error', message: 'Authorization ヘッダーがありません'});
+        expect(responseData).toEqual({status: 'inactive'});
         
-        expect(console.log).toHaveBeenCalledWith(expect.stringContaining('リクエストヘッダーから Authorization ヘッダーを取得: null'));
+        expect(global.fetch).toHaveBeenCalledWith(
+            'http://test-backend.com/api/session/check',
+            expect.objectContaining({
+                headers: {
+                    'Cookie': '',
+                },
+                credentials: 'include',
+            })
+        );
+        
+        expect(console.log).toHaveBeenCalledWith(expect.stringContaining('受け取ったCookie: null'));
     });
     
     it('バックエンドAPIがエラーを返した場合、エラーレスポンスを返すべき', async () => {
@@ -96,7 +115,7 @@ describe('GET /api/session/check', () => {
         const request = new NextRequest('http://localhost:3000/api/session/check', {
             method: 'GET',
             headers: {
-                'Authorization': 'Bearer test-jwt-token'
+                'cookie': 'session=test-session-cookie'
             }
         });
         
@@ -122,7 +141,7 @@ describe('GET /api/session/check', () => {
         const request = new NextRequest('http://localhost:3000/api/session/check', {
             method: 'GET',
             headers: {
-                'Authorization': 'Bearer test-jwt-token'
+                'cookie': 'session=test-session-cookie'
             }
         });
         

@@ -1,3 +1,5 @@
+// app/components/FavoritePlaylistsTable.tsx
+
 "use client";
 
 import React, {useContext, useMemo, useEffect} from 'react';

@@ -27,13 +27,6 @@ describe('trackUtils', () => {
             expect(console.log).toHaveBeenCalledWith("[addTrackToPlaylist] 曲が正常に追加されました");
         });
         
-        it('JWTが見つからない場合、falseを返す', async () => {
-            const result = await addTrackToPlaylist('playlist123', 'track456');
-            
-            expect(result).toBe(false);
-            expect(console.error).toHaveBeenCalledWith(expect.stringContaining("[addTrackToPlaylist] JWTが見つかりません"));
-        });
-        
         it('APIエラーの場合、falseを返す', async () => {
             sessionStorage.setItem('JWT', 'dummy_jwt');
             fetchMock.mockResponseOnce('Error message', {status: 400});
@@ -75,13 +68,6 @@ describe('trackUtils', () => {
             
             expect(result).toBe(true);
             expect(console.log).toHaveBeenCalledWith("[removeTrackFromPlaylist] 曲が正常に削除されました");
-        });
-        
-        it('JWTが見つからない場合、falseを返す', async () => {
-            const result = await removeTrackFromPlaylist('playlist123', 'track456');
-            
-            expect(result).toBe(false);
-            expect(console.error).toHaveBeenCalledWith(expect.stringContaining("[removeTrackFromPlaylist] JWTが見つかりません"));
         });
         
         it('APIエラーの場合、falseを返す', async () => {

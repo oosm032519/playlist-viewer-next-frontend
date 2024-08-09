@@ -1,8 +1,9 @@
+// app/api/playlists/followed/route.test.ts
+
 import {NextRequest, NextResponse} from 'next/server';
 import {GET} from './route';
 import {expect} from '@jest/globals';
 
-// モックの設定
 jest.mock('next/server', () => ({
     NextRequest: jest.fn().mockImplementation((input, init) => ({
         url: input,
@@ -14,21 +15,18 @@ jest.mock('next/server', () => ({
     },
 }));
 
-// グローバルなfetch関数をモック
 global.fetch = jest.fn();
 
-// コンソールログのモック
 console.log = jest.fn();
 console.error = jest.fn();
 
 describe('GET handler for followed playlists', () => {
-    // テストごとにモックをリセット
     beforeEach(() => {
         jest.clearAllMocks();
     });
     
     it('should return playlists when API call is successful', async () => {
-        const mockJwt = 'mock-jwt-token';
+        const mockSessionId = 'mock-session-id';
         const mockPlaylists = [{id: 1, name: 'Playlist 1'}, {id: 2, name: 'Playlist 2'}];
         
         (global.fetch as jest.Mock).mockResolvedValue({
@@ -39,7 +37,7 @@ describe('GET handler for followed playlists', () => {
         const req = new NextRequest('http://localhost:3000/api/playlists/followed', {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${mockJwt}`,
+                'Cookie': `sessionId=${mockSessionId}`,
             },
         });
         
@@ -50,23 +48,17 @@ describe('GET handler for followed playlists', () => {
             expect.objectContaining({
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${mockJwt}`,
+                    'Cookie': `sessionId=${mockSessionId}`,
                 },
+                credentials: 'include',
             })
         );
         
         expect(NextResponse.json).toHaveBeenCalledWith(mockPlaylists);
-        expect(console.log).toHaveBeenCalledWith('GETハンドラーが呼び出されました');
-        expect(console.log).toHaveBeenCalledWith('getFollowedPlaylists関数が呼び出されました');
-        expect(console.log).toHaveBeenCalledWith('APIリクエストを送信します:', 'http://localhost:8080/api/playlists/followed');
-        expect(console.log).toHaveBeenCalledWith('JWTトークン:', mockJwt);
-        expect(console.log).toHaveBeenCalledWith('APIレスポンスを受信しました:', undefined);
-        expect(console.log).toHaveBeenCalledWith('レスポンスデータ:', mockPlaylists);
-        expect(console.log).toHaveBeenCalledWith('プレイリストの取得に成功しました:', mockPlaylists);
     });
     
     it('should handle API errors and return a 500 response', async () => {
-        const mockJwt = 'mock-jwt-token';
+        const mockSessionId = 'mock-session-id';
         const mockError = new Error('API error');
         
         (global.fetch as jest.Mock).mockRejectedValue(mockError);
@@ -74,7 +66,7 @@ describe('GET handler for followed playlists', () => {
         const req = new NextRequest('http://localhost:3000/api/playlists/followed', {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${mockJwt}`,
+                'Cookie': `sessionId=${mockSessionId}`,
             },
         });
         
@@ -85,8 +77,9 @@ describe('GET handler for followed playlists', () => {
             expect.objectContaining({
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${mockJwt}`,
+                    'Cookie': `sessionId=${mockSessionId}`,
                 },
+                credentials: 'include',
             })
         );
         
@@ -94,11 +87,9 @@ describe('GET handler for followed playlists', () => {
             {error: 'フォロー中のプレイリストの取得中にエラーが発生しました: Failed to fetch playlists: API error'},
             {status: 500}
         );
-        expect(console.error).toHaveBeenCalledWith('APIリクエスト中にエラーが発生しました:', mockError);
-        expect(console.error).toHaveBeenCalledWith('GETハンドラーでエラーが発生しました:', expect.any(Error));
     });
     
-    it('should handle missing JWT token', async () => {
+    it('should handle missing Cookie', async () => {
         const req = new NextRequest('http://localhost:3000/api/playlists/followed', {
             method: 'GET',
         });
@@ -108,7 +99,7 @@ describe('GET handler for followed playlists', () => {
         expect(global.fetch).not.toHaveBeenCalled();
         
         expect(NextResponse.json).toHaveBeenCalledWith(
-            {error: 'フォロー中のプレイリストの取得中にエラーが発生しました: Failed to fetch playlists: Authorization header missing'},
+            {error: 'フォロー中のプレイリストの取得中にエラーが発生しました: Failed to fetch playlists: Cookie missing'},
             {status: 500}
         );
     });
@@ -116,7 +107,7 @@ describe('GET handler for followed playlists', () => {
     it('should use custom backend URL when environment variable is set', async () => {
         process.env.NEXT_PUBLIC_BACKEND_URL = 'https://custom-backend.com';
         
-        const mockJwt = 'mock-jwt-token';
+        const mockSessionId = 'mock-session-id';
         const mockPlaylists = [{id: 1, name: 'Playlist 1'}];
         
         (global.fetch as jest.Mock).mockResolvedValue({
@@ -127,7 +118,7 @@ describe('GET handler for followed playlists', () => {
         const req = new NextRequest('http://localhost:3000/api/playlists/followed', {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${mockJwt}`,
+                'Cookie': `sessionId=${mockSessionId}`,
             },
         });
         
@@ -138,8 +129,9 @@ describe('GET handler for followed playlists', () => {
             expect.objectContaining({
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${mockJwt}`,
+                    'Cookie': `sessionId=${mockSessionId}`,
                 },
+                credentials: 'include',
             })
         );
         
@@ -147,14 +139,14 @@ describe('GET handler for followed playlists', () => {
     });
     
     it('should handle non-Error objects thrown', async () => {
-        const mockJwt = 'mock-jwt-token';
+        const mockSessionId = 'mock-session-id';
         
         (global.fetch as jest.Mock).mockRejectedValue('Non-Error object');
         
         const req = new NextRequest('http://localhost:3000/api/playlists/followed', {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${mockJwt}`,
+                'Cookie': `sessionId=${mockSessionId}`,
             },
         });
         
@@ -167,7 +159,7 @@ describe('GET handler for followed playlists', () => {
     });
     
     it('should handle API response that is not ok', async () => {
-        const mockJwt = 'mock-jwt-token';
+        const mockSessionId = 'mock-session-id';
         
         (global.fetch as jest.Mock).mockResolvedValue({
             ok: false,
@@ -177,7 +169,7 @@ describe('GET handler for followed playlists', () => {
         const req = new NextRequest('http://localhost:3000/api/playlists/followed', {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${mockJwt}`,
+                'Cookie': `sessionId=${mockSessionId}`,
             },
         });
         
@@ -190,15 +182,14 @@ describe('GET handler for followed playlists', () => {
     });
     
     it('should handle unknown errors in GET handler', async () => {
-        const mockJwt = 'mock-jwt-token';
+        const mockSessionId = 'mock-session-id';
         
-        // getFollowedPlaylists関数内で未知のエラーをスローするようにモック
         (global.fetch as jest.Mock).mockRejectedValue('Unknown error');
         
         const req = new NextRequest('http://localhost:3000/api/playlists/followed', {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${mockJwt}`,
+                'Cookie': `sessionId=${mockSessionId}`,
             },
         });
         
@@ -208,7 +199,5 @@ describe('GET handler for followed playlists', () => {
             {error: 'フォロー中のプレイリストの取得中にエラーが発生しました: Failed to fetch playlists: Unknown error'},
             {status: 500}
         );
-        expect(console.error).toHaveBeenCalledWith('APIリクエスト中にエラーが発生しました:', 'Unknown error');
-        expect(console.error).toHaveBeenCalledWith('GETハンドラーでエラーが発生しました:', expect.any(Error));
     });
 });

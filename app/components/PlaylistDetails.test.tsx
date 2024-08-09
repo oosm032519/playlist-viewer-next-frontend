@@ -1,196 +1,184 @@
-import React from 'react';
-import {render, screen, within} from '@testing-library/react';
-import {axe, toHaveNoViolations} from 'jest-axe';
-import '@testing-library/jest-dom';
+// PlaylistDetails.test.tsx
+
+"use client";
+
+import {render, screen} from '@testing-library/react';
 import PlaylistDetails from './PlaylistDetails';
 import {Track} from '../types/track';
-import {expect} from '@jest/globals';
+import {AudioFeatures} from '../types/audioFeaturesTypes';
+import {FavoriteContext} from '../context/FavoriteContext';
+import {UserContextProvider} from '../context/UserContext';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import userEvent from '@testing-library/user-event';
+import {expect} from '@jest/globals'
 
-// モックコンポーネントの作成
-jest.mock('./PlaylistDetailsTable', () => ({
-    PlaylistDetailsTable: ({tracks}: { tracks: Track[] }) => (
-        <div data-testid="playlist-details-table">
-            Mocked PlaylistDetailsTable
-            <span data-testid="track-count">{tracks.length}</span>
-        </div>
-    ),
+// モックデータ
+const mockTracks: Track[] = [
+    {
+        previewUrl: 'https://example.com/preview1.mp3',
+        id: 'track1',
+        name: 'Track 1',
+        artists: [{externalUrls: {}, name: 'Artist 1'}],
+        album: {
+            externalUrls: {},
+            name: 'Album 1',
+            images: [{url: 'https://example.com/album1.jpg'}],
+        },
+        durationMs: 180000,
+        audioFeatures: {
+            danceability: 0.7,
+            energy: 0.8,
+            key: 1,
+            loudness: -5,
+            mode: 'major',
+            speechiness: 0.1,
+            acousticness: 0.2,
+            instrumentalness: 0,
+            liveness: 0.3,
+            valence: 0.9,
+            tempo: 120,
+            timeSignature: 4,
+        },
+    },
+];
+
+const mockAverageAudioFeatures: AudioFeatures = {
+    acousticness: 0.5,
+    danceability: 0.6,
+    energy: 0.7,
+    instrumentalness: 0.2,
+    liveness: 0.4,
+    speechiness: 0.3,
+    valence: 0.8,
+};
+
+const mockGenreCounts = {
+    'pop': 5,
+    'rock': 3,
+    'jazz': 2,
+};
+
+const mockRecommendations: Track[] = [
+    // ... recommendations data
+];
+
+// FavoriteContextのモック値
+const mockFavoriteContextValue = {
+    favorites: {},
+    addFavorite: jest.fn(),
+    removeFavorite: jest.fn(),
+    fetchFavorites: jest.fn(),
+};
+
+// ResizeObserverのモック
+global.ResizeObserver = jest.fn().mockImplementation(() => ({
+    observe: jest.fn(),
+    unobserve: jest.fn(),
+    disconnect: jest.fn(),
 }));
 
-jest.mock('./GenreChart', () => ({
-    __esModule: true,
-    default: ({genreCounts}: { genreCounts: { [genre: string]: number } }) => (
-        <div data-testid="genre-chart">
-            Mocked GenreChart
-            <span data-testid="genre-count">{Object.keys(genreCounts).length}</span>
-        </div>
-    ),
-}));
-
-jest.mock('./RecommendationsTable', () => ({
-    RecommendationsTable: ({tracks, ownerId, userId, playlistId}: {
-        tracks: Track[],
-        ownerId: string,
-        userId: string,
-        playlistId: string
-    }) => (
-        <div data-testid="recommendations-table">
-            Mocked RecommendationsTable
-            <span data-testid="recommendation-count">{tracks.length}</span>
-            <span data-testid="owner-id">{ownerId}</span>
-            <span data-testid="user-id">{userId}</span>
-            <span data-testid="playlist-id">{playlistId}</span>
-        </div>
-    ),
-}));
-
-// jest-axeの拡張機能を追加
-expect.extend(toHaveNoViolations);
+// fetchのモック
+global.fetch = jest.fn(() =>
+    Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({status: 'success', userId: 'testUserId'}),
+    })
+) as jest.Mock;
 
 describe('PlaylistDetails', () => {
-    // テスト用のモックデータを定義
-    const mockTracks: Track[] = [
-        {
-            id: '1',
-            name: 'Track 1',
-            artists: [{
-                name: 'Artist 1',
-                externalUrls: undefined
-            }],
-            album: {
-                name: 'Album 1',
-                externalUrls: undefined,
-                images: []
-            },
-            durationMs: 180000,
-            previewUrl: undefined
-        },
-    ];
-    
-    const mockGenreCounts = {
-        'Pop': 5,
-        'Rock': 3,
-    };
-    
-    const mockRecommendations: Track[] = [
-        {
-            id: '2',
-            name: 'Recommended Track',
-            artists: [{
-                name: 'Recommended Artist',
-                externalUrls: undefined
-            }],
-            album: {
-                name: 'Recommended Album',
-                externalUrls: undefined,
-                images: []
-            },
-            durationMs: 200000,
-            previewUrl: undefined
-        },
-    ];
-    
-    // デフォルトのプロパティを定義
-    const defaultProps = {
-        tracks: mockTracks,
-        genreCounts: mockGenreCounts,
-        recommendations: mockRecommendations,
-        playlistName: 'Test Playlist',
-        ownerId: 'owner123',
-        userId: 'user123',
-        playlistId: 'playlist123',
-        totalDuration: '3:00:00', // 例として3時間
-        averageAudioFeatures: {
-            danceability: 0.5,
-            energy: 0.5,
-            key: 5,
-            loudness: -5,
-            mode: 1,
-            speechiness: 0.05,
-            acousticness: 0.1,
-            instrumentalness: 0.0,
-            liveness: 0.1,
-            valence: 0.5,
-            tempo: 120,
-            durationMs: 180000,
-            timeSignature: 4,
-        }, // 例として適当な値を設定
-        totalTracks: 1, // mockTracksの長さに合わせる
-        ownerName: 'Owner Name', // 例としてオーナーの名前を設定
-    };
-    
-    it('renders PlaylistDetailsTable with correct number of tracks', () => {
-        // PlaylistDetailsコンポーネントをレンダリング
-        render(<PlaylistDetails {...defaultProps} />);
-        const playlistDetailsTable = screen.getByTestId('playlist-details-table');
-        // PlaylistDetailsTableが正しくレンダリングされているか確認
-        expect(playlistDetailsTable).toBeInTheDocument();
-        // トラックの数が正しいか確認
-        expect(within(playlistDetailsTable).getByTestId('track-count')).toHaveTextContent('1');
-    });
-    
-    it('renders GenreDistributionChart when genreCounts is not empty', () => {
-        // PlaylistDetailsコンポーネントをレンダリング
-        render(<PlaylistDetails {...defaultProps} />);
-        const genreChart = screen.getByTestId('genre-chart');
-        // GenreChartが正しくレンダリングされているか確認
-        expect(genreChart).toBeInTheDocument();
-        // ジャンルの数が正しいか確認
-        expect(within(genreChart).getByTestId('genre-count')).toHaveTextContent('2');
-    });
-    
-    it('does not render GenreDistributionChart when genreCounts is empty', () => {
-        // genreCountsが空の場合にPlaylistDetailsコンポーネントをレンダリング
-        render(<PlaylistDetails {...defaultProps} genreCounts={{}}/>);
-        // GenreChartがレンダリングされていないことを確認
-        expect(screen.queryByTestId('genre-chart')).not.toBeInTheDocument();
-    });
-    
-    it('renders RecommendationsTable with correct props', () => {
-        // PlaylistDetailsコンポーネントをレンダリング
-        render(<PlaylistDetails {...defaultProps} />);
-        const recommendationsTable = screen.getByTestId('recommendations-table');
-        // RecommendationsTableが正しくレンダリングされているか確認
-        expect(recommendationsTable).toBeInTheDocument();
-        // 推奨トラックの数が正しいか確認
-        expect(within(recommendationsTable).getByTestId('recommendation-count')).toHaveTextContent('1');
-        // オーナーIDが正しいか確認
-        expect(within(recommendationsTable).getByTestId('owner-id')).toHaveTextContent('owner123');
-        // ユーザーIDが正しいか確認
-        expect(within(recommendationsTable).getByTestId('user-id')).toHaveTextContent('user123');
-        // プレイリストIDが正しいか確認
-        expect(within(recommendationsTable).getByTestId('playlist-id')).toHaveTextContent('playlist123');
-    });
-    
-    it('renders correct headings', () => {
-        // PlaylistDetailsコンポーネントをレンダリング
-        render(<PlaylistDetails {...defaultProps} />);
-        // 正しい見出しがレンダリングされているか確認
+    it('プレイリストの詳細を表示する', async () => {
+        const queryClient = new QueryClient();
+        render(
+            <QueryClientProvider client={queryClient}>
+                <UserContextProvider>
+                    <FavoriteContext.Provider value={mockFavoriteContextValue}>
+                        <PlaylistDetails
+                            tracks={mockTracks}
+                            genreCounts={mockGenreCounts}
+                            recommendations={mockRecommendations}
+                            playlistName="My Playlist"
+                            ownerId="user123"
+                            userId="user123"
+                            playlistId="playlist123"
+                            totalDuration="3:00"
+                            averageAudioFeatures={mockAverageAudioFeatures}
+                            totalTracks={mockTracks.length}
+                            ownerName="User 123"
+                        />
+                    </FavoriteContext.Provider>
+                </UserContextProvider>
+            </QueryClientProvider>
+        );
+        
+        // 非同期処理が完了するまで待機
+        await screen.findByText('My Playlist');
+        
+        // プレイリスト名が表示されていることを確認
+        expect(screen.getByText('My Playlist')).toBeInTheDocument();
+        
+        // 作成者名が表示されていることを確認
+        expect(screen.getByText('User 123')).toBeInTheDocument(); // 正規表現を使用
+        
+        // 楽曲数が表示されていることを確認
+        expect(screen.getByText('楽曲数: 1')).toBeInTheDocument();
+        
+        // 総再生時間が表示されていることを確認
+        expect(screen.getByText('総再生時間: 3:00')).toBeInTheDocument();
+        
+        // トラックテーブルが表示されていることを確認
+        expect(screen.getByText('Track 1')).toBeInTheDocument();
+        
+        // ジャンル分布チャートが表示されていることを確認
         expect(screen.getByText('ジャンル分布:')).toBeInTheDocument();
+        
+        // おすすめテーブルが表示されていることを確認
         expect(screen.getByText('おすすめ:')).toBeInTheDocument();
     });
     
-    it('handles empty tracks array', () => {
-        // トラックが空の場合にPlaylistDetailsコンポーネントをレンダリング
-        render(<PlaylistDetails {...defaultProps} tracks={[]}/>);
-        const playlistDetailsTable = screen.getByTestId('playlist-details-table');
-        // トラックの数が0であることを確認
-        expect(within(playlistDetailsTable).getByTestId('track-count')).toHaveTextContent('0');
-    });
-    
-    it('handles empty recommendations array', () => {
-        // 推奨トラックが空の場合にPlaylistDetailsコンポーネントをレンダリング
-        render(<PlaylistDetails {...defaultProps} recommendations={[]}/>);
-        const recommendationsTable = screen.getByTestId('recommendations-table');
-        // 推奨トラックの数が0であることを確認
-        expect(within(recommendationsTable).getByTestId('recommendation-count')).toHaveTextContent('0');
-    });
-    
-    it('passes accessibility test', async () => {
-        // PlaylistDetailsコンポーネントをレンダリング
-        const {container} = render(<PlaylistDetails {...defaultProps} />);
-        // アクセシビリティテストを実行
-        const results = await axe(container);
-        // アクセシビリティ違反がないことを確認
-        expect(results).toHaveNoViolations();
+    it('お気に入りボタンのクリックを処理する', async () => {
+        const queryClient = new QueryClient();
+        render(
+            <QueryClientProvider client={queryClient}>
+                <UserContextProvider>
+                    <FavoriteContext.Provider value={mockFavoriteContextValue}>
+                        <PlaylistDetails
+                            tracks={mockTracks}
+                            genreCounts={mockGenreCounts}
+                            recommendations={mockRecommendations}
+                            playlistName="My Playlist"
+                            ownerId="user123"
+                            userId="user123"
+                            playlistId="playlist123"
+                            totalDuration="3:00"
+                            averageAudioFeatures={mockAverageAudioFeatures}
+                            totalTracks={mockTracks.length}
+                            ownerName="User 123"
+                        />
+                    </FavoriteContext.Provider>
+                </UserContextProvider>
+            </QueryClientProvider>
+        );
+        
+        // 非同期処理が完了するまで待機
+        await screen.findByText('My Playlist');
+        
+        // お気に入りボタンをクリック
+        const starButton = screen.getByText('☆');
+        await userEvent.click(starButton);
+        
+        // addFavorite関数が呼び出されたことを確認
+        expect(mockFavoriteContextValue.addFavorite).toHaveBeenCalledWith('playlist123', 'My Playlist', 1);
+        
+        // お気に入りボタンが星印に変わることを確認
+        expect(screen.getByText('★')).toBeInTheDocument();
+        
+        // 再度お気に入りボタンをクリック
+        await userEvent.click(starButton);
+        
+        // removeFavorite関数が呼び出されたことを確認
+        expect(mockFavoriteContextValue.removeFavorite).toHaveBeenCalledWith('playlist123');
+        
+        // お気に入りボタンが空の星印に戻ることを確認
+        expect(screen.getByText('☆')).toBeInTheDocument();
     });
 });

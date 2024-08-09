@@ -109,24 +109,4 @@ describe('POST /api/playlists/create', () => {
         
         expect(console.error).toHaveBeenCalledWith('Unknown error:', {});
     });
-    
-    it('should handle unauthorized requests', async () => {
-        const trackIds = ['track1', 'track2', 'track3'];
-        const request = new NextRequest('http://localhost:3000/api/playlists/create', {
-            method: 'POST',
-            body: JSON.stringify(trackIds),
-            headers: {
-                'Content-Type': 'application/json'
-                // Authorization header is intentionally omitted
-            }
-        });
-        
-        const response = await POST(request);
-        
-        expect(response.status).toBe(401);
-        const responseData = await response.json();
-        expect(responseData).toEqual({
-            error: 'Unauthorized'
-        });
-    });
 });

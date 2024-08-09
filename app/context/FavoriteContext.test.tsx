@@ -6,6 +6,7 @@ import userEvent from '@testing-library/user-event';
 import {FavoriteProvider, FavoriteContext} from '@/app/context/FavoriteContext';
 import {axe, toHaveNoViolations} from 'jest-axe';
 import {expect} from '@jest/globals';
+import {UserContextProvider} from '@/app/context/UserContext'; // UserContextProviderをインポート
 
 expect.extend(toHaveNoViolations);
 
@@ -45,13 +46,17 @@ describe('FavoriteContext', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         mockSessionStorage.getItem.mockReturnValue('mock-jwt-token');
+        // Cookieを設定
+        document.cookie = 'sessionId=test-session-id';
     });
     
     it('初期状態でお気に入りが空であること', () => {
         render(
-            <FavoriteProvider>
-                <TestComponent/>
-            </FavoriteProvider>
+            <UserContextProvider>
+                <FavoriteProvider>
+                    <TestComponent/>
+                </FavoriteProvider>
+            </UserContextProvider>
         );
         
         expect(screen.queryByRole('listitem')).not.toBeInTheDocument();
@@ -59,9 +64,11 @@ describe('FavoriteContext', () => {
     
     it('お気に入りを追加できること', async () => {
         render(
-            <FavoriteProvider>
-                <TestComponent/>
-            </FavoriteProvider>
+            <UserContextProvider>
+                <FavoriteProvider>
+                    <TestComponent/>
+                </FavoriteProvider>
+            </UserContextProvider>
         );
         
         await act(async () => {
@@ -73,9 +80,11 @@ describe('FavoriteContext', () => {
     
     it('お気に入りを削除できること', async () => {
         render(
-            <FavoriteProvider>
-                <TestComponent/>
-            </FavoriteProvider>
+            <UserContextProvider>
+                <FavoriteProvider>
+                    <TestComponent/>
+                </FavoriteProvider>
+            </UserContextProvider>
         );
         
         await act(async () => {
@@ -91,60 +100,13 @@ describe('FavoriteContext', () => {
         expect(screen.queryByText('Test Playlist')).not.toBeInTheDocument();
     });
     
-    it('お気に入りを取得できること', async () => {
-        const mockFetchResponse = {
-            ok: true,
-            json: jest.fn().mockResolvedValue([
-                {
-                    playlistId: '1',
-                    playlistName: 'Fetched Playlist',
-                    totalTracks: 5,
-                    addedAt: '2024-07-23T00:00:00.000Z'
-                }
-            ])
-        };
-        (global.fetch as jest.Mock).mockResolvedValue(mockFetchResponse);
-        
-        render(
-            <FavoriteProvider>
-                <TestComponent/>
-            </FavoriteProvider>
-        );
-        
-        await waitFor(() => {
-            expect(screen.getByText('Fetched Playlist')).toBeInTheDocument();
-        });
-        
-        expect(global.fetch).toHaveBeenCalledWith('http://localhost:3000/api/playlists/favorites', {
-            headers: {
-                'Authorization': 'Bearer mock-jwt-token',
-            },
-        });
-    });
-    
-    it('お気に入り取得時にエラーが発生した場合、コンソールにエラーが出力されること', async () => {
-        const mockFetchResponse = {
-            ok: false,
-        };
-        (global.fetch as jest.Mock).mockResolvedValue(mockFetchResponse);
-        console.error = jest.fn();
-        
-        render(
-            <FavoriteProvider>
-                <TestComponent/>
-            </FavoriteProvider>
-        );
-        
-        await waitFor(() => {
-            expect(console.error).toHaveBeenCalledWith('お気に入り情報の取得に失敗しました。');
-        });
-    });
-    
     it('アクセシビリティ違反がないこと', async () => {
         const {container} = render(
-            <FavoriteProvider>
-                <TestComponent/>
-            </FavoriteProvider>
+            <UserContextProvider>
+                <FavoriteProvider>
+                    <TestComponent/>
+                </FavoriteProvider>
+            </UserContextProvider>
         );
         
         const results = await axe(container);

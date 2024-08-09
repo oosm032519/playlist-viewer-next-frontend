@@ -55,7 +55,7 @@ describe('POST /api/playlists/add-track', () => {
                 method: 'POST',
                 headers: expect.objectContaining({
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer mock-jwt-token',
+                    'Cookie': 'Bearer mock-jwt-token',
                 }),
                 body: JSON.stringify({playlistId: '1', trackId: '2'}),
             })
@@ -106,9 +106,9 @@ describe('POST /api/playlists/add-track', () => {
         });
     });
     
-    it('環境変数BACKEND_URLが設定されている場合、そのURLを使用すること', async () => {
+    it('環境変数NEXT_PUBLIC_BACKEND_URLが設定されている場合、そのURLを使用すること', async () => {
         // 環境変数の設定
-        process.env.BACKEND_URL = 'https://api.example.com';
+        process.env.NEXT_PUBLIC_BACKEND_URL = 'https://api.example.com';
         
         // モックの設定
         const mockRequest = {
@@ -131,24 +131,6 @@ describe('POST /api/playlists/add-track', () => {
             'https://api.example.com/api/playlist/add-track',
             expect.anything()
         );
-    });
-    
-    it('異常系: JWTが見つからない場合', async () => {
-        // モックの設定
-        const mockRequest = {
-            json: jest.fn().mockResolvedValue({playlistId: '1', trackId: '2'}),
-            headers: {
-                get: jest.fn().mockReturnValue(null),
-            },
-        } as unknown as NextRequest;
-        
-        // テスト実行
-        const response = await POST(mockRequest);
-        const responseBody = await response.json();
-        
-        // アサーション
-        expect(response.status).toBe(401);
-        expect(responseBody).toEqual({error: 'JWTが見つかりません'});
     });
     
     // 新しいテストケース: fetchがネットワークエラーを投げた場合

@@ -35,6 +35,10 @@ describe('UserContextProvider', () => {
     
     it('初期状態で正しく描画される', async () => {
         mockSessionStorage.getItem.mockReturnValue(null);
+        (global.fetch as jest.Mock).mockResolvedValue({
+            ok: true,
+            json: () => Promise.resolve({status: 'error', userId: null}),
+        });
         
         const TestComponent = () => {
             const {isLoggedIn, userId, error} = useUser();
@@ -77,7 +81,7 @@ describe('セッションチェック', () => {
         mockSessionStorage.getItem.mockReturnValue('valid-jwt');
         (global.fetch as jest.Mock).mockResolvedValue({
             ok: true,
-            json: () => Promise.resolve({userId: 'test-user-id'}),
+            json: () => Promise.resolve({status: 'success', userId: 'test-user-id'}),
         });
         
         const TestComponent = () => {
@@ -106,6 +110,10 @@ describe('セッションチェック', () => {
     
     it('セッションが無効な場合、正しく状態が更新される', async () => {
         mockSessionStorage.getItem.mockReturnValue(null);
+        (global.fetch as jest.Mock).mockResolvedValue({
+            ok: true,
+            json: () => Promise.resolve({status: 'error', userId: null}),
+        });
         
         const TestComponent = () => {
             const {isLoggedIn, userId, error} = useUser();
@@ -155,9 +163,9 @@ describe('エラーハンドリング', () => {
         );
         
         await waitFor(() => {
-            expect(screen.getByTestId('logged-in')).toHaveTextContent('true');
+            expect(screen.getByTestId('logged-in')).toHaveTextContent('false');
             expect(screen.getByTestId('user-id')).toHaveTextContent('null');
-            expect(screen.getByTestId('error')).toHaveTextContent('ユーザーIDの取得中にエラーが発生しました。');
+            expect(screen.getByTestId('error')).toHaveTextContent('セッション初期化に失敗しました');
         });
     });
 });
@@ -220,15 +228,14 @@ describe('useUser フック', () => {
         );
         
         await waitFor(() => {
-            expect(screen.getByTestId('logged-in')).toHaveTextContent('true');
+            expect(screen.getByTestId('logged-in')).toHaveTextContent('false');
             expect(screen.getByTestId('user-id')).toHaveTextContent('null');
-            expect(screen.getByTestId('error')).toHaveTextContent('ユーザーIDの取得中にエラーが発生しました。');
+            expect(screen.getByTestId('error')).toHaveTextContent('セッション初期化に失敗しました');
         });
         
         expect(console.error).toHaveBeenCalledWith(
-            'ユーザーIDの取得中にエラーが発生しました:',
-            'HTTP error! status: 500',
-            undefined
+            'セッション初期化中にエラーが発生しました:',
+            expect.any(Error)
         );
     });
     
@@ -254,13 +261,13 @@ describe('useUser フック', () => {
         );
         
         await waitFor(() => {
-            expect(screen.getByTestId('logged-in')).toHaveTextContent('true');
+            expect(screen.getByTestId('logged-in')).toHaveTextContent('false');
             expect(screen.getByTestId('user-id')).toHaveTextContent('null');
-            expect(screen.getByTestId('error')).toHaveTextContent('ユーザーIDの取得中にエラーが発生しました。');
+            expect(screen.getByTestId('error')).toHaveTextContent('セッション初期化に失敗しました');
         });
         
         expect(console.error).toHaveBeenCalledWith(
-            'ユーザーIDの取得中にエラーが発生しました:',
+            'セッション初期化中にエラーが発生しました:',
             '非Errorオブジェクトのエラー'
         );
     });

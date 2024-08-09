@@ -1,4 +1,4 @@
-// app/api/playlists/remove-track/route.ts.test.ts
+// app/api/playlists/remove-track/route.test.ts
 
 import {POST} from './route';
 import {NextRequest} from 'next/server';
@@ -51,9 +51,10 @@ describe('POST /api/playlists/remove-track', () => {
                 method: 'POST',
                 headers: expect.objectContaining({
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer test-jwt-token',
+                    'Cookie': 'Bearer test-jwt-token',
                 }),
                 body: JSON.stringify(mockRequestBody),
+                credentials: 'include',
             })
         );
     });
@@ -126,24 +127,6 @@ describe('POST /api/playlists/remove-track', () => {
         expect(responseBody).toEqual({
             error: "トラックの削除に失敗しました",
             details: "不明なエラー",
-        });
-    });
-    
-    it('JWTが見つからない場合、401エラーを返すこと', async () => {
-        const mockRequestBody = {playlistId: '123', trackId: '456'};
-        const mockRequest = {
-            json: jest.fn().mockResolvedValue(mockRequestBody),
-            headers: {
-                get: jest.fn().mockReturnValue(null)
-            }
-        } as unknown as NextRequest;
-        
-        const response = await POST(mockRequest);
-        const responseBody = await response.json();
-        
-        expect(response.status).toBe(401);
-        expect(responseBody).toEqual({
-            error: "JWTが見つかりません"
         });
     });
 });
