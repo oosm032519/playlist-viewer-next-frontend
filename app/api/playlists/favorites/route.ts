@@ -54,6 +54,17 @@ const getFavoritePlaylists = async (req: NextRequest): Promise<any> => {
     }
 };
 
+function createResponse(body: any, status: number = 200): NextResponse {
+    const response = NextResponse.json(body, {status});
+    
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    response.headers.set('Surrogate-Control', 'no-store');
+    
+    return response;
+}
+
 export async function GET(req: NextRequest): Promise<NextResponse> {
     console.log('GETハンドラーが呼び出されました');
     
@@ -61,14 +72,14 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         const playlists = await getFavoritePlaylists(req);
         console.log('お気に入りプレイリストの取得に成功しました:', playlists);
         
-        return NextResponse.json(playlists);
+        return createResponse(playlists);
     } catch (error) {
         console.error('GETハンドラーでエラーが発生しました:', error);
         
         if (error instanceof Error) {
-            return NextResponse.json({error: `お気に入りプレイリストの取得中にエラーが発生しました: ${error.message}`}, {status: 500});
+            return createResponse({error: `お気に入りプレイリストの取得中にエラーが発生しました: ${error.message}`}, 500);
         } else {
-            return NextResponse.json({error: 'お気に入りプレイリストの取得中にエラーが発生しました: Unknown error'}, {status: 500});
+            return createResponse({error: 'お気に入りプレイリストの取得中にエラーが発生しました: Unknown error'}, 500);
         }
     }
 }
