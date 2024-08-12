@@ -48,7 +48,6 @@ export const UserContextProvider: React.FC<React.PropsWithChildren<{}>> = ({chil
                 }
             } catch (error) {
                 console.error("セッション初期化中にエラーが発生しました:", error);
-                setError("セッション初期化に失敗しました");
             }
         };
         

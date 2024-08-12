@@ -1,6 +1,8 @@
 // app/api/playlists/remove-track/route.ts
 
 import {NextRequest} from "next/server";
+import {handleApiError} from '@/app/lib/api-utils';
+import {NotFoundError, UnauthorizedError} from '@/app/lib/errors';
 
 export async function POST(request: NextRequest): Promise<Response> {
     console.log("POST request received to remove track from playlist");
@@ -16,10 +18,7 @@ export async function POST(request: NextRequest): Promise<Response> {
         console.log(`[${new Date().toISOString()}] Cookieを取得: ${cookie}`);
         
         if (!cookie) {
-            return new Response(JSON.stringify({error: "Cookieが見つかりません"}), {
-                status: 401,
-                headers: {'Content-Type': 'application/json'}
-            });
+            throw new UnauthorizedError('Cookieが見つかりません');
         }
         
         const response = await fetch(`${backendUrl}/api/playlist/remove-track`, {
@@ -33,26 +32,24 @@ export async function POST(request: NextRequest): Promise<Response> {
         });
         
         // レスポンスがOKかどうかを確認
-        if (response.ok) {
-            // OKの場合は、レスポンスをJSONとして解析し、クライアントに返す
-            const responseData = await response.json();
-            return new Response(JSON.stringify(responseData), {
-                status: response.status,
-                headers: {'Content-Type': 'application/json'}
-            });
-        } else {
-            // OKでない場合は、エラーメッセージをクライアントに返す
-            const errorData = await response.json();
-            return new Response(JSON.stringify({error: "トラックの削除に失敗しました", details: errorData}), {
-                status: response.status,
-                headers: {'Content-Type': 'application/json'}
-            });
+        if (!response.ok) {
+            if (response.status === 404) {
+                throw new NotFoundError('プレイリストが見つかりません');
+            } else if (response.status === 401) {
+                throw new UnauthorizedError('認証されていません');
+            } else {
+                const errorData = await response.json();
+                throw new Error(`トラックの削除に失敗しました: ${errorData.details || '不明なエラー'}`);
+            }
         }
+        
+        // OKの場合は、レスポンスをJSONとして解析し、クライアントに返す
+        const responseData = await response.json();
+        return new Response(JSON.stringify(responseData), {
+            status: response.status,
+            headers: {'Content-Type': 'application/json'}
+        });
     } catch (error) {
-        console.error("Error removing track from playlist:", error);
-        return new Response(
-            JSON.stringify({error: "トラックの削除に失敗しました", details: "不明なエラー"}),
-            {status: 500, headers: {'Content-Type': 'application/json'}}
-        );
+        return handleApiError(error);
     }
 }

@@ -1,6 +1,8 @@
 // app/api/playlists/followed/route.ts
 
 import {NextRequest, NextResponse} from 'next/server';
+import {handleApiError} from '@/app/lib/api-utils';
+import {UnauthorizedError, BadRequestError} from '@/app/lib/errors';
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
 
@@ -17,13 +19,13 @@ const handleFavoritePlaylist = async (req: NextRequest, method: 'POST' | 'DELETE
         console.log('Cookie:', cookie);
         
         if (!cookie) {
-            throw new Error('Cookie missing');
+            throw new UnauthorizedError('Cookieが見つかりません');
         }
         
         // sessionIdを抽出
         const sessionId = cookie.split('; ').find(row => row.startsWith('sessionId'))?.split('=')[1];
         if (!sessionId) {
-            throw new Error('sessionId missing');
+            throw new UnauthorizedError('sessionIdが見つかりません');
         }
         
         const body = await req.json();
@@ -49,9 +51,15 @@ const handleFavoritePlaylist = async (req: NextRequest, method: 'POST' | 'DELETE
         });
         
         if (!response.ok) {
-            const errorText = await response.text();
-            console.error('バックエンドからのエラーレスポンス:', errorText);
-            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+            if (response.status === 401) {
+                throw new UnauthorizedError('認証されていません');
+            } else if (response.status === 400) {
+                throw new BadRequestError('不正なリクエストです');
+            } else {
+                const errorText = await response.text();
+                console.error('バックエンドからのエラーレスポンス:', errorText);
+                throw new Error(`お気に入りプレイリストの${method === 'POST' ? '追加' : '削除'}に失敗しました: ${errorText}`);
+            }
         }
         
         const data = await response.json();
@@ -61,13 +69,7 @@ const handleFavoritePlaylist = async (req: NextRequest, method: 'POST' | 'DELETE
         
         return data;
     } catch (error) {
-        console.error('APIリクエスト中にエラーが発生しました:', error);
-        
-        if (error instanceof Error) {
-            throw new Error(`Failed to ${method.toLowerCase()} favorite playlist: ${error.message}`);
-        } else {
-            throw new Error(`Failed to ${method.toLowerCase()} favorite playlist: Unknown error`);
-        }
+        return handleApiError(error);
     }
 };
 
@@ -80,13 +82,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         
         return NextResponse.json(result);
     } catch (error) {
-        console.error('POSTハンドラーでエラーが発生しました:', error);
-        
-        if (error instanceof Error) {
-            return NextResponse.json({error: `お気に入りプレイリストの追加中にエラーが発生しました: ${error.message}`}, {status: 500});
-        } else {
-            return NextResponse.json({error: 'お気に入りプレイリストの追加中にエラーが発生しました: Unknown error'}, {status: 500});
-        }
+        return handleApiError(error);
     }
 }
 
@@ -99,12 +95,6 @@ export async function DELETE(req: NextRequest): Promise<NextResponse> {
         
         return NextResponse.json(result);
     } catch (error) {
-        console.error('DELETEハンドラーでエラーが発生しました:', error);
-        
-        if (error instanceof Error) {
-            return NextResponse.json({error: `お気に入りプレイリストの削除中にエラーが発生しました: ${error.message}`}, {status: 500});
-        } else {
-            return NextResponse.json({error: 'お気に入りプレイリストの削除中にエラーが発生しました: Unknown error'}, {status: 500});
-        }
+        return handleApiError(error);
     }
 }

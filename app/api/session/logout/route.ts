@@ -1,6 +1,8 @@
 // app/api/session/logout/route.ts
 
 import {NextRequest, NextResponse} from "next/server";
+import {handleApiError} from '@/app/lib/api-utils';
+import {UnauthorizedError} from '@/app/lib/errors';
 
 export async function POST(request: NextRequest): Promise<Response> {
     console.log(`[${new Date().toISOString()}] POST リクエスト開始: /api/session/logout`);
@@ -11,7 +13,7 @@ export async function POST(request: NextRequest): Promise<Response> {
         // sessionIdを抽出
         const sessionId = cookies.split('; ').find(row => row.startsWith('sessionId'))?.split('=')[1];
         if (!sessionId) {
-            throw new Error('sessionId missing');
+            throw new UnauthorizedError('sessionIdが見つかりません');
         }
         
         console.log(`[${new Date().toISOString()}] バックエンドAPIリクエスト開始: ${backendUrl}/api/session/logout`);
@@ -23,6 +25,10 @@ export async function POST(request: NextRequest): Promise<Response> {
             },
         });
         console.log(`[${new Date().toISOString()}] バックエンドAPIレスポンス受信: ステータス=${response.status}`);
+        
+        if (!response.ok) {
+            throw new Error(`ログアウトに失敗しました: ${response.status}`);
+        }
         
         const nextResponse = NextResponse.json(null, {
             status: response.status,
@@ -40,8 +46,7 @@ export async function POST(request: NextRequest): Promise<Response> {
         
         return nextResponse;
     } catch (error) {
-        console.error(`[${new Date().toISOString()}] エラー発生:`, error);
-        return new Response(null, {status: 500});
+        return handleApiError(error);
     } finally {
         console.log(`[${new Date().toISOString()}] POST リクエスト終了: /api/session/logout`);
     }

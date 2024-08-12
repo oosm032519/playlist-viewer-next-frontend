@@ -1,6 +1,7 @@
 // app/api/session/check/route.ts
 
 import {NextRequest, NextResponse} from 'next/server';
+import {handleApiError} from '@/app/lib/api-utils';
 
 function createResponse(body: any, status: number = 200): NextResponse {
     const response = NextResponse.json(body, {status});
@@ -32,16 +33,17 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         
         console.log(`[${new Date().toISOString()}] APIレスポンスステータス: ${response.status}`);
         
+        if (!response.ok) {
+            throw new Error(`セッションチェックに失敗しました: ${response.status}`);
+        }
+        
         const data = await response.json();
         console.log(`[${new Date().toISOString()}] APIレスポンスデータを取得: ${JSON.stringify(data)}`);
         
         console.log(`[${new Date().toISOString()}] セッションの状態を含むレスポンスを返す`);
         return createResponse(data);
     } catch (error) {
-        console.error(`[${new Date().toISOString()}] セッションチェックエラー:`, error);
-        
-        console.log(`[${new Date().toISOString()}] エラーレスポンスを返す`);
-        return createResponse({status: 'error', message: 'セッションチェックに失敗しました'}, 500);
+        return handleApiError(error);
     } finally {
         console.log(`[${new Date().toISOString()}] GET /api/session/check - リクエスト終了`);
     }

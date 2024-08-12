@@ -1,6 +1,8 @@
 // app/api/playlists/[id]/route.ts.ts
 
 import {NextResponse} from 'next/server';
+import {handleApiError} from '@/app/lib/api-utils';
+import {NotFoundError} from '@/app/lib/errors';
 
 // バックエンドサーバーのURLを環境変数から取得
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
@@ -24,10 +26,14 @@ const fetchPlaylistData = async (id: string) => {
         
         // レスポンスが成功でない場合、エラーをスロー
         if (!response.ok) {
-            const errorData = await response.json();
-            console.error(`エラーステータス: ${response.status}`);
-            console.error(`エラーデータ: ${JSON.stringify(errorData)}`);
-            throw new Error(`HTTPエラー: ${response.status}`);
+            if (response.status === 404) {
+                throw new NotFoundError('プレイリストが見つかりません');
+            } else {
+                const errorData = await response.json();
+                console.error(`エラーステータス: ${response.status}`);
+                console.error(`エラーデータ: ${JSON.stringify(errorData)}`);
+                throw new Error(`プレイリストの取得に失敗しました: ${errorData.details || '不明なエラー'}`);
+            }
         }
         
         // レスポンスデータをJSON形式で取得
@@ -35,8 +41,7 @@ const fetchPlaylistData = async (id: string) => {
         console.log(`レスポンスデータ: ${JSON.stringify(data)}`);
         return data;
     } catch (error) {
-        console.error("プレイリストの取得中にエラーが発生しました:", error);
-        throw error;
+        return handleApiError(error);
     }
 };
 
@@ -67,20 +72,6 @@ export async function GET(
         // 成功レスポンスを返す
         return NextResponse.json(data, {status: 200});
     } catch (error) {
-        console.error("プレイリストの取得に失敗しました:", error);
-        console.log('エラーレスポンスを作成中...');
-        
-        // エラーメッセージに基づいて適切なレスポンスを返す
-        if (error instanceof Error && error.message.includes('HTTPエラー')) {
-            const status = parseInt(error.message.split(': ')[1], 10);
-            if (status === 404) {
-                return NextResponse.json({error: "プレイリストが見つかりません"}, {status: 404});
-            } else if (status === 500) {
-                return NextResponse.json({error: "プレイリストの取得中にサーバーエラーが発生しました"}, {status: 500});
-            }
-        }
-        
-        // 予期せぬエラーの場合のレスポンス
-        return NextResponse.json({error: "プレイリストの取得中に予期せぬエラーが発生しました"}, {status: 500});
+        return handleApiError(error);
     }
 }

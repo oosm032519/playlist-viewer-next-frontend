@@ -1,6 +1,8 @@
 // app/api/session/sessionId/route.ts
 
 import {NextResponse} from 'next/server';
+import {handleApiError} from '@/app/lib/api-utils';
+import {BadRequestError} from '@/app/lib/errors';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
 
@@ -8,7 +10,7 @@ export async function POST(request: Request) {
     const {temporaryToken} = await request.json();
     
     if (!temporaryToken) {
-        return NextResponse.json({error: "一時トークンが提供されていません"}, {status: 400});
+        return handleApiError(new BadRequestError('一時トークンが提供されていません'));
     }
     
     try {
@@ -21,7 +23,8 @@ export async function POST(request: Request) {
         });
         
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorData = await response.json();
+            throw new Error(`セッションIDの取得に失敗しました: ${errorData.details || '不明なエラー'}`);
         }
         
         const data = await response.json();
@@ -40,7 +43,6 @@ export async function POST(request: Request) {
         
         return newResponse;
     } catch (error) {
-        console.error("セッションIDの取得中にエラーが発生しました:", error);
-        return NextResponse.json({error: "セッションIDの取得に失敗しました"}, {status: 500});
+        return handleApiError(error);
     }
 }

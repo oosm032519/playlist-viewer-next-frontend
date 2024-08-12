@@ -1,4 +1,6 @@
 import {NextRequest} from "next/server";
+import {handleApiError} from '@/app/lib/api-utils';
+import {UnauthorizedError} from '@/app/lib/errors';
 
 /**
  * プレイリスト作成のためのPOSTメソッドを処理する非同期関数
@@ -29,7 +31,12 @@ export async function POST(request: NextRequest): Promise<Response> {
         
         // レスポンスが正常でない場合はエラーをスロー
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            if (response.status === 401) {
+                throw new UnauthorizedError('認証されていません');
+            } else {
+                const errorData = await response.json();
+                throw new Error(`プレイリストの作成に失敗しました: ${errorData.details || '不明なエラー'}`);
+            }
         }
         
         // レスポンスボディをJSONとしてパース
@@ -41,19 +48,6 @@ export async function POST(request: NextRequest): Promise<Response> {
             headers: {'Content-Type': 'application/json'}
         });
     } catch (error) {
-        // エラーハンドリング
-        if (error instanceof Error) {
-            console.error("Error creating playlist:", error.message);
-            return new Response(
-                JSON.stringify({error: "Failed to create playlist", details: error.message}),
-                {status: 500, headers: {'Content-Type': 'application/json'}}
-            );
-        } else {
-            console.error("Unknown error:", error);
-            return new Response(
-                JSON.stringify({error: "Failed to create playlist", details: "Unknown error"}),
-                {status: 500, headers: {'Content-Type': 'application/json'}}
-            );
-        }
+        return handleApiError(error);
     }
 }

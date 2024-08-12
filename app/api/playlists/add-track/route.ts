@@ -1,6 +1,8 @@
 // app/api/playlists/add-track/route.ts
 
 import {NextRequest} from "next/server";
+import {handleApiError} from '@/app/lib/api-utils';
+import {NotFoundError, UnauthorizedError} from '@/app/lib/errors';
 
 export async function POST(request: NextRequest): Promise<Response> {
     console.log(`[${new Date().toISOString()}] POST リクエスト開始: /api/playlists/add-track`);
@@ -24,6 +26,17 @@ export async function POST(request: NextRequest): Promise<Response> {
         });
         console.log(`[${new Date().toISOString()}] バックエンドAPIレスポンス受信: ステータス=${response.status}`);
         
+        if (!response.ok) {
+            if (response.status === 404) {
+                throw new NotFoundError('プレイリストが見つかりません');
+            } else if (response.status === 401) {
+                throw new UnauthorizedError('認証されていません');
+            } else {
+                const errorData = await response.json();
+                throw new Error(`プレイリストへのトラック追加に失敗しました: ${errorData.details || '不明なエラー'}`);
+            }
+        }
+        
         const data = await response.json();
         console.log(`[${new Date().toISOString()}] バックエンドAPIレスポンス内容:`, JSON.stringify(data));
         
@@ -33,15 +46,7 @@ export async function POST(request: NextRequest): Promise<Response> {
             headers: {'Content-Type': 'application/json'},
         });
     } catch (error) {
-        console.error(`[${new Date().toISOString()}] エラー発生:`, error);
-        // エラーレスポンスを返す
-        return new Response(
-            JSON.stringify({
-                error: "プレイリストへのトラック追加に失敗しました",
-                details: error instanceof Error ? error.message : "不明なエラー"
-            }),
-            {status: 500, headers: {'Content-Type': 'application/json'}}
-        );
+        return handleApiError(error);
     } finally {
         console.log(`[${new Date().toISOString()}] POST リクエスト終了: /api/playlists/add-track`);
     }

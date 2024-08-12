@@ -1,6 +1,8 @@
 // app/api/playlists/favorites/route.ts
 
 import {NextRequest, NextResponse} from 'next/server';
+import {handleApiError} from '@/app/lib/api-utils';
+import {UnauthorizedError} from '@/app/lib/errors';
 
 const getFavoritePlaylists = async (req: NextRequest): Promise<any> => {
     console.log('getFavoritePlaylists関数が呼び出されました');
@@ -16,13 +18,13 @@ const getFavoritePlaylists = async (req: NextRequest): Promise<any> => {
         console.log('Cookie:', cookie);
         
         if (!cookie) {
-            throw new Error('Cookie missing');
+            throw new UnauthorizedError('Cookieが見つかりません');
         }
         
         // sessionIdを抽出
         const sessionId = cookie.split('; ').find(row => row.startsWith('sessionId'))?.split('=')[1];
         if (!sessionId) {
-            throw new Error('sessionId missing');
+            throw new UnauthorizedError('sessionIdが見つかりません');
         }
         
         const response = await fetch(apiUrl, {
@@ -34,7 +36,12 @@ const getFavoritePlaylists = async (req: NextRequest): Promise<any> => {
         });
         
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            if (response.status === 401) {
+                throw new UnauthorizedError('認証されていません');
+            } else {
+                const errorText = await response.text();
+                throw new Error(`お気に入りプレイリストの取得に失敗しました: ${errorText}`);
+            }
         }
         
         const data = await response.json();
@@ -44,13 +51,7 @@ const getFavoritePlaylists = async (req: NextRequest): Promise<any> => {
         
         return data;
     } catch (error) {
-        console.error('APIリクエスト中にエラーが発生しました:', error);
-        
-        if (error instanceof Error) {
-            throw new Error(`Failed to fetch favorite playlists: ${error.message}`);
-        } else {
-            throw new Error('Failed to fetch favorite playlists: Unknown error');
-        }
+        return handleApiError(error);
     }
 };
 
@@ -74,12 +75,6 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         
         return createResponse(playlists);
     } catch (error) {
-        console.error('GETハンドラーでエラーが発生しました:', error);
-        
-        if (error instanceof Error) {
-            return createResponse({error: `お気に入りプレイリストの取得中にエラーが発生しました: ${error.message}`}, 500);
-        } else {
-            return createResponse({error: 'お気に入りプレイリストの取得中にエラーが発生しました: Unknown error'}, 500);
-        }
+        return handleApiError(error);
     }
 }

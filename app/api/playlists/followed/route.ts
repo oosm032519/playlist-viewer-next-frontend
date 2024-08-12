@@ -1,6 +1,8 @@
 // app/api/playlists/followed/route.ts
 
 import {NextRequest, NextResponse} from 'next/server';
+import {handleApiError} from '@/app/lib/api-utils';
+import {UnauthorizedError} from '@/app/lib/errors';
 
 /**
  * フォロー中のプレイリストを取得する非同期関数
@@ -22,13 +24,13 @@ const getFollowedPlaylists = async (req: NextRequest): Promise<any> => {
         console.log('Cookie:', cookie);
         
         if (!cookie) {
-            throw new Error('Cookie missing');
+            throw new UnauthorizedError('Cookieが見つかりません');
         }
         
         // sessionIdを抽出
         const sessionId = cookie.split('; ').find(row => row.startsWith('sessionId'))?.split('=')[1];
         if (!sessionId) {
-            throw new Error('sessionId missing');
+            throw new UnauthorizedError('sessionIdが見つかりません');
         }
         
         const response = await fetch(apiUrl, {
@@ -40,7 +42,12 @@ const getFollowedPlaylists = async (req: NextRequest): Promise<any> => {
         });
         
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            if (response.status === 401) {
+                throw new UnauthorizedError('認証されていません');
+            } else {
+                const errorText = await response.text();
+                throw new Error(`プレイリストの取得に失敗しました: ${errorText}`);
+            }
         }
         
         const data = await response.json();
@@ -50,13 +57,7 @@ const getFollowedPlaylists = async (req: NextRequest): Promise<any> => {
         
         return data;
     } catch (error) {
-        console.error('APIリクエスト中にエラーが発生しました:', error);
-        
-        if (error instanceof Error) {
-            throw new Error(`Failed to fetch playlists: ${error.message}`);
-        } else {
-            throw new Error('Failed to fetch playlists: Unknown error');
-        }
+        return handleApiError(error);
     }
 };
 
@@ -74,12 +75,6 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         
         return NextResponse.json(playlists);
     } catch (error) {
-        console.error('GETハンドラーでエラーが発生しました:', error);
-        
-        if (error instanceof Error) {
-            return NextResponse.json({error: `フォロー中のプレイリストの取得中にエラーが発生しました: ${error.message}`}, {status: 500});
-        } else {
-            return NextResponse.json({error: 'フォロー中のプレイリストの取得中にエラーが発生しました: Unknown error'}, {status: 500});
-        }
+        return handleApiError(error);
     }
 }
