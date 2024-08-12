@@ -24,8 +24,11 @@ import {
 } from '@tanstack/react-table';
 import {FavoriteContext} from '@/app/context/FavoriteContext';
 import DOMPurify from 'dompurify';
-import {useUser} from '@/app/context/UserContext'
+import {useUser} from '@/app/context/UserContext';
 
+/**
+ * お気に入りプレイリストの型定義
+ */
 interface FavoritePlaylist {
     playlistId: string;
     playlistName: string;
@@ -34,6 +37,11 @@ interface FavoritePlaylist {
     addedAt: string;
 }
 
+/**
+ * お気に入りプレイリストをAPIから取得する非同期関数
+ * @returns {Promise<FavoritePlaylist[]>} お気に入りプレイリストの配列
+ * @throws APIリクエストが失敗した場合にエラーをスロー
+ */
 const fetchFavoritePlaylists = async (): Promise<FavoritePlaylist[]> => {
     const response = await fetch('/api/playlists/favorites', {
         method: 'GET',
@@ -47,6 +55,10 @@ const fetchFavoritePlaylists = async (): Promise<FavoritePlaylist[]> => {
     return response.json();
 };
 
+/**
+ * FavoritePlaylistsTableコンポーネント
+ * お気に入りプレイリストをテーブル形式で表示する
+ */
 const FavoritePlaylistsTable: React.FC = () => {
     const {setSelectedPlaylistId} = usePlaylist();
     const {favorites, addFavorite, removeFavorite} = useContext(FavoriteContext);
@@ -59,6 +71,12 @@ const FavoritePlaylistsTable: React.FC = () => {
     
     const [sorting, setSorting] = React.useState<SortingState>([]);
     
+    /**
+     * お気に入りの星アイコンをクリックしたときのハンドラー
+     * @param {FavoritePlaylist} playlist 対象のプレイリスト
+     * @param {boolean} isFavorite 現在のお気に入り状態
+     * @param {React.MouseEvent} event クリックイベント
+     */
     const handleStarClick = async (playlist: FavoritePlaylist, isFavorite: boolean, event: React.MouseEvent) => {
         event.stopPropagation();
         
@@ -94,6 +112,9 @@ const FavoritePlaylistsTable: React.FC = () => {
         }
     };
     
+    /**
+     * テーブルのカラム定義
+     */
     const columns: ColumnDef<FavoritePlaylist>[] = useMemo(
         () => [
             {
@@ -149,6 +170,9 @@ const FavoritePlaylistsTable: React.FC = () => {
         [favorites, handleStarClick]
     );
     
+    /**
+     * React Tableのインスタンスを作成
+     */
     const table = useReactTable({
         data: playlists || [],
         columns,

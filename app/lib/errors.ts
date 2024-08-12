@@ -40,8 +40,6 @@ class ForbiddenError extends ApiError {
     }
 }
 
-// 必要に応じて他のエラークラスを追加
-
 export {
     ApiError,
     NotFoundError,

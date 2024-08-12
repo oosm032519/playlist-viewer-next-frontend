@@ -4,23 +4,43 @@
 
 import React, {createContext, useContext, useState, useEffect} from "react";
 
+/**
+ * ユーザーコンテキストの型定義
+ */
 interface UserContextType {
+    /** ログイン状態を示すフラグ */
     isLoggedIn: boolean;
+    /** ユーザーID（未ログイン時はnull） */
     userId: string | null;
+    /** エラーメッセージ（エラーがない場合はnull） */
     error: string | null;
+    /** ログイン状態を更新する関数 */
     setIsLoggedIn: (isLoggedIn: boolean) => void;
+    /** ユーザーIDを更新する関数 */
     setUserId: (userId: string | null) => void;
 }
 
+/** ユーザーコンテキストを生成 */
 const UserContext = createContext<UserContextType | null>(null);
 
+/**
+ * UserContextProviderコンポーネント
+ *
+ * @param children - コンテキストプロバイダー内でレンダリングされる子要素
+ * @returns UserContextを提供するプロバイダーコンポーネント
+ */
 export const UserContextProvider: React.FC<React.PropsWithChildren<{}>> = ({children}) => {
+    // ログイン状態を管理するステート
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    // ユーザーIDを管理するステート
     const [userId, setUserId] = useState<string | null>(null);
+    // エラーメッセージを管理するステート
     const [error, setError] = useState<string | null>(null);
     
     useEffect(() => {
         console.log("UserContextProvider useEffect 開始");
+        
+        // セッションを初期化する非同期関数
         const initializeSession = async () => {
             try {
                 console.log("セッション初期化開始");
@@ -48,6 +68,12 @@ export const UserContextProvider: React.FC<React.PropsWithChildren<{}>> = ({chil
                 }
             } catch (error) {
                 console.error("セッション初期化中にエラーが発生しました:", error);
+                // errorを型キャストしてエラーメッセージを取得
+                if (error instanceof Error) {
+                    setError(error.message);
+                } else {
+                    setError(String(error));
+                }
             }
         };
         
@@ -68,6 +94,7 @@ export const UserContextProvider: React.FC<React.PropsWithChildren<{}>> = ({chil
         }
     }, [error]);
     
+    // コンテキストに提供する値を定義
     const contextValue = {isLoggedIn, userId, error, setIsLoggedIn, setUserId};
     
     return (
@@ -77,6 +104,12 @@ export const UserContextProvider: React.FC<React.PropsWithChildren<{}>> = ({chil
     );
 };
 
+/**
+ * ユーザーコンテキストを利用するカスタムフック
+ *
+ * @returns UserContextの値
+ * @throws コンテキストプロバイダーの外で使用された場合にエラーをスロー
+ */
 export const useUser = () => {
     const context = useContext(UserContext);
     if (!context) {

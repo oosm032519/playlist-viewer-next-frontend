@@ -13,19 +13,26 @@ import ErrorAlert from "./components/ErrorAlert";
 import PlaylistDisplay from "./components/PlaylistDisplay";
 import {Playlist} from "./types/playlist";
 import {Toaster} from "@/app/components/ui/toaster";
-import {FavoriteProvider, FavoriteContext} from '@/app/context/FavoriteContext'
-import FavoritePlaylistsTable from '@/app/components/FavoritePlaylistsTable'
+import {FavoriteProvider, FavoriteContext} from '@/app/context/FavoriteContext';
+import FavoritePlaylistsTable from '@/app/components/FavoritePlaylistsTable';
 
-function HomeContent() {
+/**
+ * HomeContentコンポーネント
+ *
+ * @returns {JSX.Element} - メインコンテンツをレンダリングするReactコンポーネント
+ */
+function HomeContent(): JSX.Element {
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
     const {isLoggedIn, userId, error, setIsLoggedIn, setUserId} = useUser();
     const {setSelectedPlaylistId} = usePlaylist();
     const {fetchFavorites} = useContext(FavoriteContext);
     
+    // お気に入りのプレイリストをフェッチ
     useEffect(() => {
         fetchFavorites();
     }, [fetchFavorites]);
     
+    // URLのハッシュからトークンを取得し、セッションを確立
     useEffect(() => {
         const hash = window.location.hash.substring(1);
         const params = new URLSearchParams(hash);
@@ -69,12 +76,23 @@ function HomeContent() {
         }
     }, []);
     
+    /**
+     * プレイリスト検索結果を処理
+     *
+     * @param {Playlist[]} playlists - 検索結果のプレイリスト
+     */
     const handleSearch = (playlists: Playlist[]) => {
         console.log("handleSearch: プレイリスト検索結果", playlists);
         setPlaylists(playlists);
         setSelectedPlaylistId(null);
     };
     
+    /**
+     * プレイリストがクリックされたときの処理
+     *
+     * @param {string} playlistId - 選択されたプレイリストのID
+     * @returns {Promise<void>}
+     */
     const handlePlaylistClick = async (playlistId: string): Promise<void> => {
         console.log("handlePlaylistClick: 選択されたプレイリストID", playlistId);
         setSelectedPlaylistId(playlistId);
@@ -107,7 +125,12 @@ function HomeContent() {
     );
 }
 
-export default function Home() {
+/**
+ * Homeコンポーネント
+ *
+ * @returns {JSX.Element} - アプリケーションのホームページをレンダリングするReactコンポーネント
+ */
+export default function Home(): JSX.Element {
     return (
         <UserContextProvider>
             <PlaylistContextProvider>

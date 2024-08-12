@@ -6,6 +6,15 @@ import {UnauthorizedError, BadRequestError} from '@/app/lib/errors';
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
 
+/**
+ * お気に入りプレイリストを処理する非同期関数
+ *
+ * @param req - クライアントからのリクエストオブジェクト
+ * @param method - HTTPメソッド ('POST' または 'DELETE')
+ * @returns APIからのレスポンスデータ
+ * @throws {UnauthorizedError} 認証に失敗した場合
+ * @throws {BadRequestError} リクエストが不正な場合
+ */
 const handleFavoritePlaylist = async (req: NextRequest, method: 'POST' | 'DELETE'): Promise<any> => {
     console.log(`handle${method}FavoritePlaylist関数が呼び出されました`);
     
@@ -28,6 +37,7 @@ const handleFavoritePlaylist = async (req: NextRequest, method: 'POST' | 'DELETE
             throw new UnauthorizedError('sessionIdが見つかりません');
         }
         
+        // リクエストボディを解析
         const body = await req.json();
         console.log('リクエストボディ:', body);  // ボディの内容をログ出力
         
@@ -42,6 +52,7 @@ const handleFavoritePlaylist = async (req: NextRequest, method: 'POST' | 'DELETE
         const fullUrl = `${apiUrl}?${params.toString()}`;
         console.log('完全なURL:', fullUrl);
         
+        // APIリクエストを実行
         const response = await fetch(fullUrl, {
             method: method,
             headers: {
@@ -71,8 +82,14 @@ const handleFavoritePlaylist = async (req: NextRequest, method: 'POST' | 'DELETE
     } catch (error) {
         return handleApiError(error);
     }
-};
+}
 
+/**
+ * お気に入りプレイリストを追加するためのPOSTハンドラー
+ *
+ * @param req - クライアントからのリクエストオブジェクト
+ * @returns APIからのレスポンスデータを含むNextResponseオブジェクト
+ */
 export async function POST(req: NextRequest): Promise<NextResponse> {
     console.log('POSTハンドラーが呼び出されました');
     
@@ -86,6 +103,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }
 }
 
+/**
+ * お気に入りプレイリストを削除するためのDELETEハンドラー
+ *
+ * @param req - クライアントからのリクエストオブジェクト
+ * @returns APIからのレスポンスデータを含むNextResponseオブジェクト
+ */
 export async function DELETE(req: NextRequest): Promise<NextResponse> {
     console.log('DELETEハンドラーが呼び出されました');
     

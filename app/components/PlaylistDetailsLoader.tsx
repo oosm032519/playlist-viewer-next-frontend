@@ -8,11 +8,19 @@ import PlaylistDetails from "./PlaylistDetails";
 import LoadingSpinner from "./LoadingSpinner";
 import {AudioFeatures} from '../types/audioFeaturesTypes';
 
+/**
+ * プレイリストの詳細をロードするコンポーネントのプロパティを定義します。
+ */
 interface PlaylistDetailsLoaderProps {
+    /** プレイリストのID */
     playlistId: string;
+    /** ユーザーのID（オプション） */
     userId?: string;
 }
 
+/**
+ * プレイリストデータのインターフェースを定義します。
+ */
 interface PlaylistData {
     tracks: Track[];
     genreCounts: { [genre: string]: number };
@@ -24,6 +32,13 @@ interface PlaylistData {
     ownerName: string;
 }
 
+/**
+ * プレイリストの詳細をAPIから取得します。
+ *
+ * @param playlistId - プレイリストのID
+ * @returns プレイリストデータ
+ * @throws ネットワークエラーまたは無効なデータの場合
+ */
 const fetchPlaylistDetails = async (playlistId: string): Promise<PlaylistData> => {
     const response = await fetch(`/api/playlists/${playlistId}`);
     if (!response.ok) {
@@ -50,6 +65,12 @@ const fetchPlaylistDetails = async (playlistId: string): Promise<PlaylistData> =
     throw new Error('Invalid response data');
 };
 
+/**
+ * ミリ秒単位の時間をフォーマットされた文字列に変換します。
+ *
+ * @param millis - ミリ秒
+ * @returns フォーマットされた時間文字列
+ */
 const formatDuration = (millis: number): string => {
     const hours = Math.floor(millis / (1000 * 60 * 60));
     const minutes = Math.floor((millis % (1000 * 60 * 60)) / (1000 * 60));
@@ -62,25 +83,36 @@ const formatDuration = (millis: number): string => {
     }
 };
 
+/**
+ * プレイリストの詳細をロードし表示するコンポーネント。
+ *
+ * @param props - コンポーネントのプロパティ
+ * @returns プレイリストの詳細コンポーネント
+ */
 const PlaylistDetailsLoader: React.FC<PlaylistDetailsLoaderProps> = ({
                                                                          playlistId,
                                                                          userId,
                                                                      }) => {
+    // プレイリストデータを取得するクエリを実行
     const {data: playlistData, isLoading, error} = useQuery<PlaylistData, Error>({
         queryKey: ['playlistDetails', playlistId],
         queryFn: () => fetchPlaylistDetails(playlistId),
     });
     
     if (isLoading) {
+        // データがロード中の場合、ローディングスピナーを表示
         return <LoadingSpinner loading={isLoading}/>;
     }
     
     if (error || !playlistData) {
+        // エラーが発生した場合、エラーメッセージを表示
         return <div>プレイリスト取得中にエラーが発生しました</div>;
     }
     
+    // トータルの再生時間をフォーマット
     const formattedDuration = formatDuration(playlistData.totalDuration);
     
+    // プレイリストの詳細を表示
     return (
         <PlaylistDetails
             tracks={playlistData.tracks}

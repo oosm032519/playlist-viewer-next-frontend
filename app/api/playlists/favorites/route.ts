@@ -4,6 +4,14 @@ import {NextRequest, NextResponse} from 'next/server';
 import {handleApiError} from '@/app/lib/api-utils';
 import {UnauthorizedError} from '@/app/lib/errors';
 
+/**
+ * お気に入りプレイリストを取得する非同期関数
+ *
+ * @param req - Next.jsのリクエストオブジェクト
+ * @returns お気に入りプレイリストのデータ
+ * @throws {UnauthorizedError} クッキーまたはsessionIdが見つからない場合
+ * @throws {Error} APIリクエストが失敗した場合
+ */
 const getFavoritePlaylists = async (req: NextRequest): Promise<any> => {
     console.log('getFavoritePlaylists関数が呼び出されました');
     
@@ -55,9 +63,17 @@ const getFavoritePlaylists = async (req: NextRequest): Promise<any> => {
     }
 };
 
+/**
+ * JSONレスポンスを作成する関数
+ *
+ * @param body - レスポンスボディ
+ * @param status - HTTPステータスコード（デフォルトは200）
+ * @returns Next.jsのレスポンスオブジェクト
+ */
 function createResponse(body: any, status: number = 200): NextResponse {
     const response = NextResponse.json(body, {status});
     
+    // キャッシュ制御ヘッダーを設定
     response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     response.headers.set('Pragma', 'no-cache');
     response.headers.set('Expires', '0');
@@ -66,6 +82,12 @@ function createResponse(body: any, status: number = 200): NextResponse {
     return response;
 }
 
+/**
+ * GETリクエストを処理するハンドラー
+ *
+ * @param req - Next.jsのリクエストオブジェクト
+ * @returns お気に入りプレイリストのレスポンス
+ */
 export async function GET(req: NextRequest): Promise<NextResponse> {
     console.log('GETハンドラーが呼び出されました');
     

@@ -8,11 +8,13 @@ import {UnauthorizedError} from '@/app/lib/errors';
  * フォロー中のプレイリストを取得する非同期関数
  * @param {NextRequest} req - Next.jsのリクエストオブジェクト
  * @returns {Promise<any>} フォロー中のプレイリストデータ
+ * @throws {UnauthorizedError} 認証エラーが発生した場合
  * @throws {Error} APIリクエストが失敗した場合にエラーをスロー
  */
 const getFollowedPlaylists = async (req: NextRequest): Promise<any> => {
     console.log('getFollowedPlaylists関数が呼び出されました');
     
+    // バックエンドのURLを環境変数から取得
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
     const apiUrl = `${backendUrl}/api/playlists/followed`;
     
@@ -24,15 +26,18 @@ const getFollowedPlaylists = async (req: NextRequest): Promise<any> => {
         console.log('Cookie:', cookie);
         
         if (!cookie) {
+            // Cookieが存在しない場合は認証エラーをスロー
             throw new UnauthorizedError('Cookieが見つかりません');
         }
         
-        // sessionIdを抽出
+        // sessionIdをCookieから抽出
         const sessionId = cookie.split('; ').find(row => row.startsWith('sessionId'))?.split('=')[1];
         if (!sessionId) {
+            // sessionIdが存在しない場合は認証エラーをスロー
             throw new UnauthorizedError('sessionIdが見つかりません');
         }
         
+        // APIにGETリクエストを送信
         const response = await fetch(apiUrl, {
             method: 'GET',
             headers: {
@@ -42,6 +47,7 @@ const getFollowedPlaylists = async (req: NextRequest): Promise<any> => {
         });
         
         if (!response.ok) {
+            // レスポンスが成功でない場合、ステータスに応じたエラーをスロー
             if (response.status === 401) {
                 throw new UnauthorizedError('認証されていません');
             } else {
@@ -50,6 +56,7 @@ const getFollowedPlaylists = async (req: NextRequest): Promise<any> => {
             }
         }
         
+        // レスポンスデータをJSONとしてパース
         const data = await response.json();
         
         console.log('APIレスポンスを受信しました:', response.status);
@@ -57,6 +64,7 @@ const getFollowedPlaylists = async (req: NextRequest): Promise<any> => {
         
         return data;
     } catch (error) {
+        // エラーをハンドルするユーティリティ関数を使用
         return handleApiError(error);
     }
 };
@@ -65,16 +73,20 @@ const getFollowedPlaylists = async (req: NextRequest): Promise<any> => {
  * GETリクエストを処理するハンドラー関数
  * @param {NextRequest} req - Next.jsのリクエストオブジェクト
  * @returns {Promise<NextResponse>} フォロー中のプレイリストデータを含むレスポンス
+ * @throws {Error} APIリクエストが失敗した場合にエラーをスロー
  */
 export async function GET(req: NextRequest): Promise<NextResponse> {
     console.log('GETハンドラーが呼び出されました');
     
     try {
+        // フォロー中のプレイリストを取得
         const playlists = await getFollowedPlaylists(req);
         console.log('プレイリストの取得に成功しました:', playlists);
         
+        // プレイリストデータをJSONレスポンスとして返す
         return NextResponse.json(playlists);
     } catch (error) {
+        // エラーをハンドルするユーティリティ関数を使用
         return handleApiError(error);
     }
 }

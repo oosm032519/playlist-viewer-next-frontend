@@ -4,17 +4,20 @@
  * ジャンルごとのデータを表すインターフェース
  */
 interface GenreChartData {
+    /** ジャンル名 */
     name: string;
+    /** ジャンルのカウント値 */
     value: number;
+    /** 全体の合計数 */
     total: number;
 }
 
 /**
  * ジャンルごとのカウントデータを受け取り、チャート表示用のデータを準備する関数
  *
- * @param {Object} genreCounts - ジャンルごとのカウントデータ
- * @param {number} total - 全体の合計数
- * @returns {GenreChartData[]} - チャート表示用のデータ配列
+ * @param genreCounts - ジャンルごとのカウントデータを含むオブジェクト
+ * @param total - 全体の合計数
+ * @returns チャート表示用のデータ配列
  */
 const prepareChartData = (
     genreCounts: { [genre: string]: number },

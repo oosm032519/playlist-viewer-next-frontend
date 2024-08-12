@@ -5,11 +5,13 @@ import {Playlist} from "../types/playlist";
 
 /**
  * プレイリストを検索する非同期関数
+ *
  * @param {Object} params - 検索パラメータ
  * @param {string} params.query - 検索クエリ
  * @param {number} params.page - ページ番号
  * @param {number} params.limit - 1ページあたりのアイテム数
  * @returns {Promise<Playlist[]>} - 検索結果のプレイリスト配列
+ * @throws {Error} - ネットワークエラーが発生した場合
  */
 const searchPlaylists = async ({
                                    query,
@@ -20,6 +22,7 @@ const searchPlaylists = async ({
     page: number;
     limit: number;
 }): Promise<Playlist[]> => {
+    // APIエンドポイントにリクエストを送信
     const response = await fetch(
         `/api/playlists/search?query=${query}&offset=${
             (page - 1) * limit
@@ -37,12 +40,14 @@ const searchPlaylists = async ({
 
 /**
  * プレイリスト検索のカスタムフック
+ *
  * @param {Function} onSearch - 検索結果を処理するコールバック関数
  * @returns {Object} - useMutationの戻り値
  */
 export const useSearchPlaylists = (
     onSearch: (playlists: Playlist[]) => void
 ) => {
+    // React Queryのクライアントを取得
     const queryClient = useQueryClient();
     
     return useMutation({

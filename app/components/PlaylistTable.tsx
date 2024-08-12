@@ -5,19 +5,40 @@ import {Table, TableBody} from "./ui/table";
 import PlaylistTableHeader from "./PlaylistTableHeader";
 import PlaylistTableRow from "./PlaylistTableRow";
 
+/**
+ * プレイリストテーブルコンポーネントのプロパティを定義するインターフェース
+ */
 interface PlaylistTableProps {
-    playlists: Playlist[]; // プレイリストの配列
-    onPlaylistClick: (playlistId: string) => void; // プレイリストがクリックされたときのコールバック関数
-    currentPage: number; // 現在のページ番号
-    totalPlaylists: number; // 総プレイリスト数
+    /** プレイリストの配列 */
+    playlists: Playlist[];
+    /** プレイリストがクリックされたときのコールバック関数 */
+    onPlaylistClick: (playlistId: string) => void;
+    /** 現在のページ番号 */
+    currentPage: number;
+    /** 総プレイリスト数 */
+    totalPlaylists: number;
 }
 
 /**
  * プレイリストのテーブルを表示するコンポーネント
+ *
  * @param {PlaylistTableProps} props - プレイリストテーブルのプロパティ
  * @returns {JSX.Element} プレイリストテーブルのJSX要素
+ *
+ * @example
+ * <PlaylistTable
+ *   playlists={playlists}
+ *   onPlaylistClick={handlePlaylistClick}
+ *   currentPage={1}
+ *   totalPlaylists={100}
+ * />
  */
-export default function PlaylistTable({playlists, onPlaylistClick, currentPage, totalPlaylists}: PlaylistTableProps) {
+export default function PlaylistTable({
+                                          playlists,
+                                          onPlaylistClick,
+                                          currentPage,
+                                          totalPlaylists,
+                                      }: PlaylistTableProps): JSX.Element {
     return (
         <Table>
             {/* テーブルのヘッダー部分 */}

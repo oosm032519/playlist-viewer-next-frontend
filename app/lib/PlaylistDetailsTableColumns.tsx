@@ -7,36 +7,47 @@ import Image from "next/image";
 
 // AudioFeature型を定義し、使用可能なオーディオフィーチャーを列挙
 type AudioFeature =
-    | 'danceability'
-    | 'energy'
-    | 'key'
-    | 'loudness'
-    | 'speechiness'
-    | 'acousticness'
-    | 'instrumentalness'
-    | 'liveness'
-    | 'valence'
-    | 'tempo';
+    | "danceability"
+    | "energy"
+    | "key"
+    | "loudness"
+    | "speechiness"
+    | "acousticness"
+    | "instrumentalness"
+    | "liveness"
+    | "valence"
+    | "tempo";
 
 // Track型に基づいてカラムヘルパーを作成
 const columnHelper = createColumnHelper<Track>();
 
-// keyを文字列に変換する関数
+/**
+ * keyを文字列に変換する関数
+ * @param key - 音楽のキーを表す数値（0〜11）
+ * @returns キーを表す文字列（例: "C", "D#", など）
+ */
 const keyToString = (key: number | undefined): string => {
     if (key === undefined) return "-";
     const keyMap = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
     return keyMap[key] || "-";
 };
 
-// ミリ秒を"分:秒"形式に変換する関数
+/**
+ * ミリ秒を"分:秒"形式に変換する関数
+ * @param ms - ミリ秒単位の時間
+ * @returns "分:秒"形式の文字列
+ */
 const msToMinutesAndSeconds = (ms: number | undefined): string => {
     if (ms === undefined) return "-";
     const minutes = Math.floor(ms / 60000);
     const seconds = ((ms % 60000) / 1000).toFixed(0);
-    return `${minutes}:${Number(seconds) < 10 ? '0' : ''}${seconds}`;
+    return `${minutes}:${Number(seconds) < 10 ? "0" : ""}${seconds}`;
 };
 
-// プレイリストの詳細テーブルのカラム定義
+/**
+ * プレイリストの詳細テーブルのカラム定義
+ * 各カラムはトラックの異なる属性を表示する
+ */
 export const playlistDetailsTableColumns = [
     // アルバムカラムの定義
     columnHelper.accessor("album", {
@@ -91,7 +102,7 @@ export const playlistDetailsTableColumns = [
     columnHelper.accessor((row) => row.audioFeatures?.timeSignature, {
         id: "timeSignature",
         header: "Time Signature",
-        sortingFn: (a, b) => audioFeatureSort(a, b, 'timeSignature'), // カスタムソート関数を使用
+        sortingFn: (a, b) => audioFeatureSort(a, b, "timeSignature"), // カスタムソート関数を使用
         cell: (info) => info.getValue()?.toString() ?? "-", // 値がない場合はハイフンを表示
     }),
 ];

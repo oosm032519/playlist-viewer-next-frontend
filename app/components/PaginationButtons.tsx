@@ -19,14 +19,23 @@ interface PaginationButtonsProps {
  *
  * @param {PaginationButtonsProps} props - コンポーネントのプロパティ
  * @returns {JSX.Element} ページネーションボタンのJSX要素
+ *
+ * @example
+ * <PaginationButtons
+ *   currentPage={1}
+ *   isPending={false}
+ *   hasNextPage={true}
+ *   onNextPage={() => console.log('Next page')}
+ *   onPrevPage={() => console.log('Previous page')}
+ * />
  */
-export default ({
-                    currentPage,
-                    isPending,
-                    hasNextPage,
-                    onNextPage,
-                    onPrevPage,
-                }: PaginationButtonsProps) => (
+const PaginationButtons = ({
+                               currentPage,
+                               isPending,
+                               hasNextPage,
+                               onNextPage,
+                               onPrevPage,
+                           }: PaginationButtonsProps): JSX.Element => (
     <div className="flex justify-center space-x-2 mt-4">
         {/* 前のページに戻るボタン */}
         <Button
@@ -44,3 +53,5 @@ export default ({
         </Button>
     </div>
 );
+
+export default PaginationButtons;

@@ -1,3 +1,5 @@
+// app/components/PlaylistSearch.tsx
+
 "use client";
 
 import {useForm} from "react-hook-form";
@@ -19,6 +21,9 @@ import {Form, FormControl, FormField, FormItem, FormMessage} from "./ui/form";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "./ui/table";
 import {Card, CardContent, CardHeader, CardTitle} from "./ui/card";
 
+/**
+ * プレイリストのインターフェース
+ */
 interface Playlist {
     id: string;
     name: string;
@@ -26,10 +31,16 @@ interface Playlist {
     images: { url: string }[];
 }
 
+/**
+ * 検索フォームの入力インターフェース
+ */
 interface SearchFormInputs {
     query: string;
 }
 
+/**
+ * 検索フォームのバリデーションスキーマ
+ */
 const schema = yup
     .object({
         query: yup
@@ -39,6 +50,12 @@ const schema = yup
     })
     .required();
 
+/**
+ * プレイリストを検索する非同期関数
+ * @param query - 検索クエリ
+ * @returns プレイリストの配列
+ * @throws ネットワークエラー
+ */
 const fetchPlaylists = async (query: string): Promise<Playlist[]> => {
     const response = await fetch(`/api/playlists/search?query=${encodeURIComponent(query)}`);
     if (!response.ok) {
@@ -47,22 +64,33 @@ const fetchPlaylists = async (query: string): Promise<Playlist[]> => {
     return response.json();
 };
 
+/**
+ * プレイリスト検索コンポーネント
+ * @returns JSX.Element
+ */
 export default function PlaylistSearch() {
+    // フォームのセットアップ
     const form = useForm<SearchFormInputs>({
         resolver: yupResolver(schema),
         defaultValues: {query: ''},
     });
     
+    // プレイリストデータの取得
     const {data: playlists = [], isLoading, refetch} = useQuery({
         queryKey: ['playlists', form.watch('query')],
         queryFn: () => fetchPlaylists(form.getValues('query')),
-        enabled: false,
+        enabled: false, // 手動でのフェッチを有効にする
     });
     
+    /**
+     * フォーム送信時の処理
+     * @param data - フォームデータ
+     */
     const onSubmit = async (data: SearchFormInputs) => {
-        refetch();
+        refetch(); // データの再取得
     };
     
+    // テーブルのカラム設定
     const columnHelper = createColumnHelper<Playlist>();
     
     const columns = useMemo(
@@ -91,6 +119,7 @@ export default function PlaylistSearch() {
         []
     );
     
+    // テーブルのセットアップ
     const table = useReactTable({
         data: playlists,
         columns,

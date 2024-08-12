@@ -1,4 +1,4 @@
-// app/api/playlists/[id]/route.ts.ts
+// app/api/playlists/[id]/route.ts
 
 import {NextResponse} from 'next/server';
 import {handleApiError} from '@/app/lib/api-utils';
@@ -11,9 +11,10 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:808
  * プレイリストデータを取得する非同期関数
  * @param {string} id - プレイリストのID
  * @returns {Promise<any>} プレイリストデータ
- * @throws {Error} HTTPエラーまたはその他のエラー
+ * @throws {NotFoundError} プレイリストが見つからない場合
+ * @throws {Error} その他のHTTPエラーまたは処理エラー
  */
-const fetchPlaylistData = async (id: string) => {
+const fetchPlaylistData = async (id: string): Promise<any> => {
     // 完全なURLを構築
     const fullUrl = `${BACKEND_URL}/api/playlists/${id}`;
     console.log(`フルURL: ${fullUrl}`);
@@ -41,6 +42,7 @@ const fetchPlaylistData = async (id: string) => {
         console.log(`レスポンスデータ: ${JSON.stringify(data)}`);
         return data;
     } catch (error) {
+        // エラーを処理し、適切なレスポンスを返す
         return handleApiError(error);
     }
 };
@@ -56,7 +58,7 @@ const fetchPlaylistData = async (id: string) => {
 export async function GET(
     request: Request,
     {params}: { params: { id: string } }
-) {
+): Promise<NextResponse> {
     console.log('GET関数が呼び出されました');
     console.log(`リクエストパラメータ: ${JSON.stringify(params)}`);
     
@@ -72,6 +74,7 @@ export async function GET(
         // 成功レスポンスを返す
         return NextResponse.json(data, {status: 200});
     } catch (error) {
+        // エラーを処理し、適切なレスポンスを返す
         return handleApiError(error);
     }
 }

@@ -46,6 +46,7 @@ export default function PlaylistSearchForm({
     // React Queryのクライアントを取得
     const queryClient = useQueryClient();
     
+    // 選択されたプレイリストIDをコンテキストから取得
     const {selectedPlaylistId} = usePlaylist();
     
     // フォームの設定
@@ -96,7 +97,6 @@ export default function PlaylistSearchForm({
             });
         }
     };
-    
     
     /**
      * 前のページボタン押下時の処理
@@ -164,7 +164,7 @@ export default function PlaylistSearchForm({
                 </CardContent>
             </Card>
             <LoadingSpinner loading={searchMutation.isPending}/>
-            {currentPlaylists.length > 0 && !selectedPlaylistId &&( // 条件を追加
+            {currentPlaylists.length > 0 && !selectedPlaylistId && (
                 <PaginationButtons
                     currentPage={currentPage}
                     isPending={searchMutation.isPending}

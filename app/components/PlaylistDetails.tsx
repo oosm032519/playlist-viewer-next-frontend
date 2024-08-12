@@ -1,3 +1,5 @@
+// app/components/PlaylistDetails.tsx
+
 "use client";
 
 import React, {useContext, useState, useEffect, useCallback} from "react";
@@ -10,20 +12,30 @@ import {FavoriteContext} from "../context/FavoriteContext";
 import DOMPurify from 'dompurify';
 import {useUser} from '@/app/context/UserContext'
 
+/**
+ * プレイリストの詳細情報を表示するためのコンポーネントのプロパティ
+ */
 interface PlaylistDetailsProps {
-    tracks: Track[];
-    genreCounts: { [genre: string]: number };
-    recommendations: Track[];
-    playlistName: string | null;
-    ownerId: string;
-    userId: string;
-    playlistId: string;
-    totalDuration: string;
-    averageAudioFeatures: AudioFeatures;
-    totalTracks: number;
-    ownerName: string;
+    tracks: Track[]; // プレイリスト内のトラックリスト
+    genreCounts: { [genre: string]: number }; // ジャンルごとのトラック数
+    recommendations: Track[]; // 推奨トラックリスト
+    playlistName: string | null; // プレイリスト名
+    ownerId: string; // プレイリスト所有者のID
+    userId: string; // 現在のユーザーのID
+    playlistId: string; // プレイリストのID
+    totalDuration: string; // プレイリストの総再生時間
+    averageAudioFeatures: AudioFeatures; // 平均的なオーディオ特徴量
+    totalTracks: number; // プレイリスト内のトラック数
+    ownerName: string; // プレイリスト所有者の名前
 }
 
+/**
+ * ジャンル分布を表示するためのコンポーネント
+ *
+ * @param genreCounts ジャンルごとのトラック数
+ * @param playlistName プレイリスト名
+ * @returns ジャンル分布チャート
+ */
 const GenreDistributionChart: React.FC<{
     genreCounts: { [genre: string]: number };
     playlistName: string | null;
@@ -39,6 +51,12 @@ const GenreDistributionChart: React.FC<{
     return null;
 };
 
+/**
+ * プレイリストの詳細を表示するコンポーネント
+ *
+ * @param props プレイリストの詳細情報
+ * @returns プレイリスト詳細ビュー
+ */
 const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                                                              tracks,
                                                              genreCounts = {},
@@ -56,6 +74,9 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
     const {isLoggedIn} = useUser();
     const [isFavorite, setIsFavorite] = useState(false);
     
+    /**
+     * お気に入りの状態をチェックする関数
+     */
     const checkFavoriteStatus = useCallback(() => {
         setIsFavorite(playlistId in favorites);
     }, [favorites, playlistId]);
@@ -66,6 +87,9 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
         }
     }, [isLoggedIn, checkFavoriteStatus]);
     
+    /**
+     * お気に入りの追加または削除を行うハンドラー
+     */
     const handleStarClick = async () => {
         try {
             const response = await fetch(

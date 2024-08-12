@@ -4,23 +4,36 @@ import {NextRequest} from "next/server";
 import {handleApiError} from '@/app/lib/api-utils';
 import {NotFoundError, UnauthorizedError} from '@/app/lib/errors';
 
+/**
+ * プレイリストからトラックを削除するためのAPIエンドポイント。
+ *
+ * @param {NextRequest} request - Next.jsのリクエストオブジェクト。JSONボディにplaylistIdとtrackIdを含む。
+ * @returns {Promise<Response>} - 操作の結果を示すHTTPレスポンス。
+ * @throws {UnauthorizedError} - Cookieが存在しない場合。
+ * @throws {NotFoundError} - プレイリストが見つからない場合。
+ * @throws {Error} - その他のエラーが発生した場合。
+ */
 export async function POST(request: NextRequest): Promise<Response> {
-    console.log("POST request received to remove track from playlist");
+    console.log("POSTリクエストを受信しました: プレイリストからトラックを削除します");
     try {
+        // リクエストボディからplaylistIdとtrackIdを取得
         const {playlistId, trackId} = await request.json();
-        console.log(`Received request to remove track ${trackId} from playlist ${playlistId}`);
+        console.log(`トラック ${trackId} をプレイリスト ${playlistId} から削除するリクエストを受信しました`);
         
+        // バックエンドのURLを環境変数から取得、デフォルトはローカルホスト
         const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
-        console.log(`Using backend URL: ${backendUrl}`);
+        console.log(`使用するバックエンドURL: ${backendUrl}`);
         
         // リクエストからCookieを取得
         const cookie = request.headers.get('Cookie');
         console.log(`[${new Date().toISOString()}] Cookieを取得: ${cookie}`);
         
+        // Cookieが存在しない場合は認証エラーをスロー
         if (!cookie) {
             throw new UnauthorizedError('Cookieが見つかりません');
         }
         
+        // バックエンドにトラック削除リクエストを送信
         const response = await fetch(`${backendUrl}/api/playlist/remove-track`, {
             method: 'POST',
             headers: {
@@ -50,6 +63,7 @@ export async function POST(request: NextRequest): Promise<Response> {
             headers: {'Content-Type': 'application/json'}
         });
     } catch (error) {
+        // エラーをハンドリングし、適切なレスポンスを返す
         return handleApiError(error);
     }
 }

@@ -1,3 +1,5 @@
+// app/components/RecommendationsTable.tsx
+
 import React, {useEffect, useMemo, useState} from "react";
 import Image from "next/image";
 import {
@@ -25,12 +27,19 @@ const purifyConfig = {
     ALLOWED_ATTR: ['href', 'target']
 };
 
+/**
+ * 推奨トラックを表示するテーブルコンポーネント
+ * @param {RecommendationsTableProps} props - コンポーネントのプロパティ
+ * @returns {JSX.Element} 推奨トラックのテーブルをレンダリングするReactコンポーネント
+ */
 export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({tracks, ownerId, userId, playlistId}) => {
+    // テーブルのソート状態を管理
     const [sorting, setSorting] = useState<SortingState>([]);
     const {toast} = useToast();
     const {createPlaylist, createdPlaylistId, isCreating} = useCreatePlaylistMutation(tracks, toast);
     const {addedTracks, handleAddTrack, handleRemoveTrack} = useTrackActions(playlistId, toast);
     
+    // ownerIdとuserIdの変更を監視してログに出力
     useEffect(() => {
         console.log("ownerId:", ownerId);
         console.log("userId:", userId);
@@ -39,6 +48,7 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({track
     // DOMPurify の結果をメモ化
     const sanitize = useMemo(() => (content: string) => DOMPurify.sanitize(content, purifyConfig), []);
     
+    // テーブルのカラム定義をメモ化
     const columns = useMemo<ColumnDef<typeof tracks[0]>[]>(() => {
         const baseColumns: ColumnDef<typeof tracks[0]>[] = [
             {
@@ -67,6 +77,7 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({track
             },
         ];
         
+        // オーナーがユーザーと同じ場合、アクションカラムを追加
         if (ownerId === userId) {
             baseColumns.push({
                 header: 'Actions',
@@ -90,6 +101,7 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({track
         return baseColumns;
     }, [ownerId, userId, addedTracks, handleAddTrack, handleRemoveTrack, sanitize]);
     
+    // React Table のインスタンスを作成
     const table = useReactTable({
         data: tracks,
         columns,

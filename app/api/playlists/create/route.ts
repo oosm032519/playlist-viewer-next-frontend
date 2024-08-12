@@ -1,11 +1,22 @@
+// app/api/playlists/create/route.ts
+
 import {NextRequest} from "next/server";
 import {handleApiError} from '@/app/lib/api-utils';
 import {UnauthorizedError} from '@/app/lib/errors';
 
 /**
  * プレイリスト作成のためのPOSTメソッドを処理する非同期関数
+ *
  * @param {NextRequest} request - クライアントからのリクエスト
  * @returns {Promise<Response>} - 作成されたプレイリストのレスポンス
+ *
+ * @remarks
+ * この関数は、クライアントから送信されたトラックIDのリストを使用して、
+ * バックエンドAPIにプレイリスト作成のリクエストを送信します。
+ * セッションIDがクッキーに保存されている場合、それもリクエストに含めます。
+ *
+ * @throws {UnauthorizedError} 認証エラーが発生した場合
+ * @throws {Error} その他のエラーが発生した場合
  */
 export async function POST(request: NextRequest): Promise<Response> {
     try {
@@ -23,6 +34,7 @@ export async function POST(request: NextRequest): Promise<Response> {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                // セッションIDが存在する場合はクッキーに含める
                 'Cookie': sessionId ? `sessionId=${sessionId}` : ''
             },
             body: JSON.stringify(trackIds),
@@ -48,6 +60,7 @@ export async function POST(request: NextRequest): Promise<Response> {
             headers: {'Content-Type': 'application/json'}
         });
     } catch (error) {
+        // エラーを処理し、適切なレスポンスを返す
         return handleApiError(error);
     }
 }
