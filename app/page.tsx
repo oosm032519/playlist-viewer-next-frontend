@@ -67,7 +67,7 @@ function HomeContent() {
                 })
                 .catch(error => console.error('Error:', error));
         }
-    }, [setIsLoggedIn, setUserId]);
+    }, []);
     
     const handleSearch = (playlists: Playlist[]) => {
         console.log("handleSearch: プレイリスト検索結果", playlists);
