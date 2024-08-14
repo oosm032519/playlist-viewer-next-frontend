@@ -64,9 +64,9 @@ const LoginButton: React.FC = () => {
     return (
         <Button onClick={() => {
             console.log('ボタンがクリックされました', {isLoggedIn});
-            isLoggedIn ? handleLogout() : handleLogin(); // ログイン状態に応じて処理を切り替え
+            isLoggedIn ? handleLogout() : handleLogin();
         }}>
-            {isLoggedIn ? 'ログアウト' : 'Spotifyでログイン'} // ボタンのラベルを動的に変更
+            {isLoggedIn ? 'ログアウト' : 'Spotifyでログイン'}
         </Button>
     );
 };
