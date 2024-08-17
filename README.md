@@ -1,36 +1,151 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+## フロントエンド README
 
-## Getting Started
+# Playlist Viewer Next.js フロントエンド
 
-First, run the development server:
+このプロジェクトは、Spotify のプレイリストを閲覧、分析、操作するための Next.js フロントエンドアプリケーションです。ユーザーは
+Spotify アカウントでログインし、プレイリストを検索、詳細情報の表示、推奨トラックの取得、プレイリストへのトラックの追加・削除、新しいプレイリストの作成、お気に入りのプレイリストの管理などができます。
+
+## 機能
+
+- Spotify ログイン
+- プレイリスト検索
+- プレイリスト詳細情報の表示（トラックリスト、ジャンル分布、オーディオ特徴量）
+- 推奨トラックの取得と試聴
+- プレイリストへのトラックの追加・削除
+- 新しいプレイリストの作成
+- お気に入りのプレイリストの管理
+
+## 技術スタック
+
+- Next.js
+- React
+- TanStack Query
+- Tailwind CSS
+- Recharts
+- Lucide React
+- React Hook Form
+- Yup
+- DOMPurify
+
+## インストール
+
+1. プロジェクトのルートディレクトリに移動します。
+2. 依存関係をインストールします。
+
+```bash
+npm install
+```
+
+## 開発サーバーの起動
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 環境変数
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+以下の環境変数を設定する必要があります。
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+- `NEXT_PUBLIC_BACKEND_URL`: バックエンドサーバーのURL
 
-## Learn More
+## 使用方法
 
-To learn more about Next.js, take a look at the following resources:
+1. Spotify アカウントでログインします。
+2. プレイリストを検索するか、URL からプレイリスト ID を入力します。
+3. プレイリストの詳細情報、推奨トラック、および利用可能なアクションを表示します。
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## ディレクトリ構造
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+```
+├── app
+│   ├── api
+│   │   ├── playlists
+│   │   │   ├── add-track
+│   │   │   │   └── route.ts
+│   │   │   ├── create
+│   │   │   │   └── route.ts
+│   │   │   ├── favorite
+│   │   │   │   └── route.ts
+│   │   │   ├── favorites
+│   │   │   │   └── route.ts
+│   │   │   ├── followed
+│   │   │   │   └── route.ts
+│   │   │   ├── remove-track
+│   │   │   │   └── route.ts
+│   │   │   ├── search
+│   │   │   │   └── route.ts
+│   │   │   └── [id]
+│   │   │       └── route.ts
+│   │   ├── session
+│   │   │   ├── check
+│   │   │   │   └── route.ts
+│   │   │   ├── logout
+│   │   │   │   └── route.ts
+│   │   │   └── sessionId
+│   │   │       └── route.ts
+│   │   └── spotify
+│   │       └── route.ts
+│   ├── components
+│   │   ├── CombinedAudioFeaturesChart.tsx
+│   │   ├── CustomTooltip.tsx
+│   │   ├── ErrorAlert.tsx
+│   │   ├── FavoritePlaylistsTable.tsx
+│   │   ├── FollowedPlaylists.tsx
+│   │   ├── GenreChart.tsx
+│   │   ├── LoadingSpinner.tsx
+│   │   ├── LoginButton.tsx
+│   │   ├── PaginationButtons.tsx
+│   │   ├── PlaylistDetails.tsx
+│   │   ├── PlaylistDetailsLoader.tsx
+│   │   ├── PlaylistDetailsTable.tsx
+│   │   ├── PlaylistDisplay.tsx
+│   │   ├── PlaylistIdForm.tsx
+│   │   ├── PlaylistSearch.tsx
+│   │   ├── PlaylistSearchForm.tsx
+│   │   ├── PlaylistTable.tsx
+│   │   ├── PlaylistTableHeader.tsx
+│   │   ├── PlaylistTableRow.tsx
+│   │   ├── RecommendationsTable.tsx
+│   │   └── TrackPlayer.tsx
+│   ├── context
+│   │   ├── FavoriteContext.tsx
+│   │   ├── PlaylistContext.tsx
+│   │   └── UserContext.tsx
+│   ├── hooks
+│   │   ├── useCreatePlaylistMutation.ts
+│   │   ├── useSearchPlaylists.ts
+│   │   └── useTrackActions.ts
+│   ├── lib
+│   │   ├── PlaylistDetailsTableColumns.tsx
+│   │   ├── api-utils.ts
+│   │   ├── audioFeaturesUtils.ts
+│   │   ├── errors.ts
+│   │   ├── tableUtils.ts
+│   │   └── trackUtils.ts
+│   ├── types
+│   │   ├── audioFeaturesTypes.ts
+│   │   ├── playlist.ts
+│   │   ├── recommendationsTableProps.ts
+│   │   └── track.ts
+│   ├── utils
+│   │   └── prepareChartData.ts
+│   ├── validationSchema.ts
+│   ├── globals.css
+│   ├── layout.tsx
+│   └── page.tsx
+├── public
+│   └── favicon.ico
+├── tailwind.config.js
+├── next.config.js
+├── tsconfig.json
+└── package.json
 
-## Deploy on Vercel
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## ライセンス
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+MIT License
+
+## 免責事項
+
+このプロジェクトは、Spotify とは一切関係ありません。
