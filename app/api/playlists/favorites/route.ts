@@ -12,7 +12,7 @@ import {UnauthorizedError} from '@/app/lib/errors';
  * @throws {UnauthorizedError} クッキーまたはsessionIdが見つからない場合
  * @throws {Error} APIリクエストが失敗した場合
  */
-const getFavoritePlaylists = async (req: NextRequest): Promise<any> => {
+const getFavoritePlaylists = async (req: NextRequest): Promise<Response> => {
     console.log('getFavoritePlaylists関数が呼び出されました');
     
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
@@ -43,13 +43,9 @@ const getFavoritePlaylists = async (req: NextRequest): Promise<any> => {
             credentials: 'include', // クレデンシャルを含める
         });
         
+        // レスポンスが成功でない場合のエラーハンドリング
         if (!response.ok) {
-            if (response.status === 401) {
-                throw new UnauthorizedError('認証されていません');
-            } else {
-                const errorText = await response.text();
-                throw new Error(`お気に入りプレイリストの取得に失敗しました: ${errorText}`);
-            }
+            return handleApiError(new Error(`お気に入りプレイリストの取得に失敗しました: ${response.status}`));
         }
         
         const data = await response.json();
@@ -57,30 +53,12 @@ const getFavoritePlaylists = async (req: NextRequest): Promise<any> => {
         console.log('APIレスポンスを受信しました:', response.status);
         console.log('レスポンスデータ:', data);
         
-        return data;
+        return NextResponse.json(data);
     } catch (error) {
         return handleApiError(error);
     }
 };
 
-/**
- * JSONレスポンスを作成する関数
- *
- * @param body - レスポンスボディ
- * @param status - HTTPステータスコード（デフォルトは200）
- * @returns Next.jsのレスポンスオブジェクト
- */
-function createResponse(body: any, status: number = 200): NextResponse {
-    const response = NextResponse.json(body, {status});
-    
-    // キャッシュ制御ヘッダーを設定
-    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    response.headers.set('Pragma', 'no-cache');
-    response.headers.set('Expires', '0');
-    response.headers.set('Surrogate-Control', 'no-store');
-    
-    return response;
-}
 
 /**
  * GETリクエストを処理するハンドラー
@@ -88,15 +66,8 @@ function createResponse(body: any, status: number = 200): NextResponse {
  * @param req - Next.jsのリクエストオブジェクト
  * @returns お気に入りプレイリストのレスポンス
  */
-export async function GET(req: NextRequest): Promise<NextResponse> {
+export async function GET(req: NextRequest): Promise<Response> {
     console.log('GETハンドラーが呼び出されました');
     
-    try {
-        const playlists = await getFavoritePlaylists(req);
-        console.log('お気に入りプレイリストの取得に成功しました:', playlists);
-        
-        return createResponse(playlists);
-    } catch (error) {
-        return handleApiError(error);
-    }
+    return getFavoritePlaylists(req);
 }

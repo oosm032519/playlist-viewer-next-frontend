@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, {useContext, useMemo, useEffect} from 'react';
+import React, {useContext, useMemo} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {
     Table,
@@ -25,6 +25,7 @@ import {
 import {FavoriteContext} from '@/app/context/FavoriteContext';
 import DOMPurify from 'dompurify';
 import {useUser} from '@/app/context/UserContext';
+import {handleApiError} from "@/app/lib/api-utils";
 
 /**
  * お気に入りプレイリストの型定義
@@ -96,9 +97,7 @@ const FavoritePlaylistsTable: React.FC = () => {
             });
             
             if (!response.ok) {
-                const errorText = await response.text();
-                console.error('エラーレスポンス:', errorText);
-                throw new Error(`HTTP error! status: ${response.status}`);
+                return handleApiError(new Error(`お気に入りプレイリストの${isFavorite ? '削除' : '追加'}に失敗しました: ${response.status}`));
             }
             
             if (isFavorite) {
@@ -108,7 +107,7 @@ const FavoritePlaylistsTable: React.FC = () => {
             }
             refetch();
         } catch (error) {
-            console.error('お気に入り登録/解除中にエラーが発生しました。', error);
+            return handleApiError(error);
         }
     };
     

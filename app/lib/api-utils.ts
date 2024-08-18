@@ -10,35 +10,58 @@ import {
 } from './errors';
 
 /**
- * APIエラーを処理し、適切なHTTPレスポンスを返します。
+ * APIエラーを処理し、適切なHTTPレスポンスを返す
  *
- * @param error - 処理するエラーオブジェクト。通常はAPI呼び出しで発生するエラー。
- * @returns エラーメッセージとステータスコードを含むNext.jsのレスポンスオブジェクト。
- *
- * @example
- * ```typescript
- * try {
- *   // API呼び出し
- * } catch (error) {
- *   return handleApiError(error);
- * }
- * ```
+ * @param error - 処理するエラーオブジェクト。通常はAPI呼び出しで発生するエラー
+ * @param context - エラーが発生したコンテキスト情報（オプション）
+ * @returns エラーメッセージとステータスコードを含むNext.jsのレスポンスオブジェクト
  */
-export async function handleApiError(error: unknown): Promise<NextResponse> {
-    // エラー内容をコンソールに出力
-    console.error('API Error:', error);
+export async function handleApiError(error: unknown, context?: string): Promise<NextResponse> {
+    console.error('API Error:', error, context);
     
-    // エラーがApiErrorのインスタンスである場合、カスタムエラーメッセージとステータスを返す
+    let status = 500;
+    let message = 'Internal Server Error';
+    let details = '予期しないエラーが発生しました';
+    
     if (error instanceof ApiError) {
-        return NextResponse.json(
-            {error: error.message, details: error.details},
-            {status: error.status}
-        );
+        status = error.status;
+        message = error.message;
+        details = error.details || '';
+    } else if (error instanceof Error) {
+        message = error.message;
+        details = error.stack || '';
     }
     
-    // 予期しないエラーの場合、500ステータスで汎用的なエラーメッセージを返す
+    // エラーの種類に応じて詳細なメッセージを追加
+    switch (status) {
+        case 400:
+            message = '入力内容に誤りがあります。もう一度確認してください。';
+            details = 'リクエスト内容を確認してください。' + (details ? `\n詳細: ${details}` : '');
+            break;
+        case 401:
+            message = 'ログインが必要です。ログインボタンからログインしてください。';
+            break;
+        case 403:
+            message = 'アクセスが拒否されました';
+            details = 'この操作を行う権限がありません。' + (details ? `\n詳細: ${details}` : '');
+            break;
+        case 404:
+            message = 'リソースが見つかありません';
+            details = 'お探しのリソースが見つかりません。' + (details ? `\n詳細: ${details}` : '');
+            break;
+        case 500:
+            message = 'サーバーでエラーが発生しました。しばらくしてからもう一度お試しください。';
+            details = '管理者に連絡してください。' + (details ? `\n詳細: ${details}` : '');
+            break;
+    }
+    
+    // コンテキスト情報があればメッセージに追加
+    if (context) {
+        details = `${context} でエラーが発生しました: ${details}`;
+    }
+    
     return NextResponse.json(
-        {error: 'Internal Server Error', details: '予期しないエラーが発生しました'},
-        {status: 500}
+        {error: message, details: details},
+        {status: status}
     );
 }

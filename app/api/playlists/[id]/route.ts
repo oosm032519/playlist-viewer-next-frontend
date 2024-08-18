@@ -2,7 +2,6 @@
 
 import {NextResponse} from 'next/server';
 import {handleApiError} from '@/app/lib/api-utils';
-import {NotFoundError} from '@/app/lib/errors';
 
 // バックエンドサーバーのURLを環境変数から取得
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
@@ -11,10 +10,9 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:808
  * プレイリストデータを取得する非同期関数
  * @param {string} id - プレイリストのID
  * @returns {Promise<any>} プレイリストデータ
- * @throws {NotFoundError} プレイリストが見つからない場合
  * @throws {Error} その他のHTTPエラーまたは処理エラー
  */
-const fetchPlaylistData = async (id: string): Promise<any> => {
+const fetchPlaylistData = async (id: string): Promise<Response> => {
     // 完全なURLを構築
     const fullUrl = `${BACKEND_URL}/api/playlists/${id}`;
     console.log(`フルURL: ${fullUrl}`);
@@ -27,20 +25,13 @@ const fetchPlaylistData = async (id: string): Promise<any> => {
         
         // レスポンスが成功でない場合、エラーをスロー
         if (!response.ok) {
-            if (response.status === 404) {
-                throw new NotFoundError('プレイリストが見つかりません');
-            } else {
-                const errorData = await response.json();
-                console.error(`エラーステータス: ${response.status}`);
-                console.error(`エラーデータ: ${JSON.stringify(errorData)}`);
-                throw new Error(`プレイリストの取得に失敗しました: ${errorData.details || '不明なエラー'}`);
-            }
+            return handleApiError(new Error(`プレイリストの取得に失敗しました: ${response.status}`));
         }
         
         // レスポンスデータをJSON形式で取得
         const data = await response.json();
         console.log(`レスポンスデータ: ${JSON.stringify(data)}`);
-        return data;
+        return NextResponse.json(data);
     } catch (error) {
         // エラーを処理し、適切なレスポンスを返す
         return handleApiError(error);
@@ -58,23 +49,12 @@ const fetchPlaylistData = async (id: string): Promise<any> => {
 export async function GET(
     request: Request,
     {params}: { params: { id: string } }
-): Promise<NextResponse> {
+): Promise<Response> {
     console.log('GET関数が呼び出されました');
     console.log(`リクエストパラメータ: ${JSON.stringify(params)}`);
     
     const id = params.id;
     console.log(`プレイリストID: ${id}`);
     
-    try {
-        console.log(`fetchPlaylistData関数を呼び出し: ID = ${id}`);
-        // プレイリストデータを取得
-        const data = await fetchPlaylistData(id);
-        console.log('取得されたデータ:', data);
-        console.log('NextResponseを作成中...');
-        // 成功レスポンスを返す
-        return NextResponse.json(data, {status: 200});
-    } catch (error) {
-        // エラーを処理し、適切なレスポンスを返す
-        return handleApiError(error);
-    }
+    return fetchPlaylistData(id);
 }

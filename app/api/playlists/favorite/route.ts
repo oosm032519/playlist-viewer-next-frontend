@@ -1,4 +1,4 @@
-// app/api/playlists/followed/route.ts
+// app/api/playlists/favorite/route.ts
 
 import {NextRequest, NextResponse} from 'next/server';
 import {handleApiError} from '@/app/lib/api-utils';
@@ -15,7 +15,7 @@ const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080
  * @throws {UnauthorizedError} 認証に失敗した場合
  * @throws {BadRequestError} リクエストが不正な場合
  */
-const handleFavoritePlaylist = async (req: NextRequest, method: 'POST' | 'DELETE'): Promise<any> => {
+const handleFavoritePlaylist = async (req: NextRequest, method: 'POST' | 'DELETE'): Promise<Response> => {
     console.log(`handle${method}FavoritePlaylist関数が呼び出されました`);
     
     const apiUrl = `${backendUrl}/api/playlists/favorite`;
@@ -61,16 +61,9 @@ const handleFavoritePlaylist = async (req: NextRequest, method: 'POST' | 'DELETE
             credentials: 'include', // クレデンシャルを含める
         });
         
+        // レスポンスが成功でない場合のエラーハンドリング
         if (!response.ok) {
-            if (response.status === 401) {
-                throw new UnauthorizedError('認証されていません');
-            } else if (response.status === 400) {
-                throw new BadRequestError('不正なリクエストです');
-            } else {
-                const errorText = await response.text();
-                console.error('バックエンドからのエラーレスポンス:', errorText);
-                throw new Error(`お気に入りプレイリストの${method === 'POST' ? '追加' : '削除'}に失敗しました: ${errorText}`);
-            }
+            return handleApiError(new Error(`お気に入りプレイリストの${method === 'POST' ? '追加' : '削除'}に失敗しました: ${response.status}`));
         }
         
         const data = await response.json();
@@ -78,7 +71,7 @@ const handleFavoritePlaylist = async (req: NextRequest, method: 'POST' | 'DELETE
         console.log('APIレスポンスを受信しました:', response.status);
         console.log('レスポンスデータ:', data);
         
-        return data;
+        return NextResponse.json(data);
     } catch (error) {
         return handleApiError(error);
     }
@@ -90,17 +83,10 @@ const handleFavoritePlaylist = async (req: NextRequest, method: 'POST' | 'DELETE
  * @param req - クライアントからのリクエストオブジェクト
  * @returns APIからのレスポンスデータを含むNextResponseオブジェクト
  */
-export async function POST(req: NextRequest): Promise<NextResponse> {
+export async function POST(req: NextRequest): Promise<Response> {
     console.log('POSTハンドラーが呼び出されました');
     
-    try {
-        const result = await handleFavoritePlaylist(req, 'POST');
-        console.log('お気に入りプレイリストの追加に成功しました:', result);
-        
-        return NextResponse.json(result);
-    } catch (error) {
-        return handleApiError(error);
-    }
+    return handleFavoritePlaylist(req, 'POST');
 }
 
 /**
@@ -109,15 +95,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
  * @param req - クライアントからのリクエストオブジェクト
  * @returns APIからのレスポンスデータを含むNextResponseオブジェクト
  */
-export async function DELETE(req: NextRequest): Promise<NextResponse> {
+export async function DELETE(req: NextRequest): Promise<Response> {
     console.log('DELETEハンドラーが呼び出されました');
     
-    try {
-        const result = await handleFavoritePlaylist(req, 'DELETE');
-        console.log('お気に入りプレイリストの削除に成功しました:', result);
-        
-        return NextResponse.json(result);
-    } catch (error) {
-        return handleApiError(error);
-    }
+    return handleFavoritePlaylist(req, 'DELETE');
 }

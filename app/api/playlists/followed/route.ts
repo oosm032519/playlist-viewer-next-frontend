@@ -11,7 +11,7 @@ import {UnauthorizedError} from '@/app/lib/errors';
  * @throws {UnauthorizedError} 認証エラーが発生した場合
  * @throws {Error} APIリクエストが失敗した場合にエラーをスロー
  */
-const getFollowedPlaylists = async (req: NextRequest): Promise<any> => {
+const getFollowedPlaylists = async (req: NextRequest): Promise<Response> => {
     console.log('getFollowedPlaylists関数が呼び出されました');
     
     // バックエンドのURLを環境変数から取得
@@ -46,14 +46,9 @@ const getFollowedPlaylists = async (req: NextRequest): Promise<any> => {
             credentials: 'include', // クレデンシャルを含める
         });
         
+        // レスポンスが成功でない場合のエラーハンドリング
         if (!response.ok) {
-            // レスポンスが成功でない場合、ステータスに応じたエラーをスロー
-            if (response.status === 401) {
-                throw new UnauthorizedError('認証されていません');
-            } else {
-                const errorText = await response.text();
-                throw new Error(`プレイリストの取得に失敗しました: ${errorText}`);
-            }
+            return handleApiError(new Error(`プレイリストの取得に失敗しました: ${response.status}`));
         }
         
         // レスポンスデータをJSONとしてパース
@@ -62,7 +57,7 @@ const getFollowedPlaylists = async (req: NextRequest): Promise<any> => {
         console.log('APIレスポンスを受信しました:', response.status);
         console.log('レスポンスデータ:', data);
         
-        return data;
+        return NextResponse.json(data);
     } catch (error) {
         // エラーをハンドルするユーティリティ関数を使用
         return handleApiError(error);
@@ -75,18 +70,8 @@ const getFollowedPlaylists = async (req: NextRequest): Promise<any> => {
  * @returns {Promise<NextResponse>} フォロー中のプレイリストデータを含むレスポンス
  * @throws {Error} APIリクエストが失敗した場合にエラーをスロー
  */
-export async function GET(req: NextRequest): Promise<NextResponse> {
+export async function GET(req: NextRequest): Promise<Response> {
     console.log('GETハンドラーが呼び出されました');
     
-    try {
-        // フォロー中のプレイリストを取得
-        const playlists = await getFollowedPlaylists(req);
-        console.log('プレイリストの取得に成功しました:', playlists);
-        
-        // プレイリストデータをJSONレスポンスとして返す
-        return NextResponse.json(playlists);
-    } catch (error) {
-        // エラーをハンドルするユーティリティ関数を使用
-        return handleApiError(error);
-    }
+    return getFollowedPlaylists(req);
 }

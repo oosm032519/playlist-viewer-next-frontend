@@ -3,6 +3,7 @@
 "use client";
 
 import React, {createContext, useContext, useState, useEffect} from "react";
+import {handleApiError} from "@/app/lib/api-utils";
 
 /**
  * ユーザーコンテキストの型定義
@@ -67,13 +68,7 @@ export const UserContextProvider: React.FC<React.PropsWithChildren<{}>> = ({chil
                     setUserId(null);
                 }
             } catch (error) {
-                console.error("セッション初期化中にエラーが発生しました:", error);
-                // errorを型キャストしてエラーメッセージを取得
-                if (error instanceof Error) {
-                    setError(error.message);
-                } else {
-                    setError(String(error));
-                }
+                handleApiError(error);
             }
         };
         
