@@ -26,7 +26,7 @@ const columnHelper = createColumnHelper<Track>();
  * @param key - 音楽のキーを表す数値（0〜11）
  * @returns キーを表す文字列（例: "C", "D#", など）
  */
-const keyToString = (key: number | undefined): string => {
+export const keyToString = (key: number | undefined): string => {
     if (key === undefined) return "-";
     const keyMap = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
     return keyMap[key] || "-";
@@ -37,7 +37,7 @@ const keyToString = (key: number | undefined): string => {
  * @param ms - ミリ秒単位の時間
  * @returns "分:秒"形式の文字列
  */
-const msToMinutesAndSeconds = (ms: number | undefined): string => {
+export const msToMinutesAndSeconds = (ms: number | undefined): string => {
     if (ms === undefined) return "-";
     const minutes = Math.floor(ms / 60000);
     const seconds = ((ms % 60000) / 1000).toFixed(0);

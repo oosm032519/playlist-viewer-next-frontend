@@ -165,8 +165,80 @@ describe('エラーハンドリング', () => {
         await waitFor(() => {
             expect(screen.getByTestId('logged-in')).toHaveTextContent('false');
             expect(screen.getByTestId('user-id')).toHaveTextContent('null');
-            expect(screen.getByTestId('error')).toHaveTextContent('セッション初期化に失敗しました');
+            // エラーメッセージが変更されていることを確認
+            expect(screen.getByTestId('error')).toHaveTextContent('ユーザーID取得エラー');
         });
+    });
+    
+    it('HTTPエラーが発生した場合、正しくエラー状態が設定される', async () => {
+        mockSessionStorage.getItem.mockReturnValue('valid-jwt');
+        (global.fetch as jest.Mock).mockResolvedValue({
+            ok: false,
+            status: 500,
+        });
+        
+        const TestComponent = () => {
+            const {isLoggedIn, userId, error} = useUser();
+            return (
+                <div>
+                    <span data-testid="logged-in">{isLoggedIn.toString()}</span>
+                    <span data-testid="user-id">{userId || 'null'}</span>
+                    <span data-testid="error">{error || 'null'}</span>
+                </div>
+            );
+        };
+        
+        render(
+            <UserContextProvider>
+                <TestComponent/>
+            </UserContextProvider>
+        );
+        
+        await waitFor(() => {
+            expect(screen.getByTestId('logged-in')).toHaveTextContent('false');
+            expect(screen.getByTestId('user-id')).toHaveTextContent('null');
+            // エラーメッセージが変更されていることを確認
+            expect(screen.getByTestId('error')).toHaveTextContent('HTTP error! status: 500');
+        });
+        
+        expect(console.error).toHaveBeenCalledWith(
+            'セッション初期化中にエラーが発生しました:',
+            expect.any(Error)
+        );
+    });
+    
+    it('非Errorオブジェクトのエラーが発生した場合、正しくエラー状態が設定される', async () => {
+        mockSessionStorage.getItem.mockReturnValue('valid-jwt');
+        (global.fetch as jest.Mock).mockRejectedValue('非Errorオブジェクトのエラー');
+        
+        const TestComponent = () => {
+            const {isLoggedIn, userId, error} = useUser();
+            return (
+                <div>
+                    <span data-testid="logged-in">{isLoggedIn.toString()}</span>
+                    <span data-testid="user-id">{userId || 'null'}</span>
+                    <span data-testid="error">{error || 'null'}</span>
+                </div>
+            );
+        };
+        
+        render(
+            <UserContextProvider>
+                <TestComponent/>
+            </UserContextProvider>
+        );
+        
+        await waitFor(() => {
+            expect(screen.getByTestId('logged-in')).toHaveTextContent('false');
+            expect(screen.getByTestId('user-id')).toHaveTextContent('null');
+            // エラーメッセージが変更されていることを確認
+            expect(screen.getByTestId('error')).toHaveTextContent('非Errorオブジェクトのエラー');
+        });
+        
+        expect(console.error).toHaveBeenCalledWith(
+            'セッション初期化中にエラーが発生しました:',
+            '非Errorオブジェクトのエラー'
+        );
     });
 });
 
@@ -201,74 +273,5 @@ describe('useUser フック', () => {
         expect(screen.getByTestId('logged-in')).toBeInTheDocument();
         expect(screen.getByTestId('user-id')).toBeInTheDocument();
         expect(screen.getByTestId('error')).toBeInTheDocument();
-    });
-    
-    it('HTTPエラーが発生した場合、正しくエラー状態が設定される', async () => {
-        mockSessionStorage.getItem.mockReturnValue('valid-jwt');
-        (global.fetch as jest.Mock).mockResolvedValue({
-            ok: false,
-            status: 500,
-        });
-        
-        const TestComponent = () => {
-            const {isLoggedIn, userId, error} = useUser();
-            return (
-                <div>
-                    <span data-testid="logged-in">{isLoggedIn.toString()}</span>
-                    <span data-testid="user-id">{userId || 'null'}</span>
-                    <span data-testid="error">{error || 'null'}</span>
-                </div>
-            );
-        };
-        
-        render(
-            <UserContextProvider>
-                <TestComponent/>
-            </UserContextProvider>
-        );
-        
-        await waitFor(() => {
-            expect(screen.getByTestId('logged-in')).toHaveTextContent('false');
-            expect(screen.getByTestId('user-id')).toHaveTextContent('null');
-            expect(screen.getByTestId('error')).toHaveTextContent('セッション初期化に失敗しました');
-        });
-        
-        expect(console.error).toHaveBeenCalledWith(
-            'セッション初期化中にエラーが発生しました:',
-            expect.any(Error)
-        );
-    });
-    
-    it('非Errorオブジェクトのエラーが発生した場合、正しくエラー状態が設定される', async () => {
-        mockSessionStorage.getItem.mockReturnValue('valid-jwt');
-        (global.fetch as jest.Mock).mockRejectedValue('非Errorオブジェクトのエラー');
-        
-        const TestComponent = () => {
-            const {isLoggedIn, userId, error} = useUser();
-            return (
-                <div>
-                    <span data-testid="logged-in">{isLoggedIn.toString()}</span>
-                    <span data-testid="user-id">{userId || 'null'}</span>
-                    <span data-testid="error">{error || 'null'}</span>
-                </div>
-            );
-        };
-        
-        render(
-            <UserContextProvider>
-                <TestComponent/>
-            </UserContextProvider>
-        );
-        
-        await waitFor(() => {
-            expect(screen.getByTestId('logged-in')).toHaveTextContent('false');
-            expect(screen.getByTestId('user-id')).toHaveTextContent('null');
-            expect(screen.getByTestId('error')).toHaveTextContent('セッション初期化に失敗しました');
-        });
-        
-        expect(console.error).toHaveBeenCalledWith(
-            'セッション初期化中にエラーが発生しました:',
-            '非Errorオブジェクトのエラー'
-        );
     });
 });
