@@ -7,6 +7,19 @@ import {UserContextProvider, useUser} from '@/app/context/UserContext';
 import FavoritePlaylistsTable from './FavoritePlaylistsTable';
 import {axe, toHaveNoViolations} from 'jest-axe';
 import {expect} from '@jest/globals';
+import * as apiUtils from '@/app/lib/api-utils';
+
+// NextResponse のモック
+jest.mock('next/server', () => ({
+    NextResponse: {
+        json: (body: any, init?: ResponseInit) => {
+            return {
+                ...new Response(JSON.stringify(body), init),
+                json: () => Promise.resolve(body),
+            };
+        },
+    },
+}));
 
 expect.extend(toHaveNoViolations);
 
@@ -35,7 +48,30 @@ jest.mock('date-fns', () => ({
 }));
 
 // フェッチのモック
-global.fetch = jest.fn();
+global.fetch = jest.fn(() =>
+    Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({}),
+        headers: new Headers(),
+        redirected: false,
+        statusText: 'OK',
+        type: 'basic',
+        url: '',
+        clone: jest.fn(),
+        body: null,
+        bodyUsed: false,
+        arrayBuffer: jest.fn(),
+        blob: jest.fn(),
+        formData: jest.fn(),
+        text: jest.fn(),
+    } as Response)
+);
+
+// handleApiErrorのモック
+jest.mock('@/app/lib/api-utils', () => ({
+    handleApiError: jest.fn(),
+}));
 
 const mockFavoritePlaylists = [
     {
@@ -169,8 +205,21 @@ describe('FavoritePlaylistsTable', () => {
         
         (global.fetch as jest.Mock).mockResolvedValue({
             ok: true,
+            status: 200,
             json: jest.fn().mockResolvedValue({}),
-        });
+            headers: new Headers(),
+            redirected: false,
+            statusText: 'OK',
+            type: 'basic',
+            url: '',
+            clone: jest.fn(),
+            body: null,
+            bodyUsed: false,
+            arrayBuffer: jest.fn(),
+            blob: jest.fn(),
+            formData: jest.fn(),
+            text: jest.fn(),
+        } as Response);
         
         renderComponent(true, {});
         
@@ -197,8 +246,21 @@ describe('FavoritePlaylistsTable', () => {
         
         (global.fetch as jest.Mock).mockResolvedValue({
             ok: true,
+            status: 200,
             json: jest.fn().mockResolvedValue({}),
-        });
+            headers: new Headers(),
+            redirected: false,
+            statusText: 'OK',
+            type: 'basic',
+            url: '',
+            clone: jest.fn(),
+            body: null,
+            bodyUsed: false,
+            arrayBuffer: jest.fn(),
+            blob: jest.fn(),
+            formData: jest.fn(),
+            text: jest.fn(),
+        } as Response);
         
         renderComponent(true, {'1': true});
         
@@ -226,11 +288,26 @@ describe('FavoritePlaylistsTable', () => {
         (global.fetch as jest.Mock).mockResolvedValue({
             ok: false,
             status: 500,
-            text: jest.fn().mockResolvedValue('Internal Server Error'),
-        });
+            json: jest.fn().mockResolvedValue({error: 'Internal Server Error'}),
+            headers: new Headers(),
+            redirected: false,
+            statusText: 'Internal Server Error',
+            type: 'basic',
+            url: '',
+            clone: jest.fn(),
+            body: null,
+            bodyUsed: false,
+            arrayBuffer: jest.fn(),
+            blob: jest.fn(),
+            formData: jest.fn(),
+            text: jest.fn(),
+        } as Response);
         
-        const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {
-        });
+        const mockHandleApiError = apiUtils.handleApiError as jest.MockedFunction<typeof apiUtils.handleApiError>;
+        mockHandleApiError.mockResolvedValue({
+            json: () => Promise.resolve({error: 'Test error'}),
+            status: 500,
+        } as unknown as Response);
         
         renderComponent(true, {});
         
@@ -242,10 +319,8 @@ describe('FavoritePlaylistsTable', () => {
         fireEvent.click(favoriteButtons[0]);
         
         await waitFor(() => {
-            expect(consoleSpy).toHaveBeenCalledWith('お気に入り登録/解除中にエラーが発生しました。', expect.any(Error));
+            expect(mockHandleApiError).toHaveBeenCalled();
         });
-        
-        consoleSpy.mockRestore();
     });
     
     test('sorts table when clicking on header', async () => {

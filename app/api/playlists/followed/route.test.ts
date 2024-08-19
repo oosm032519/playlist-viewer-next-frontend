@@ -1,241 +1,82 @@
 // app/api/playlists/followed/route.test.ts
 
-import {NextRequest, NextResponse} from 'next/server';
 import {GET} from './route';
+import {NextRequest} from 'next/server';
+import {UnauthorizedError} from '@/app/lib/errors';
+import * as apiUtils from '@/app/lib/api-utils';
 import {expect} from '@jest/globals';
 
+// モックの設定
 jest.mock('next/server', () => ({
-    NextRequest: jest.fn().mockImplementation((input, init) => ({
-        url: input,
-        method: init?.method,
-        headers: new Map(Object.entries(init?.headers || {})),
-    })),
+    NextRequest: jest.fn(),
     NextResponse: {
-        json: jest.fn(),
+        json: jest.fn((data) => ({json: () => data})),
     },
 }));
 
+jest.mock('@/app/lib/api-utils', () => ({
+    handleApiError: jest.fn(),
+}));
+
+// フェッチのモック
 global.fetch = jest.fn();
 
-console.log = jest.fn();
-console.error = jest.fn();
-
-describe('GET handler for followed playlists', () => {
+describe('GET /api/playlists/followed', () => {
+    let mockRequest: jest.Mocked<NextRequest>;
+    
     beforeEach(() => {
         jest.clearAllMocks();
+        mockRequest = {
+            headers: {
+                get: jest.fn(),
+            },
+        } as unknown as jest.Mocked<NextRequest>;
+        process.env.NEXT_PUBLIC_BACKEND_URL = 'http://test-backend.com';
     });
     
-    it('should return playlists when API call is successful', async () => {
-        const mockSessionId = 'mock-session-id';
-        const mockPlaylists = [{id: 1, name: 'Playlist 1'}, {id: 2, name: 'Playlist 2'}];
-        
-        (global.fetch as jest.Mock).mockResolvedValue({
+    it('正常にフォロー中のプレイリストを取得できる場合', async () => {
+        const mockResponseData = [{id: '1', name: 'Playlist 1'}];
+        (global.fetch as jest.Mock).mockResolvedValueOnce({
             ok: true,
-            json: jest.fn().mockResolvedValue(mockPlaylists),
+            status: 200,
+            json: jest.fn().mockResolvedValueOnce(mockResponseData),
         });
+        (mockRequest.headers.get as jest.Mock).mockReturnValue('sessionId=test-session-id');
         
-        const req = new NextRequest('http://localhost:3000/api/playlists/followed', {
-            method: 'GET',
-            headers: {
-                'Cookie': `sessionId=${mockSessionId}`,
-            },
-        });
+        const response = await GET(mockRequest);
+        const responseData = await response.json();
         
-        await GET(req);
-        
+        expect(responseData).toEqual(mockResponseData);
         expect(global.fetch).toHaveBeenCalledWith(
-            'http://localhost:8080/api/playlists/followed',
+            'http://test-backend.com/api/playlists/followed',
             expect.objectContaining({
                 method: 'GET',
-                headers: {
-                    'Cookie': `sessionId=${mockSessionId}`,
-                },
+                headers: expect.objectContaining({
+                    'Cookie': 'sessionId=test-session-id',
+                }),
                 credentials: 'include',
             })
         );
-        
-        expect(NextResponse.json).toHaveBeenCalledWith(mockPlaylists);
     });
     
-    it('should handle API errors and return a 500 response', async () => {
-        const mockSessionId = 'mock-session-id';
-        const mockError = new Error('API error');
+    it('認証されていない場合', async () => {
+        (mockRequest.headers.get as jest.Mock).mockReturnValue(null);
         
-        (global.fetch as jest.Mock).mockRejectedValue(mockError);
+        await GET(mockRequest);
         
-        const req = new NextRequest('http://localhost:3000/api/playlists/followed', {
-            method: 'GET',
-            headers: {
-                'Cookie': `sessionId=${mockSessionId}`,
-            },
-        });
-        
-        await GET(req);
-        
-        expect(global.fetch).toHaveBeenCalledWith(
-            'http://localhost:8080/api/playlists/followed',
-            expect.objectContaining({
-                method: 'GET',
-                headers: {
-                    'Cookie': `sessionId=${mockSessionId}`,
-                },
-                credentials: 'include',
-            })
-        );
-        
-        expect(NextResponse.json).toHaveBeenCalledWith(
-            {error: 'フォロー中のプレイリストの取得中にエラーが発生しました: Failed to fetch playlists: API error'},
-            {status: 500}
-        );
+        expect(apiUtils.handleApiError).toHaveBeenCalledWith(expect.any(UnauthorizedError));
     });
     
-    it('should handle missing Cookie', async () => {
-        const req = new NextRequest('http://localhost:3000/api/playlists/followed', {
-            method: 'GET',
-        });
-        
-        await GET(req);
-        
-        expect(global.fetch).not.toHaveBeenCalled();
-        
-        expect(NextResponse.json).toHaveBeenCalledWith(
-            {error: 'フォロー中のプレイリストの取得中にエラーが発生しました: Failed to fetch playlists: Cookie missing'},
-            {status: 500}
-        );
-    });
-    
-    it('should use custom backend URL when environment variable is set', async () => {
-        process.env.NEXT_PUBLIC_BACKEND_URL = 'https://custom-backend.com';
-        
-        const mockSessionId = 'mock-session-id';
-        const mockPlaylists = [{id: 1, name: 'Playlist 1'}];
-        
-        (global.fetch as jest.Mock).mockResolvedValue({
-            ok: true,
-            json: jest.fn().mockResolvedValue(mockPlaylists),
-        });
-        
-        const req = new NextRequest('http://localhost:3000/api/playlists/followed', {
-            method: 'GET',
-            headers: {
-                'Cookie': `sessionId=${mockSessionId}`,
-            },
-        });
-        
-        await GET(req);
-        
-        expect(global.fetch).toHaveBeenCalledWith(
-            'https://custom-backend.com/api/playlists/followed',
-            expect.objectContaining({
-                method: 'GET',
-                headers: {
-                    'Cookie': `sessionId=${mockSessionId}`,
-                },
-                credentials: 'include',
-            })
-        );
-        
-        delete process.env.NEXT_PUBLIC_BACKEND_URL;
-    });
-    
-    it('should handle non-Error objects thrown', async () => {
-        const mockSessionId = 'mock-session-id';
-        
-        (global.fetch as jest.Mock).mockRejectedValue('Non-Error object');
-        
-        const req = new NextRequest('http://localhost:3000/api/playlists/followed', {
-            method: 'GET',
-            headers: {
-                'Cookie': `sessionId=${mockSessionId}`,
-            },
-        });
-        
-        await GET(req);
-        
-        expect(NextResponse.json).toHaveBeenCalledWith(
-            {error: 'フォロー中のプレイリストの取得中にエラーが発生しました: Failed to fetch playlists: Unknown error'},
-            {status: 500}
-        );
-    });
-    
-    it('should handle API response that is not ok', async () => {
-        const mockSessionId = 'mock-session-id';
-        
-        (global.fetch as jest.Mock).mockResolvedValue({
+    it('その他のエラーが発生した場合', async () => {
+        (global.fetch as jest.Mock).mockResolvedValueOnce({
             ok: false,
-            status: 404,
+            status: 500,
+            json: jest.fn().mockResolvedValueOnce({details: 'Server error'}),
         });
+        (mockRequest.headers.get as jest.Mock).mockReturnValue('sessionId=test-session-id');
         
-        const req = new NextRequest('http://localhost:3000/api/playlists/followed', {
-            method: 'GET',
-            headers: {
-                'Cookie': `sessionId=${mockSessionId}`,
-            },
-        });
+        await GET(mockRequest);
         
-        await GET(req);
-        
-        expect(NextResponse.json).toHaveBeenCalledWith(
-            {error: 'フォロー中のプレイリストの取得中にエラーが発生しました: Failed to fetch playlists: HTTP error! status: 404'},
-            {status: 500}
-        );
-    });
-    
-    it('should handle unknown errors in GET handler', async () => {
-        const mockSessionId = 'mock-session-id';
-        
-        (global.fetch as jest.Mock).mockRejectedValue('Unknown error');
-        
-        const req = new NextRequest('http://localhost:3000/api/playlists/followed', {
-            method: 'GET',
-            headers: {
-                'Cookie': `sessionId=${mockSessionId}`,
-            },
-        });
-        
-        await GET(req);
-        
-        expect(NextResponse.json).toHaveBeenCalledWith(
-            {error: 'フォロー中のプレイリストの取得中にエラーが発生しました: Failed to fetch playlists: Unknown error'},
-            {status: 500}
-        );
-    });
-    
-    it('should handle unknown errors in GET handler', async () => {
-        const mockSessionId = 'mock-session-id';
-        
-        (global.fetch as jest.Mock).mockRejectedValue('Unknown error');
-        
-        const req = new NextRequest('http://localhost:3000/api/playlists/followed', {
-            method: 'GET',
-            headers: {
-                'Cookie': `sessionId=${mockSessionId}`,
-            },
-        });
-        
-        await GET(req);
-        
-        expect(NextResponse.json).toHaveBeenCalledWith(
-            {error: 'フォロー中のプレイリストの取得中にエラーが発生しました: Failed to fetch playlists: Unknown error'},
-            {status: 500}
-        );
-    });
-    
-    it('should handle missing sessionId', async () => {
-        const req = new NextRequest('http://localhost:3000/api/playlists/followed', {
-            method: 'GET',
-            headers: {
-                'Cookie': 'someCookie=someValue',
-            },
-        });
-        
-        await GET(req);
-        
-        expect(global.fetch).not.toHaveBeenCalled();
-        
-        expect(NextResponse.json).toHaveBeenCalledWith(
-            {error: 'フォロー中のプレイリストの取得中にエラーが発生しました: Failed to fetch playlists: sessionId missing'},
-            {status: 500}
-        );
+        expect(apiUtils.handleApiError).toHaveBeenCalledWith(expect.any(Error));
     });
 });

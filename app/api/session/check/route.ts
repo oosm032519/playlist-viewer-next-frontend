@@ -28,7 +28,7 @@ function createResponse(body: any, status: number = 200): NextResponse {
  * @param request - Next.jsのNextRequestオブジェクト
  * @returns セッションの状態を含むNextResponseオブジェクト
  */
-export async function GET(request: NextRequest): Promise<NextResponse> {
+export async function GET(request: NextRequest): Promise<NextResponse | Response> {
     console.log(`[${new Date().toISOString()}] GET /api/session/check - リクエスト開始`);
     
     try {

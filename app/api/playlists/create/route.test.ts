@@ -1,112 +1,107 @@
-// app/api/playlists/create/route.ts.test.ts
+// app/api/playlists/create/route.test.ts
 
-import {NextRequest} from 'next/server';
 import {POST} from './route';
-import fetchMock from 'jest-fetch-mock';
+import {NextRequest} from 'next/server';
+import {UnauthorizedError} from '@/app/lib/errors';
+import * as apiUtils from '@/app/lib/api-utils';
 import {expect} from '@jest/globals';
 
-fetchMock.enableMocks();
+// モックの設定
+jest.mock('next/server', () => ({
+    NextRequest: jest.fn(),
+}));
+
+jest.mock('@/app/lib/api-utils', () => ({
+    handleApiError: jest.fn(),
+}));
+
+// フェッチのモック
+global.fetch = jest.fn();
 
 describe('POST /api/playlists/create', () => {
+    let mockRequest: jest.Mocked<NextRequest>;
+    
     beforeEach(() => {
-        fetchMock.resetMocks();
-        jest.spyOn(console, 'error').mockImplementation(() => {
-        });
+        jest.clearAllMocks();
+        mockRequest = {
+            json: jest.fn(),
+            cookies: {
+                get: jest.fn(),
+            },
+        } as unknown as jest.Mocked<NextRequest>;
+        mockRequest.json.mockResolvedValue(['track1', 'track2']);
+        (mockRequest.cookies.get as jest.Mock).mockReturnValue({value: 'test-session-id'});
+        process.env.NEXT_PUBLIC_BACKEND_URL = 'http://test-backend.com';
     });
     
-    afterEach(() => {
-        jest.restoreAllMocks();
-    });
-    
-    it('should create a playlist successfully', async () => {
-        const mockResponse = {success: true, playlistId: '12345'};
-        fetchMock.mockResponseOnce(JSON.stringify(mockResponse), {status: 200});
-        
-        const trackIds = ['track1', 'track2', 'track3'];
-        const request = new NextRequest('http://localhost:3000/api/playlists/create', {
-            method: 'POST',
-            body: JSON.stringify(trackIds),
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer mockJWT'
-            }
+    it('正常にプレイリストを作成できる場合', async () => {
+        const mockResponseData = {id: 'playlist1', name: 'New Playlist'};
+        (global.fetch as jest.Mock).mockResolvedValueOnce({
+            ok: true,
+            status: 200,
+            json: jest.fn().mockResolvedValueOnce(mockResponseData),
         });
         
-        const response = await POST(request);
+        const response = await POST(mockRequest);
+        const responseData = await response.json();
         
         expect(response.status).toBe(200);
-        const responseData = await response.json();
-        expect(responseData).toEqual(mockResponse);
+        expect(responseData).toEqual(mockResponseData);
+        expect(global.fetch).toHaveBeenCalledWith(
+            'http://test-backend.com/api/playlists/create',
+            expect.objectContaining({
+                method: 'POST',
+                headers: expect.objectContaining({
+                    'Content-Type': 'application/json',
+                    'Cookie': 'sessionId=test-session-id',
+                }),
+                body: JSON.stringify(['track1', 'track2']),
+                credentials: 'include',
+            })
+        );
     });
     
-    it('should handle backend errors gracefully', async () => {
-        fetchMock.mockResponseOnce('Internal Server Error', {status: 500});
-        
-        const trackIds = ['track1', 'track2', 'track3'];
-        const request = new NextRequest('http://localhost:3000/api/playlists/create', {
-            method: 'POST',
-            body: JSON.stringify(trackIds),
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer mockJWT'
-            }
+    it('認証されていない場合', async () => {
+        (global.fetch as jest.Mock).mockResolvedValueOnce({
+            ok: false,
+            status: 401,
         });
         
-        const response = await POST(request);
+        await POST(mockRequest);
         
-        expect(response.status).toBe(500);
-        const responseData = await response.json();
-        expect(responseData).toEqual({
-            error: 'Failed to create playlist',
-            details: 'HTTP error! status: 500'
-        });
+        expect(apiUtils.handleApiError).toHaveBeenCalledWith(expect.any(UnauthorizedError));
     });
     
-    it('should handle unexpected errors gracefully', async () => {
-        fetchMock.mockRejectOnce(new Error('Unexpected error'));
-        
-        const trackIds = ['track1', 'track2', 'track3'];
-        const request = new NextRequest('http://localhost:3000/api/playlists/create', {
-            method: 'POST',
-            body: JSON.stringify(trackIds),
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer mockJWT'
-            }
+    it('その他のエラーが発生した場合', async () => {
+        (global.fetch as jest.Mock).mockResolvedValueOnce({
+            ok: false,
+            status: 500,
+            json: jest.fn().mockResolvedValueOnce({details: 'Server error'}),
         });
         
-        const response = await POST(request);
+        await POST(mockRequest);
         
-        expect(response.status).toBe(500);
-        const responseData = await response.json();
-        expect(responseData).toEqual({
-            error: 'Failed to create playlist',
-            details: 'Unexpected error'
-        });
+        expect(apiUtils.handleApiError).toHaveBeenCalledWith(expect.any(Error));
     });
     
-    it('should handle unknown errors gracefully', async () => {
-        fetchMock.mockRejectOnce(() => Promise.reject({} as Error));
-        
-        const trackIds = ['track1', 'track2', 'track3'];
-        const request = new NextRequest('http://localhost:3000/api/playlists/create', {
-            method: 'POST',
-            body: JSON.stringify(trackIds),
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer mockJWT'
-            }
+    it('セッションIDが存在しない場合', async () => {
+        (mockRequest.cookies.get as jest.Mock).mockReturnValue(undefined);
+        const mockResponseData = {id: 'playlist1', name: 'New Playlist'};
+        (global.fetch as jest.Mock).mockResolvedValueOnce({
+            ok: true,
+            status: 200,
+            json: jest.fn().mockResolvedValueOnce(mockResponseData),
         });
         
-        const response = await POST(request);
+        await POST(mockRequest);
         
-        expect(response.status).toBe(500);
-        const responseData = await response.json();
-        expect(responseData).toEqual({
-            error: 'Failed to create playlist',
-            details: 'Unknown error'
-        });
-        
-        expect(console.error).toHaveBeenCalledWith('Unknown error:', {});
+        expect(global.fetch).toHaveBeenCalledWith(
+            'http://test-backend.com/api/playlists/create',
+            expect.objectContaining({
+                headers: expect.objectContaining({
+                    'Cookie': '',
+                }),
+            })
+        );
     });
 });

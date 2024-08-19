@@ -1,94 +1,112 @@
-// app/api/playlists/search/route.ts.ts
+// app/api/playlists/search/route.test.ts
 
 import {GET} from './route';
-import {expect} from '@jest/globals';
+import {NextRequest} from 'next/server';
+import * as apiUtils from '@/app/lib/api-utils';
+import {BadRequestError} from '@/app/lib/errors';
+import {expect} from '@jest/globals'
 
-// NextResponseをモックする
+// モックの設定
 jest.mock('next/server', () => ({
+    NextRequest: jest.fn(),
     NextResponse: {
-        json: jest.fn((data, init) => {
-            return {
-                status: init?.status || 200,
-                json: async () => data,
-            };
-        }),
+        json: jest.fn((data) => ({json: () => data})),
     },
 }));
 
-// fetch関数をグローバルにモックする
+jest.mock('@/app/lib/api-utils', () => ({
+    handleApiError: jest.fn(),
+}));
+
+// フェッチのモック
 global.fetch = jest.fn();
 
 describe('GET /api/playlists/search', () => {
-    // 各テストの前にモックをクリアする
+    let mockRequest: jest.Mocked<NextRequest>;
+    let originalEnv: NodeJS.ProcessEnv;
+    
     beforeEach(() => {
         jest.clearAllMocks();
+        mockRequest = {
+            url: 'http://localhost:3000/api/playlists/search?query=test&offset=0&limit=20',
+            nextUrl: {
+                searchParams: new URLSearchParams('query=test&offset=0&limit=20'),
+            },
+        } as unknown as jest.Mocked<NextRequest>;
+        originalEnv = process.env;
+        process.env = {...originalEnv};
+        delete process.env.NEXT_PUBLIC_BACKEND_URL; // 環境変数をクリア
     });
     
-    /**
-     * クエリパラメータが欠如している場合、400エラーを返すことを確認するテスト
-     */
-    it('should return 400 if query parameter is missing', async () => {
-        const request = new Request('http://localhost:3000/api/playlists/search');
-        const response = await GET(request);
-        
-        // ステータスコードが400であることを確認
-        expect(response.status).toBe(400);
-        const json = await response.json();
-        // エラーメッセージが正しいことを確認
-        expect(json).toEqual({error: 'Query parameter is required'});
+    afterEach(() => {
+        process.env = originalEnv; // テスト後に元の環境変数を復元
     });
     
-    /**
-     * クエリパラメータが提供された場合、プレイリストデータを返すことを確認するテスト
-     */
-    it('should return playlists data when query parameter is provided', async () => {
-        const mockData = {playlists: ['playlist1', 'playlist2']};
-        (fetch as jest.Mock).mockResolvedValueOnce({
+    it('正常にプレイリストを検索できる場合', async () => {
+        const mockResponseData = {playlists: [{id: '1', name: 'Test Playlist'}]};
+        (global.fetch as jest.Mock).mockResolvedValueOnce({
             ok: true,
-            json: async () => mockData,
+            json: jest.fn().mockResolvedValueOnce(mockResponseData),
         });
         
-        const request = new Request('http://localhost:3000/api/playlists/search?query=test&offset=0&limit=20');
-        const response = await GET(request);
+        const response = await GET(mockRequest);
+        const responseData = await response.json();
         
-        // ステータスコードが200であることを確認
-        expect(response.status).toBe(200);
-        const json = await response.json();
-        // 返されるデータが正しいことを確認
-        expect(json).toEqual(mockData);
+        expect(responseData).toEqual(mockResponseData);
+        expect(global.fetch).toHaveBeenCalledWith(
+            'http://localhost:8080/api/playlists/search?query=test&offset=0&limit=20',
+            expect.objectContaining({
+                method: 'GET',
+                headers: expect.objectContaining({
+                    'Content-Type': 'application/json',
+                }),
+            })
+        );
     });
     
-    /**
-     * fetchが失敗した場合、500エラーを返すことを確認するテスト
-     */
-    it('should return 500 if fetch fails', async () => {
-        (fetch as jest.Mock).mockResolvedValueOnce({
+    it('クエリパラメータが指定されていない場合', async () => {
+        mockRequest = {
+            url: 'http://localhost:3000/api/playlists/search',
+            nextUrl: {
+                searchParams: new URLSearchParams(''),
+            },
+        } as unknown as jest.Mocked<NextRequest>;
+        
+        await GET(mockRequest);
+        
+        expect(apiUtils.handleApiError).toHaveBeenCalledWith(expect.any(BadRequestError));
+    });
+    
+    it('バックエンドAPIがエラーを返す場合', async () => {
+        (global.fetch as jest.Mock).mockResolvedValueOnce({
             ok: false,
+            json: jest.fn().mockResolvedValueOnce({details: 'Backend error'}),
         });
         
-        const request = new Request('http://localhost:3000/api/playlists/search?query=test&offset=0&limit=20');
-        const response = await GET(request);
+        await GET(mockRequest);
         
-        // ステータスコードが500であることを確認
-        expect(response.status).toBe(500);
-        const json = await response.json();
-        // エラーメッセージが正しいことを確認
-        expect(json).toEqual({error: 'Internal Server Error'});
+        expect(apiUtils.handleApiError).toHaveBeenCalledWith(expect.any(Error));
     });
     
-    /**
-     * fetchエラーを適切に処理することを確認するテスト
-     */
-    it('should handle fetch error', async () => {
-        (fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
+    it('環境変数NEXT_PUBLIC_BACKEND_URLが設定されている場合', async () => {
+        // テストの実行前に環境変数を設定
+        process.env.NEXT_PUBLIC_BACKEND_URL = 'http://custom-backend.com';
         
-        const request = new Request('http://localhost:3000/api/playlists/search?query=test&offset=0&limit=20');
-        const response = await GET(request);
+        const mockResponseData = {playlists: [{id: '1', name: 'Test Playlist'}]};
+        (global.fetch as jest.Mock).mockResolvedValueOnce({
+            ok: true,
+            json: jest.fn().mockResolvedValueOnce(mockResponseData),
+        });
         
-        // ステータスコードが500であることを確認
-        expect(response.status).toBe(500);
-        const json = await response.json();
-        // エラーメッセージが正しいことを確認
-        expect(json).toEqual({error: 'Internal Server Error'});
+        // GETリクエストを実行する前にモジュールをリロード
+        jest.resetModules();
+        const {GET: reloadedGET} = require('./route');
+        
+        await reloadedGET(mockRequest);
+        
+        expect(global.fetch).toHaveBeenCalledWith(
+            'http://custom-backend.com/api/playlists/search?query=test&offset=0&limit=20',
+            expect.anything()
+        );
     });
 });

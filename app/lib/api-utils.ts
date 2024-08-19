@@ -1,22 +1,17 @@
 // app/lib/api-utils.ts
 
 import {NextResponse} from 'next/server';
-import {
-    ApiError,
-    NotFoundError,
-    UnauthorizedError,
-    BadRequestError,
-    ForbiddenError
-} from './errors';
+
+import {ApiError} from './errors';
 
 /**
  * APIエラーを処理し、適切なHTTPレスポンスを返す
  *
  * @param error - 処理するエラーオブジェクト。通常はAPI呼び出しで発生するエラー
  * @param context - エラーが発生したコンテキスト情報（オプション）
- * @returns エラーメッセージとステータスコードを含むNext.jsのレスポンスオブジェクト
+ * @returns エラーメッセージとステータスコードを含むレスポンスオブジェクト
  */
-export async function handleApiError(error: unknown, context?: string): Promise<NextResponse> {
+export async function handleApiError(error: unknown, context?: string): Promise<NextResponse | Response> {
     console.error('API Error:', error, context);
     
     let status = 500;
@@ -60,8 +55,19 @@ export async function handleApiError(error: unknown, context?: string): Promise<
         details = `${context} でエラーが発生しました: ${details}`;
     }
     
-    return NextResponse.json(
-        {error: message, details: details},
-        {status: status}
-    );
+    const responseBody = JSON.stringify({error: message, details: details});
+    
+    if (typeof Response !== 'undefined') {
+        // ブラウザ環境
+        return new Response(responseBody, {
+            status: status,
+            headers: {'Content-Type': 'application/json'}
+        });
+    } else {
+        // Next.js環境
+        return NextResponse.json(
+            {error: message, details: details},
+            {status: status}
+        );
+    }
 }

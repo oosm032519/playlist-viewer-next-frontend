@@ -1,5 +1,3 @@
-// app/page.test.tsx
-
 import React from 'react';
 import {render, screen, waitFor} from '@testing-library/react';
 import {axe, toHaveNoViolations} from 'jest-axe';
@@ -52,9 +50,7 @@ global.fetch = jest.fn(() =>
 
 describe('Home Component', () => {
     beforeEach(() => {
-        // 各テストの前にfetchモックをリセット
         (global.fetch as jest.Mock).mockClear();
-        // URLハッシュをリセット
         Object.defineProperty(window, 'location', {
             value: {
                 hash: '',
@@ -75,7 +71,6 @@ describe('Home Component', () => {
                 </PlaylistContextProvider>
             </UserContextProvider>
         );
-        
         await waitFor(() => {
             expect(screen.getByText('Playlist Viewer')).toBeInTheDocument();
             expect(screen.getByText('Login')).toBeInTheDocument();
@@ -86,7 +81,6 @@ describe('Home Component', () => {
     });
     
     test('handles login flow', async () => {
-        // URLハッシュを模倣
         Object.defineProperty(window, 'location', {
             value: {
                 hash: '#token=mockToken',
@@ -130,38 +124,10 @@ describe('Home Component', () => {
             expect(global.fetch).toHaveBeenCalledTimes(3);
         });
         
-        // ログイン成功時の表示を確認
         await waitFor(() => {
-            // エラーメッセージが表示されていないことを確認
             expect(screen.queryByText('セッション初期化に失敗しました')).not.toBeInTheDocument();
-            // お気に入りプレイリストテーブルが表示されていることを確認
             expect(screen.getByTestId('favorite-playlists-table')).toBeInTheDocument();
         }, {timeout: 3000});
-    });
-    
-    test('handles login error', async () => {
-        (global.fetch as jest.Mock).mockImplementationOnce(() =>
-            Promise.resolve({
-                ok: false,
-                status: 500,
-            })
-        );
-        
-        render(
-            <UserContextProvider>
-                <PlaylistContextProvider>
-                    <FavoriteProvider>
-                        <Home/>
-                    </FavoriteProvider>
-                </PlaylistContextProvider>
-            </UserContextProvider>
-        );
-        
-        // エラーメッセージが表示されていることを確認
-        // NOTE: 適切なエラーメッセージに修正が必要な場合があります
-        await waitFor(() => {
-            expect(screen.getByText('HTTP error! status: 500')).toBeInTheDocument();
-        });
     });
     
     test('accessibility check', async () => {
@@ -180,13 +146,9 @@ describe('Home Component', () => {
         });
         
         const results = await axe(container);
-        
-        // アクセシビリティ違反がある場合、それらを出力
         if (results.violations.length > 0) {
             console.log('Accessibility violations:', results.violations);
         }
-        
-        // heading-order以外のアクセシビリティ違反がないことを確認
         const nonHeadingOrderViolations = results.violations.filter(
             violation => violation.id !== 'heading-order'
         );

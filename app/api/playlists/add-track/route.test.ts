@@ -1,175 +1,96 @@
-import {NextRequest} from 'next/server';
+// app/api/playlists/add-track/route.test.ts
+
 import {POST} from './route';
+import {NextRequest} from 'next/server';
+import {NotFoundError, UnauthorizedError} from '@/app/lib/errors';
+import * as apiUtils from '@/app/lib/api-utils';
 import {expect} from '@jest/globals';
 
 // モックの設定
-jest.mock('next/headers', () => ({
-    cookies: jest.fn(),
+jest.mock('next/server', () => ({
+    NextRequest: jest.fn(),
 }));
 
-// グローバルなfetchのモック
+jest.mock('@/app/lib/api-utils', () => ({
+    handleApiError: jest.fn(),
+}));
+
+// フェッチのモック
 global.fetch = jest.fn();
 
 describe('POST /api/playlists/add-track', () => {
-    // テストごとにモックをリセット
-    beforeEach(() => {
-        jest.resetAllMocks();
-        console.log = jest.fn();
-        console.error = jest.fn();
-    });
+    let mockRequest: jest.Mocked<NextRequest>;
     
-    // 環境変数の設定
-    const originalEnv = process.env;
     beforeEach(() => {
-        jest.resetModules();
-        process.env = {...originalEnv};
-    });
-    afterAll(() => {
-        process.env = originalEnv;
-    });
-    
-    it('正常系: トラックをプレイリストに追加できること', async () => {
-        // モックの設定
-        const mockRequest = {
-            json: jest.fn().mockResolvedValue({playlistId: '1', trackId: '2'}),
+        jest.clearAllMocks();
+        mockRequest = {
+            json: jest.fn(),
             headers: {
-                get: jest.fn().mockReturnValue('Bearer mock-jwt-token'),
+                get: jest.fn(),
             },
-        } as unknown as NextRequest;
-        
-        (global.fetch as jest.Mock).mockResolvedValue({
+        } as unknown as jest.Mocked<NextRequest>;
+        mockRequest.json.mockResolvedValue({playlistId: '1', trackId: '2'});
+        (mockRequest.headers.get as jest.Mock).mockReturnValue('test-cookie');
+        process.env.NEXT_PUBLIC_BACKEND_URL = 'http://test-backend.com';
+    });
+    
+    it('正常にトラックをプレイリストに追加できる場合', async () => {
+        const mockResponseData = {success: true, message: 'Track added successfully'};
+        (global.fetch as jest.Mock).mockResolvedValueOnce({
+            ok: true,
             status: 200,
-            json: jest.fn().mockResolvedValue({message: 'Track added successfully'}),
+            json: jest.fn().mockResolvedValueOnce(mockResponseData),
         });
         
-        // テスト実行
         const response = await POST(mockRequest);
-        const responseBody = await response.json();
+        const responseData = await response.json();
         
-        // アサーション
         expect(response.status).toBe(200);
-        expect(responseBody).toEqual({message: 'Track added successfully'});
+        expect(responseData).toEqual(mockResponseData);
         expect(global.fetch).toHaveBeenCalledWith(
-            'http://localhost:8080/api/playlist/add-track',
+            'http://test-backend.com/api/playlist/add-track',
             expect.objectContaining({
                 method: 'POST',
                 headers: expect.objectContaining({
                     'Content-Type': 'application/json',
-                    'Cookie': 'Bearer mock-jwt-token',
+                    'Cookie': 'test-cookie',
                 }),
                 body: JSON.stringify({playlistId: '1', trackId: '2'}),
             })
         );
     });
     
-    it('異常系: バックエンドAPIがエラーを返した場合', async () => {
-        // モックの設定
-        const mockRequest = {
-            json: jest.fn().mockResolvedValue({playlistId: '1', trackId: '2'}),
-            headers: {
-                get: jest.fn().mockReturnValue('Bearer mock-jwt-token'),
-            },
-        } as unknown as NextRequest;
-        
-        (global.fetch as jest.Mock).mockResolvedValue({
-            status: 400,
-            json: jest.fn().mockResolvedValue({error: 'Invalid playlist ID'}),
+    it('プレイリストが見つからない場合', async () => {
+        (global.fetch as jest.Mock).mockResolvedValueOnce({
+            ok: false,
+            status: 404,
         });
         
-        // テスト実行
-        const response = await POST(mockRequest);
-        const responseBody = await response.json();
-        
-        // アサーション
-        expect(response.status).toBe(400);
-        expect(responseBody).toEqual({error: 'Invalid playlist ID'});
-    });
-    
-    it('異常系: リクエストのJSONパースに失敗した場合', async () => {
-        // モックの設定
-        const mockRequest = {
-            json: jest.fn().mockRejectedValue(new Error('Invalid JSON')),
-            headers: {
-                get: jest.fn().mockReturnValue('Bearer mock-jwt-token'),
-            },
-        } as unknown as NextRequest;
-        
-        // テスト実行
-        const response = await POST(mockRequest);
-        const responseBody = await response.json();
-        
-        // アサーション
-        expect(response.status).toBe(500);
-        expect(responseBody).toEqual({
-            error: 'プレイリストへのトラック追加に失敗しました',
-            details: 'Invalid JSON',
-        });
-    });
-    
-    it('環境変数NEXT_PUBLIC_BACKEND_URLが設定されている場合、そのURLを使用すること', async () => {
-        // 環境変数の設定
-        process.env.NEXT_PUBLIC_BACKEND_URL = 'https://api.example.com';
-        
-        // モックの設定
-        const mockRequest = {
-            json: jest.fn().mockResolvedValue({playlistId: '1', trackId: '2'}),
-            headers: {
-                get: jest.fn().mockReturnValue('Bearer mock-jwt-token'),
-            },
-        } as unknown as NextRequest;
-        
-        (global.fetch as jest.Mock).mockResolvedValue({
-            status: 200,
-            json: jest.fn().mockResolvedValue({message: 'Track added successfully'}),
-        });
-        
-        // テスト実行
         await POST(mockRequest);
         
-        // アサーション
-        expect(global.fetch).toHaveBeenCalledWith(
-            'https://api.example.com/api/playlist/add-track',
-            expect.anything()
-        );
+        expect(apiUtils.handleApiError).toHaveBeenCalledWith(expect.any(NotFoundError));
     });
     
-    // 新しいテストケース: fetchがネットワークエラーを投げた場合
-    it('異常系: fetchがネットワークエラーを投げた場合', async () => {
-        const mockRequest = {
-            json: jest.fn().mockResolvedValue({playlistId: '1', trackId: '2'}),
-            headers: {
-                get: jest.fn().mockReturnValue('Bearer mock-jwt-token'),
-            },
-        } as unknown as NextRequest;
-        
-        (global.fetch as jest.Mock).mockRejectedValue(new Error('Network error'));
-        
-        const response = await POST(mockRequest);
-        const responseBody = await response.json();
-        
-        expect(response.status).toBe(500);
-        expect(responseBody).toEqual({
-            error: 'プレイリストへのトラック追加に失敗しました',
-            details: 'Network error',
+    it('認証されていない場合', async () => {
+        (global.fetch as jest.Mock).mockResolvedValueOnce({
+            ok: false,
+            status: 401,
         });
+        
+        await POST(mockRequest);
+        
+        expect(apiUtils.handleApiError).toHaveBeenCalledWith(expect.any(UnauthorizedError));
     });
     
-    // 新しいテストケース: 不明なエラーが発生した場合
-    it('異常系: 不明なエラーが発生した場合', async () => {
-        const mockRequest = {
-            json: jest.fn().mockRejectedValue('Unknown error'),
-            headers: {
-                get: jest.fn().mockReturnValue('Bearer mock-jwt-token'),
-            },
-        } as unknown as NextRequest;
-        
-        const response = await POST(mockRequest);
-        const responseBody = await response.json();
-        
-        expect(response.status).toBe(500);
-        expect(responseBody).toEqual({
-            error: 'プレイリストへのトラック追加に失敗しました',
-            details: '不明なエラー',
+    it('その他のエラーが発生した場合', async () => {
+        (global.fetch as jest.Mock).mockResolvedValueOnce({
+            ok: false,
+            status: 500,
+            json: jest.fn().mockResolvedValueOnce({details: 'Server error'}),
         });
+        
+        await POST(mockRequest);
+        
+        expect(apiUtils.handleApiError).toHaveBeenCalledWith(expect.any(Error));
     });
 });

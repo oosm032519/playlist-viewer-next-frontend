@@ -244,6 +244,7 @@ describe('PlaylistDetails', () => {
         global.fetch = jest.fn(() =>
             Promise.resolve({
                 ok: false,
+                json: () => Promise.resolve({}),
             })
         ) as jest.Mock;
         
