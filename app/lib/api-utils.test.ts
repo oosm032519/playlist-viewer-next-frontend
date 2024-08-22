@@ -111,4 +111,46 @@ describe('handleApiError', () => {
             init: {status: 500}
         });
     });
+    
+    it('401エラーを適切に処理する', async () => {
+        const apiError = new ApiError(401, 'Unauthorized', 'Login required');
+        const result = await handleApiError(apiError);
+        
+        expect(console.error).toHaveBeenCalledWith('API Error:', apiError, undefined);
+        expect(NextResponse.json).toHaveBeenCalledWith(
+            {
+                error: 'ログインが必要です。ログインボタンからログインしてください。',
+                details: 'Login required'
+            },
+            {status: 401}
+        );
+    });
+    
+    it('403エラーを適切に処理する', async () => {
+        const apiError = new ApiError(403, 'Forbidden', 'Insufficient permissions');
+        const result = await handleApiError(apiError);
+        
+        expect(console.error).toHaveBeenCalledWith('API Error:', apiError, undefined);
+        expect(NextResponse.json).toHaveBeenCalledWith(
+            {
+                error: 'アクセスが拒否されました',
+                details: 'この操作を行う権限がありません。\n詳細: Insufficient permissions'
+            },
+            {status: 403}
+        );
+    });
+    
+    it('404エラーを適切に処理する', async () => {
+        const apiError = new ApiError(404, 'Not Found', 'Resource not found');
+        const result = await handleApiError(apiError);
+        
+        expect(console.error).toHaveBeenCalledWith('API Error:', apiError, undefined);
+        expect(NextResponse.json).toHaveBeenCalledWith(
+            {
+                error: 'リソースが見つかありません',
+                details: 'お探しのリソースが見つかりません。\n詳細: Resource not found'
+            },
+            {status: 404}
+        );
+    });
 });
