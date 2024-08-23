@@ -1,7 +1,7 @@
 // app/api/session/check/route.ts
 
-import {NextRequest, NextResponse} from 'next/server';
-import {handleApiError} from '@/app/lib/api-utils';
+import {NextRequest} from 'next/server';
+import {getCookies, handleApiError, sendRequest} from '@/app/lib/api-utils';
 
 /**
  * レスポンスを生成する関数
@@ -10,8 +10,11 @@ import {handleApiError} from '@/app/lib/api-utils';
  * @param status - HTTPステータスコード（デフォルトは200）
  * @returns NextResponseオブジェクト
  */
-function createResponse(body: any, status: number = 200): NextResponse {
-    const response = NextResponse.json(body, {status});
+function createResponse(body: any, status: number = 200): Response {
+    const response = new Response(JSON.stringify(body), {
+        status: status,
+        headers: {'Content-Type': 'application/json'}
+    });
     
     // キャッシュを無効化するためのヘッダーを設定
     response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
@@ -28,32 +31,18 @@ function createResponse(body: any, status: number = 200): NextResponse {
  * @param request - Next.jsのNextRequestオブジェクト
  * @returns セッションの状態を含むNextResponseオブジェクト
  */
-export async function GET(request: NextRequest): Promise<NextResponse | Response> {
+export async function GET(request: NextRequest): Promise<Response> {
     console.log(`[${new Date().toISOString()}] GET /api/session/check - リクエスト開始`);
     
     try {
-        // バックエンドURLを環境変数から取得
-        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
-        console.log(`[${new Date().toISOString()}] 環境変数からバックエンドURLを取得: ${backendUrl}`);
-        
-        // リクエストヘッダーからCookieを取得
-        const cookies = request.headers.get('cookie');
+        // Cookieを取得
+        const cookies = getCookies(request);
         console.log(`[${new Date().toISOString()}] 受け取ったCookie: ${cookies}`);
         
         // バックエンドのセッションチェックAPIを呼び出し
-        const response = await fetch(`${backendUrl}/api/session/check`, {
-            headers: {
-                'Cookie': cookies || '', // 全てのCookieを転送
-            },
-            credentials: 'include',
-        });
+        const response = await sendRequest('/api/session/check', 'GET', undefined, cookies);
         
         console.log(`[${new Date().toISOString()}] APIレスポンスステータス: ${response.status}`);
-        
-        // レスポンスが正常でない場合はエラーをスロー
-        if (!response.ok) {
-            throw new Error(`セッションチェックに失敗しました: ${response.status}`);
-        }
         
         // レスポンスデータをJSONとして取得
         const data = await response.json();

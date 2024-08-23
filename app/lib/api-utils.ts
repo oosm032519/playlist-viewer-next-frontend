@@ -1,6 +1,6 @@
 // app/lib/api-utils.ts
 
-import {NextResponse} from 'next/server';
+import {NextRequest, NextResponse} from 'next/server';
 
 import {ApiError} from './errors';
 
@@ -22,6 +22,11 @@ export async function handleApiError(error: unknown, context?: string): Promise<
         status = error.status;
         message = error.message;
         details = error.details || '';
+    } else if (error instanceof Response) {
+        status = error.status;
+        const errorData = await error.json();
+        message = errorData.error || 'API Request Failed';
+        details = errorData.details || error.statusText;
     } else if (error instanceof Error) {
         message = error.message;
         details = error.stack || '';
@@ -41,7 +46,7 @@ export async function handleApiError(error: unknown, context?: string): Promise<
             details = 'この操作を行う権限がありません。' + (details ? `\n詳細: ${details}` : '');
             break;
         case 404:
-            message = 'リソースが見つかありません';
+            message = 'リソースが見つかりません';
             details = 'お探しのリソースが見つかりません。' + (details ? `\n詳細: ${details}` : '');
             break;
         case 500:
@@ -70,4 +75,43 @@ export async function handleApiError(error: unknown, context?: string): Promise<
             {status: status}
         );
     }
+}
+
+/**
+ * APIリクエストを送信する共通関数
+ *
+ * @param url - リクエスト先のURL
+ * @param method - HTTPメソッド
+ * @param body - リクエストボディ（オプション）
+ * @param cookies - Cookieヘッダー（オプション）
+ * @returns APIレスポンス
+ * @throws handleApiError - APIリクエストが失敗した場合
+ */
+export async function sendRequest(url: string, method: string, body?: any, cookies?: string): Promise<Response> {
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
+    const response = await fetch(`${backendUrl}${url}`, {
+        method,
+        headers: {
+            'Content-Type': 'application/json',
+            'Cookie': cookies || '',
+        },
+        body: body ? JSON.stringify(body) : undefined,
+        credentials: 'include',
+    });
+    
+    if (!response.ok) {
+        throw response; // レスポンスオブジェクトをエラーとしてスロー
+    }
+    
+    return response;
+}
+
+/**
+ * リクエストからCookieを取得する関数
+ *
+ * @param request - Next.jsのNextRequestオブジェクト
+ * @returns Cookie文字列
+ */
+export function getCookies(request: NextRequest): string {
+    return request.headers.get('cookie') || '';
 }

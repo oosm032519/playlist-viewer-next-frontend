@@ -1,11 +1,8 @@
 // app/api/session/sessionId/route.ts
 
 import {NextResponse} from 'next/server';
-import {handleApiError} from '@/app/lib/api-utils';
+import {handleApiError, sendRequest} from '@/app/lib/api-utils';
 import {BadRequestError} from '@/app/lib/errors';
-
-// 環境変数からバックエンドのURLを取得し、デフォルトはローカルホスト
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
 
 /**
  * セッションIDを取得するためのPOSTリクエストを処理します。
@@ -27,25 +24,16 @@ export async function POST(request: Request) {
     
     try {
         // バックエンドAPIにPOSTリクエストを送信
-        const response = await fetch(`${BACKEND_URL}/api/session/sessionId`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({temporaryToken}),
-        });
-        
-        // レスポンスが正常でない場合はエラーを投げる
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(`セッションIDの取得に失敗しました: ${errorData.details || '不明なエラー'}`);
-        }
+        const response = await sendRequest('/api/session/sessionId', 'POST', {temporaryToken});
         
         // 成功した場合、レスポンスデータを取得
         const data = await response.json();
         
-        // 新しいレスポンスを作成
-        const newResponse = NextResponse.json(data);
+        // NextResponse.jsonで新しいレスポンスを作成
+        const newResponse = NextResponse.json(data, {
+            status: 200,
+            headers: {'Content-Type': 'application/json'}
+        });
         
         // HttpOnlyフラグ付きでクッキーを設定
         newResponse.cookies.set('sessionId', data.sessionId, {

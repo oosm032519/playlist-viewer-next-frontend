@@ -1,7 +1,7 @@
 // app/api/session/logout/route.ts
 
 import {NextRequest, NextResponse} from "next/server";
-import {handleApiError} from '@/app/lib/api-utils';
+import {getCookies, handleApiError, sendRequest} from '@/app/lib/api-utils';
 import {UnauthorizedError} from '@/app/lib/errors';
 
 /**
@@ -15,11 +15,8 @@ import {UnauthorizedError} from '@/app/lib/errors';
 export async function POST(request: NextRequest): Promise<Response> {
     console.log(`[${new Date().toISOString()}] POST リクエスト開始: /api/session/logout`);
     try {
-        // バックエンドのURLを環境変数から取得、デフォルトはローカルホスト
-        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
-        
-        // リクエストヘッダーからCookieを取得
-        const cookies = request.headers.get('cookie') || '';
+        // Cookieを取得
+        const cookies = getCookies(request);
         
         // sessionIdをCookieから抽出
         const sessionId = cookies.split('; ').find(row => row.startsWith('sessionId'))?.split('=')[1];
@@ -27,28 +24,19 @@ export async function POST(request: NextRequest): Promise<Response> {
             throw new UnauthorizedError('sessionIdが見つかりません');
         }
         
-        console.log(`[${new Date().toISOString()}] バックエンドAPIリクエスト開始: ${backendUrl}/api/session/logout`);
+        console.log(`[${new Date().toISOString()}] バックエンドAPIリクエスト開始: /api/session/logout`);
         
         // バックエンドにログアウトリクエストを送信
-        const response = await fetch(`${backendUrl}/api/session/logout`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Cookie': `sessionId=${sessionId}`, // sessionIdのみをヘッダーにセット
-            },
-        });
+        const response = await sendRequest('/api/session/logout', 'POST', undefined, cookies);
         
         console.log(`[${new Date().toISOString()}] バックエンドAPIレスポンス受信: ステータス=${response.status}`);
         
-        if (!response.ok) {
-            throw new Error(`ログアウトに失敗しました: ${response.status}`);
-        }
-        
-        // レスポンスを作成し、sessionId Cookieを削除
+        // NextResponseを作成
         const nextResponse = NextResponse.json(null, {
             status: response.status,
         });
         
+        // sessionId Cookieを削除
         nextResponse.cookies.set({
             name: 'sessionId',
             value: '',

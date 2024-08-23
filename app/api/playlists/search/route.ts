@@ -1,11 +1,8 @@
 // app/api/playlists/search/route.ts
 
-import {NextResponse} from 'next/server';
-import {handleApiError} from '@/app/lib/api-utils';
+import {NextRequest} from 'next/server';
+import {handleApiError, sendRequest} from '@/app/lib/api-utils';
 import {BadRequestError} from '@/app/lib/errors';
-
-// 環境変数からバックエンドのURLを取得
-const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
 
 /**
  * プレイリスト検索を行う関数
@@ -19,18 +16,7 @@ const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
 async function searchPlaylists(query: string, offset: number, limit: number): Promise<any> {
     try {
         // プレイリスト検索APIにGETリクエストを送信
-        const response = await fetch(`${apiUrl}/api/playlists/search?query=${encodeURIComponent(query)}&offset=${offset}&limit=${limit}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
-        
-        // レスポンスが正常でない場合はエラーをスロー
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(`プレイリストの検索に失敗しました: ${errorData.details || '不明なエラー'}`);
-        }
+        const response = await sendRequest(`/api/playlists/search?query=${encodeURIComponent(query)}&offset=${offset}&limit=${limit}`, 'GET');
         
         // JSONデータを取得して返す
         const data = await response.json();
@@ -48,7 +34,7 @@ async function searchPlaylists(query: string, offset: number, limit: number): Pr
  * @param {Request} request - リクエストオブジェクト
  * @returns {Promise<Response>} レスポンスオブジェクト
  */
-export async function GET(request: Request): Promise<Response> {
+export async function GET(request: NextRequest): Promise<Response> {
     console.log('GET リクエストを受信しました');
     
     // リクエストURLからクエリパラメータを取得
@@ -66,7 +52,10 @@ export async function GET(request: Request): Promise<Response> {
     try {
         // プレイリストを検索し、結果をJSON形式で返す
         const playlists = await searchPlaylists(query, offset, limit);
-        return NextResponse.json(playlists);
+        return new Response(JSON.stringify(playlists), {
+            status: 200,
+            headers: {'Content-Type': 'application/json'}
+        });
     } catch (error) {
         // エラーをハンドリング
         return handleApiError(error);
