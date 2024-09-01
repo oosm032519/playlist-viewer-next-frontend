@@ -1,146 +1,77 @@
-## フロントエンド README
-
 # Playlist Viewer Next.js フロントエンド
+
+## 概要
 
 このプロジェクトは、Spotify のプレイリストを閲覧、分析、操作するための Next.js フロントエンドアプリケーションです。ユーザーは
 Spotify アカウントでログインし、プレイリストを検索、詳細情報の表示、推奨トラックの取得、プレイリストへのトラックの追加・削除、新しいプレイリストの作成、お気に入りのプレイリストの管理などができます。
 
-## 機能
+**[デモサイト](https://playlist-viewer-next-frontend.vercel.app)**
 
-- Spotify ログイン
-- プレイリスト検索
-- プレイリスト詳細情報の表示（トラックリスト、ジャンル分布、オーディオ特徴量）
-- 推奨トラックの取得と試聴
-- プレイリストへのトラックの追加・削除
-- 新しいプレイリストの作成
-- お気に入りのプレイリストの管理
+## 主な機能
+
+* **Spotify ログイン**: Spotify OAuth2 を使用した安全なログイン
+* **プレイリスト操作**:
+    * プレイリストの検索、閲覧
+    * プレイリストの詳細情報の取得 (トラックリスト、ジャンル分布、オーディオ特徴量)
+    * プレイリストへのトラックの追加・削除
+    * 新しいプレイリストの作成
+* **プレイリスト分析**:
+    * ジャンル分布の表示 (円グラフ)
+    * Audio Features の分析 (レーダーチャート、danceability, energy, valence など)
+    * 推奨トラックの取得とプレビュー
+* **お気に入りのプレイリスト管理**:
+    * プレイリストをお気に入りに登録
+    * お気に入りのプレイリスト一覧表示
+* **フォロー中のプレイリスト表示**:
+    * Spotify でフォロー中のプレイリスト一覧表示
 
 ## 技術スタック
 
-- Next.js
-- React
-- TanStack Query
-- Tailwind CSS
-- Recharts
-- Lucide React
-- React Hook Form
-- Yup
-- DOMPurify
+* **フレームワーク**: Next.js 14 (App Router)
+* **UI ライブラリ**: React
+* **データフェッチ**: TanStack Query
+* **スタイリング**: Tailwind CSS
+* **チャート**: Recharts
+* **フォーム**: React Hook Form, Yup
+* **セキュリティ**: DOMPurify
+* **その他**: TypeScript
 
-## インストール
+## 開発環境のセットアップ
 
-1. プロジェクトのルートディレクトリに移動します。
-2. 依存関係をインストールします。
+1. **前提条件**:
+    * Node.js 16 以上
+    * npm または yarn
+2. **リポジトリのクローン**:
+    ```bash
+    git clone https://github.com/oosm032519/playlist-viewer-next-frontend.git
+    ```
+3. **環境変数の設定**:
+    * `.env.local` ファイルを作成します。
+    * `.env.local` に以下の環境変数を設定します。
+        * `NEXT_PUBLIC_BACKEND_URL`: バックエンドアプリケーションの URL (例: `http://localhost:8080`)
+4. **依存関係のインストール**:
+    ```bash
+    npm install
+    # または
+    yarn install
+    ```
+5. **開発サーバーの起動**:
+    ```bash
+    npm run dev
+    # または
+    yarn dev
+    ```
 
-```bash
-npm install
-```
+## ビルドとデプロイ
 
-## 開発サーバーの起動
-
-```bash
-npm run dev
-```
-
-## 環境変数
-
-以下の環境変数を設定する必要があります。
-
-- `NEXT_PUBLIC_BACKEND_URL`: バックエンドサーバーのURL
-
-## 使用方法
-
-1. Spotify アカウントでログインします。
-2. プレイリストを検索するか、URL からプレイリスト ID を入力します。
-3. プレイリストの詳細情報、推奨トラック、および利用可能なアクションを表示します。
-
-## ディレクトリ構造
-
-```
-├── app
-│   ├── api
-│   │   ├── playlists
-│   │   │   ├── add-track
-│   │   │   │   └── route.ts
-│   │   │   ├── create
-│   │   │   │   └── route.ts
-│   │   │   ├── favorite
-│   │   │   │   └── route.ts
-│   │   │   ├── favorites
-│   │   │   │   └── route.ts
-│   │   │   ├── followed
-│   │   │   │   └── route.ts
-│   │   │   ├── remove-track
-│   │   │   │   └── route.ts
-│   │   │   ├── search
-│   │   │   │   └── route.ts
-│   │   │   └── [id]
-│   │   │       └── route.ts
-│   │   ├── session
-│   │   │   ├── check
-│   │   │   │   └── route.ts
-│   │   │   ├── logout
-│   │   │   │   └── route.ts
-│   │   │   └── sessionId
-│   │   │       └── route.ts
-│   │   └── spotify
-│   │       └── route.ts
-│   ├── components
-│   │   ├── CombinedAudioFeaturesChart.tsx
-│   │   ├── CustomTooltip.tsx
-│   │   ├── ErrorAlert.tsx
-│   │   ├── FavoritePlaylistsTable.tsx
-│   │   ├── FollowedPlaylists.tsx
-│   │   ├── GenreChart.tsx
-│   │   ├── LoadingSpinner.tsx
-│   │   ├── LoginButton.tsx
-│   │   ├── PaginationButtons.tsx
-│   │   ├── PlaylistDetails.tsx
-│   │   ├── PlaylistDetailsLoader.tsx
-│   │   ├── PlaylistDetailsTable.tsx
-│   │   ├── PlaylistDisplay.tsx
-│   │   ├── PlaylistIdForm.tsx
-│   │   ├── PlaylistSearch.tsx
-│   │   ├── PlaylistSearchForm.tsx
-│   │   ├── PlaylistTable.tsx
-│   │   ├── PlaylistTableHeader.tsx
-│   │   ├── PlaylistTableRow.tsx
-│   │   ├── RecommendationsTable.tsx
-│   │   └── TrackPlayer.tsx
-│   ├── context
-│   │   ├── FavoriteContext.tsx
-│   │   ├── PlaylistContext.tsx
-│   │   └── UserContext.tsx
-│   ├── hooks
-│   │   ├── useCreatePlaylistMutation.ts
-│   │   ├── useSearchPlaylists.ts
-│   │   └── useTrackActions.ts
-│   ├── lib
-│   │   ├── PlaylistDetailsTableColumns.tsx
-│   │   ├── api-utils.ts
-│   │   ├── audioFeaturesUtils.ts
-│   │   ├── errors.ts
-│   │   ├── tableUtils.ts
-│   │   └── trackUtils.ts
-│   ├── types
-│   │   ├── audioFeaturesTypes.ts
-│   │   ├── playlist.ts
-│   │   ├── recommendationsTableProps.ts
-│   │   └── track.ts
-│   ├── utils
-│   │   └── prepareChartData.ts
-│   ├── validationSchema.ts
-│   ├── globals.css
-│   ├── layout.tsx
-│   └── page.tsx
-├── public
-│   └── favicon.ico
-├── tailwind.config.js
-├── next.config.js
-├── tsconfig.json
-└── package.json
-
-```
+1. **ビルド**:
+    ```bash
+    npm run build
+    # または
+    yarn build
+    ```
+2. **デプロイ**:
+   Vercel, Netlify などのサービスを利用してデプロイできます。
 
 ## ライセンス
 
