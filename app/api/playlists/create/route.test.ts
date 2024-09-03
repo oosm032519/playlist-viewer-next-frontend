@@ -13,6 +13,12 @@ jest.mock('next/server', () => ({
 
 jest.mock('@/app/lib/api-utils', () => ({
     handleApiError: jest.fn(),
+    getCookies: jest.fn(), // getCookiesをモック
+    sendRequest: jest.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: jest.fn().mockResolvedValue({id: 'playlist1', name: 'New Playlist'}),
+    }),
 }));
 
 // フェッチのモック
@@ -25,18 +31,19 @@ describe('POST /api/playlists/create', () => {
         jest.clearAllMocks();
         mockRequest = {
             json: jest.fn(),
-            cookies: {
+            headers: {
                 get: jest.fn(),
             },
         } as unknown as jest.Mocked<NextRequest>;
         mockRequest.json.mockResolvedValue(['track1', 'track2']);
-        (mockRequest.cookies.get as jest.Mock).mockReturnValue({value: 'test-session-id'});
+        (mockRequest.headers.get as jest.Mock).mockReturnValue('sessionId=test-session-id'); // Cookieヘッダーをモック
+        (apiUtils.getCookies as jest.Mock).mockReturnValue('sessionId=test-session-id'); // getCookiesをモック
         process.env.NEXT_PUBLIC_BACKEND_URL = 'http://test-backend.com';
     });
     
     it('正常にプレイリストを作成できる場合', async () => {
         const mockResponseData = {id: 'playlist1', name: 'New Playlist'};
-        (global.fetch as jest.Mock).mockResolvedValueOnce({
+        (apiUtils.sendRequest as jest.Mock).mockResolvedValueOnce({ // sendRequestをモック
             ok: true,
             status: 200,
             json: jest.fn().mockResolvedValueOnce(mockResponseData),
@@ -47,25 +54,16 @@ describe('POST /api/playlists/create', () => {
         
         expect(response.status).toBe(200);
         expect(responseData).toEqual(mockResponseData);
-        expect(global.fetch).toHaveBeenCalledWith(
-            'http://test-backend.com/api/playlists/create',
-            expect.objectContaining({
-                method: 'POST',
-                headers: expect.objectContaining({
-                    'Content-Type': 'application/json',
-                    'Cookie': 'sessionId=test-session-id',
-                }),
-                body: JSON.stringify(['track1', 'track2']),
-                credentials: 'include',
-            })
+        expect(apiUtils.sendRequest).toHaveBeenCalledWith( // sendRequestの呼び出しを確認
+            '/api/playlists/create',
+            'POST',
+            ['track1', 'track2'],
+            'sessionId=test-session-id'
         );
     });
     
     it('認証されていない場合', async () => {
-        (global.fetch as jest.Mock).mockResolvedValueOnce({
-            ok: false,
-            status: 401,
-        });
+        (apiUtils.sendRequest as jest.Mock).mockRejectedValueOnce(new UnauthorizedError('Unauthorized')); // sendRequestをモックしてエラーを返す
         
         await POST(mockRequest);
         
@@ -73,11 +71,7 @@ describe('POST /api/playlists/create', () => {
     });
     
     it('その他のエラーが発生した場合', async () => {
-        (global.fetch as jest.Mock).mockResolvedValueOnce({
-            ok: false,
-            status: 500,
-            json: jest.fn().mockResolvedValueOnce({details: 'Server error'}),
-        });
+        (apiUtils.sendRequest as jest.Mock).mockRejectedValueOnce(new Error('Server error')); // sendRequestをモックしてエラーを返す
         
         await POST(mockRequest);
         
@@ -85,9 +79,10 @@ describe('POST /api/playlists/create', () => {
     });
     
     it('セッションIDが存在しない場合', async () => {
-        (mockRequest.cookies.get as jest.Mock).mockReturnValue(undefined);
+        (mockRequest.headers.get as jest.Mock).mockReturnValue(undefined); // CookieヘッダーをモックしてセッションIDが存在しない状態にする
+        (apiUtils.getCookies as jest.Mock).mockReturnValue(''); // getCookiesをモックして空文字を返す
         const mockResponseData = {id: 'playlist1', name: 'New Playlist'};
-        (global.fetch as jest.Mock).mockResolvedValueOnce({
+        (apiUtils.sendRequest as jest.Mock).mockResolvedValueOnce({ // sendRequestをモック
             ok: true,
             status: 200,
             json: jest.fn().mockResolvedValueOnce(mockResponseData),
@@ -95,13 +90,11 @@ describe('POST /api/playlists/create', () => {
         
         await POST(mockRequest);
         
-        expect(global.fetch).toHaveBeenCalledWith(
-            'http://test-backend.com/api/playlists/create',
-            expect.objectContaining({
-                headers: expect.objectContaining({
-                    'Cookie': '',
-                }),
-            })
+        expect(apiUtils.sendRequest).toHaveBeenCalledWith( // sendRequestの呼び出しを確認
+            '/api/playlists/create',
+            'POST',
+            ['track1', 'track2'],
+            ''
         );
     });
 });

@@ -15,6 +15,8 @@ jest.mock('next/server', () => ({
 }));
 jest.mock('@/app/lib/api-utils', () => ({
     handleApiError: jest.fn(),
+    getCookies: jest.fn(), // getCookiesをモック
+    sendRequest: jest.fn(), // sendRequestをモック
 }));
 
 // グローバルなfetch関数をモック
@@ -27,6 +29,7 @@ describe('Favorite Playlist API Route', () => {
     
     describe('POST handler', () => {
         it('正常なPOSTリクエストを処理できること', async () => {
+            (apiUtils.getCookies as jest.Mock).mockReturnValue('sessionId=test-session-id'); // getCookiesのモックを設定
             const mockRequest = {
                 headers: {
                     get: jest.fn().mockReturnValue('sessionId=test-session-id'),
@@ -38,15 +41,19 @@ describe('Favorite Playlist API Route', () => {
                     playlistOwnerName: 'Test User',
                 }),
             };
-            (global.fetch as jest.Mock).mockResolvedValue({
+            (apiUtils.sendRequest as jest.Mock).mockResolvedValue({ // sendRequestのモックを使用
                 ok: true,
                 json: jest.fn().mockResolvedValue({success: true}),
             });
             const response = await POST(mockRequest as unknown as NextRequest);
-            expect(response).toEqual({success: true});
+            const responseData = await response.json(); // レスポンスボディを取得
+            
+            expect(response.status).toBe(200); // ステータスコードをチェック
+            expect(responseData).toEqual({success: true}); // レスポンスボディをチェック
         });
         
         it('Cookieが存在しない場合にUnauthorizedErrorを投げること', async () => {
+            (apiUtils.getCookies as jest.Mock).mockReturnValue(''); // getCookiesのモックを設定
             const mockRequest = {
                 headers: {
                     get: jest.fn().mockReturnValue(null),
@@ -59,6 +66,7 @@ describe('Favorite Playlist API Route', () => {
         });
         
         it('sessionIdが空の場合にUnauthorizedErrorを投げること', async () => {
+            (apiUtils.getCookies as jest.Mock).mockReturnValue('sessionId='); // getCookiesのモックを設定
             const mockRequest = {
                 headers: {
                     get: jest.fn().mockReturnValue('sessionId='),
@@ -71,6 +79,7 @@ describe('Favorite Playlist API Route', () => {
         });
         
         it('APIリクエストが失敗した場合にエラーを処理すること', async () => {
+            (apiUtils.getCookies as jest.Mock).mockReturnValue('sessionId=test-session-id'); // getCookiesのモックを設定
             const mockRequest = {
                 headers: {
                     get: jest.fn().mockReturnValue('sessionId=test-session-id'),
@@ -82,7 +91,7 @@ describe('Favorite Playlist API Route', () => {
                     playlistOwnerName: 'Test User',
                 }),
             };
-            (global.fetch as jest.Mock).mockResolvedValue({
+            (apiUtils.sendRequest as jest.Mock).mockResolvedValue({ // sendRequestのモックを使用
                 ok: false,
                 status: 500,
             });
@@ -95,6 +104,7 @@ describe('Favorite Playlist API Route', () => {
     
     describe('DELETE handler', () => {
         it('正常なDELETEリクエストを処理できること', async () => {
+            (apiUtils.getCookies as jest.Mock).mockReturnValue('sessionId=test-session-id'); // getCookiesのモックを設定
             const mockRequest = {
                 headers: {
                     get: jest.fn().mockReturnValue('sessionId=test-session-id'),
@@ -106,15 +116,19 @@ describe('Favorite Playlist API Route', () => {
                     playlistOwnerName: 'Test User',
                 }),
             };
-            (global.fetch as jest.Mock).mockResolvedValue({
+            (apiUtils.sendRequest as jest.Mock).mockResolvedValue({ // sendRequestのモックを使用
                 ok: true,
                 json: jest.fn().mockResolvedValue({success: true}),
             });
             const response = await DELETE(mockRequest as unknown as NextRequest);
-            expect(response).toEqual({success: true});
+            const responseData = await response.json(); // レスポンスボディを取得
+            
+            expect(response.status).toBe(200); // ステータスコードをチェック
+            expect(responseData).toEqual({success: true}); // レスポンスボディをチェック
         });
         
         it('Cookieが存在しない場合にUnauthorizedErrorを投げること', async () => {
+            (apiUtils.getCookies as jest.Mock).mockReturnValue(''); // getCookiesのモックを設定
             const mockRequest = {
                 headers: {
                     get: jest.fn().mockReturnValue(null),
@@ -127,6 +141,7 @@ describe('Favorite Playlist API Route', () => {
         });
         
         it('sessionIdが空の場合にUnauthorizedErrorを投げること', async () => {
+            (apiUtils.getCookies as jest.Mock).mockReturnValue('sessionId='); // getCookiesのモックを設定
             const mockRequest = {
                 headers: {
                     get: jest.fn().mockReturnValue('sessionId='),
@@ -139,6 +154,7 @@ describe('Favorite Playlist API Route', () => {
         });
         
         it('APIリクエストが失敗した場合にエラーを処理すること', async () => {
+            (apiUtils.getCookies as jest.Mock).mockReturnValue('sessionId=test-session-id'); // getCookiesのモックを設定
             const mockRequest = {
                 headers: {
                     get: jest.fn().mockReturnValue('sessionId=test-session-id'),
@@ -150,7 +166,7 @@ describe('Favorite Playlist API Route', () => {
                     playlistOwnerName: 'Test User',
                 }),
             };
-            (global.fetch as jest.Mock).mockResolvedValue({
+            (apiUtils.sendRequest as jest.Mock).mockResolvedValue({ // sendRequestのモックを使用
                 ok: false,
                 status: 500,
             });

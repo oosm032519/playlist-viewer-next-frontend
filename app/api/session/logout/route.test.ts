@@ -3,7 +3,7 @@
 import {POST} from './route';
 import {NextRequest, NextResponse} from 'next/server';
 import {UnauthorizedError} from '@/app/lib/errors';
-import {expect} from '@jest/globals'
+import {expect} from '@jest/globals';
 
 // モックの設定
 jest.mock('next/server', () => ({
@@ -18,11 +18,16 @@ jest.mock('next/server', () => ({
     },
 }));
 
+// handleApiErrorのモックを修正
 jest.mock('@/app/lib/api-utils', () => ({
-    handleApiError: jest.fn().mockImplementation((error) => ({
-        status: error instanceof UnauthorizedError ? 401 : 500,
-        json: () => ({message: error.message}),
-    })),
+    handleApiError: jest.fn().mockImplementation((error) => {
+        if (error instanceof UnauthorizedError) {
+            return NextResponse.json({error: error.message}, {status: 401});
+        }
+        return NextResponse.json({error: 'Internal Server Error'}, {status: 500});
+    }),
+    getCookies: jest.fn().mockReturnValue('sessionId=test-session-id'),
+    sendRequest: jest.fn(),
 }));
 
 describe('POST /api/session/logout', () => {
@@ -32,7 +37,8 @@ describe('POST /api/session/logout', () => {
     });
     
     it('正常にログアウトできる場合', async () => {
-        global.fetch = jest.fn().mockResolvedValueOnce({
+        const mockSendRequest = jest.requireMock('@/app/lib/api-utils').sendRequest;
+        mockSendRequest.mockResolvedValueOnce({
             ok: true,
             status: 200,
         });
@@ -52,34 +58,32 @@ describe('POST /api/session/logout', () => {
             path: '/',
             maxAge: 0,
         });
-        expect(global.fetch).toHaveBeenCalledWith(
-            'http://test-backend.com/api/session/logout',
-            expect.objectContaining({
-                method: 'POST',
-                headers: expect.objectContaining({
-                    'Cookie': 'sessionId=test-session-id',
-                }),
-            })
+        expect(mockSendRequest).toHaveBeenCalledWith(
+            '/api/session/logout',
+            'POST',
+            undefined,
+            'sessionId=test-session-id'
         );
     });
     
     it('sessionIdが見つからない場合', async () => {
+        const mockGetCookies = jest.requireMock('@/app/lib/api-utils').getCookies;
+        mockGetCookies.mockReturnValueOnce('');
+        
         const mockRequest = {
             headers: {
                 get: jest.fn().mockReturnValue(''),
             },
         } as unknown as NextRequest;
         
-        const response = await POST(mockRequest);
+        const response = await POST(mockRequest) as NextResponse;
         
         expect(response.status).toBe(401);
     });
     
     it('バックエンドAPIがエラーを返す場合', async () => {
-        global.fetch = jest.fn().mockResolvedValueOnce({
-            ok: false,
-            status: 500,
-        });
+        const mockSendRequest = jest.requireMock('@/app/lib/api-utils').sendRequest;
+        mockSendRequest.mockRejectedValueOnce(new Error('Backend error'));
         
         const mockRequest = {
             headers: {
@@ -87,7 +91,7 @@ describe('POST /api/session/logout', () => {
             },
         } as unknown as NextRequest;
         
-        const response = await POST(mockRequest);
+        const response = await POST(mockRequest) as NextResponse;
         
         expect(response.status).toBe(500);
     });

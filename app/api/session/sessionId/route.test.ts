@@ -15,10 +15,8 @@ jest.mock('next/server', () => ({
 
 jest.mock('@/app/lib/api-utils', () => ({
     handleApiError: jest.fn(),
+    sendRequest: jest.fn(),
 }));
-
-// フェッチのモック
-global.fetch = jest.fn();
 
 describe('POST /api/session/sessionId', () => {
     beforeEach(() => {
@@ -41,7 +39,7 @@ describe('POST /api/session/sessionId', () => {
             ok: true,
             json: jest.fn().mockResolvedValue({sessionId: mockSessionId}),
         };
-        (global.fetch as jest.Mock).mockResolvedValue(mockResponse);
+        (apiUtils.sendRequest as jest.Mock).mockResolvedValue(mockResponse);
         
         const mockNextResponse = {
             cookies: {
@@ -56,16 +54,20 @@ describe('POST /api/session/sessionId', () => {
         
         const response = await POST(request as any);
         
-        expect(global.fetch).toHaveBeenCalledWith(
-            expect.stringContaining('/api/session/sessionId'),
-            expect.objectContaining({
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({temporaryToken: 'test-token'}),
-            })
+        expect(apiUtils.sendRequest).toHaveBeenCalledWith(
+            '/api/session/sessionId',
+            'POST',
+            {temporaryToken: 'test-token'}
         );
         
-        expect(NextResponse.json).toHaveBeenCalledWith({sessionId: mockSessionId});
+        expect(NextResponse.json).toHaveBeenCalledWith(
+            {sessionId: mockSessionId},
+            {
+                status: 200,
+                headers: {'Content-Type': 'application/json'}
+            }
+        );
+        
         expect(mockNextResponse.cookies.set).toHaveBeenCalledWith(
             'sessionId',
             mockSessionId,
@@ -86,7 +88,7 @@ describe('POST /api/session/sessionId', () => {
             ok: false,
             json: jest.fn().mockResolvedValue({details: 'エラーが発生しました'}),
         };
-        (global.fetch as jest.Mock).mockResolvedValue(mockErrorResponse);
+        (apiUtils.sendRequest as jest.Mock).mockRejectedValue(mockErrorResponse);
         
         const request = {
             json: jest.fn().mockResolvedValue({temporaryToken: 'test-token'}),
@@ -94,6 +96,6 @@ describe('POST /api/session/sessionId', () => {
         
         await POST(request as any);
         
-        expect(apiUtils.handleApiError).toHaveBeenCalledWith(expect.any(Error));
+        expect(apiUtils.handleApiError).toHaveBeenCalledWith(mockErrorResponse);
     });
 });

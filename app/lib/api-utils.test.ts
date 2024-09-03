@@ -1,9 +1,8 @@
 // app/lib/api-utils.test.ts
 
-import {NextResponse} from 'next/server';
 import {handleApiError} from './api-utils';
 import {ApiError} from './errors';
-import {expect} from '@jest/globals'
+import {expect, jest, describe, it, beforeAll, afterAll, beforeEach} from '@jest/globals';
 
 // NextResponseをモック化
 jest.mock('next/server', () => ({
@@ -18,7 +17,19 @@ describe('handleApiError', () => {
     beforeAll(() => {
         originalResponse = global.Response;
         // @ts-ignore
-        delete global.Response;
+        global.Response = class MockResponse {
+            status: number;
+            body: any;
+            
+            constructor(body?: BodyInit | null, init?: ResponseInit) {
+                this.body = body;
+                this.status = init?.status || 200;
+            }
+            
+            json() {
+                return Promise.resolve(JSON.parse(this.body));
+            }
+        };
     });
     
     afterAll(() => {
@@ -30,30 +41,7 @@ describe('handleApiError', () => {
         console.error = jest.fn(); // console.errorをモック化
     });
     
-    it('ApiErrorを適切に処理する (NextResponse)', async () => {
-        const apiError = new ApiError(400, 'Bad Request', 'Invalid input');
-        const result = await handleApiError(apiError);
-        
-        expect(console.error).toHaveBeenCalledWith('API Error:', apiError, undefined);
-        expect(NextResponse.json).toHaveBeenCalledWith(
-            {
-                error: '入力内容に誤りがあります。もう一度確認してください。',
-                details: 'リクエスト内容を確認してください。\n詳細: Invalid input'
-            },
-            {status: 400}
-        );
-        expect(result).toEqual({
-            body: {
-                error: '入力内容に誤りがあります。もう一度確認してください。',
-                details: 'リクエスト内容を確認してください。\n詳細: Invalid input'
-            },
-            init: {status: 400}
-        });
-    });
-    
-    it('ApiErrorを適切に処理する (Response)', async () => {
-        // @ts-ignore
-        global.Response = originalResponse;
+    it('ApiErrorを適切に処理する', async () => {
         const apiError = new ApiError(400, 'Bad Request', 'Invalid input');
         const result = await handleApiError(apiError);
         
@@ -65,8 +53,6 @@ describe('handleApiError', () => {
             details: 'リクエスト内容を確認してください。\n詳細: Invalid input'
         });
         expect(result.status).toBe(400);
-        // @ts-ignore
-        delete global.Response;
     });
     
     it('一般的なErrorを適切に処理する', async () => {
@@ -74,20 +60,13 @@ describe('handleApiError', () => {
         const result = await handleApiError(error);
         
         expect(console.error).toHaveBeenCalledWith('API Error:', error, undefined);
-        expect(NextResponse.json).toHaveBeenCalledWith(
-            {
-                error: 'サーバーでエラーが発生しました。しばらくしてからもう一度お試しください。',
-                details: expect.stringContaining('管理者に連絡してください。\n詳細: Error: Something went wrong')
-            },
-            {status: 500}
-        );
-        expect(result).toEqual({
-            body: {
-                error: 'サーバーでエラーが発生しました。しばらくしてからもう一度お試しください。',
-                details: expect.stringContaining('管理者に連絡してください。\n詳細: Error: Something went wrong')
-            },
-            init: {status: 500}
+        expect(result).toBeInstanceOf(Response);
+        const responseData = await result.json();
+        expect(responseData).toEqual({
+            error: 'サーバーでエラーが発生しました。しばらくしてからもう一度お試しください。',
+            details: expect.stringContaining('管理者に連絡してください。\n詳細: Error: Something went wrong')
         });
+        expect(result.status).toBe(500);
     });
     
     it('コンテキスト情報を適切に処理する', async () => {
@@ -96,20 +75,13 @@ describe('handleApiError', () => {
         const result = await handleApiError(error, context);
         
         expect(console.error).toHaveBeenCalledWith('API Error:', error, context);
-        expect(NextResponse.json).toHaveBeenCalledWith(
-            {
-                error: 'サーバーでエラーが発生しました。しばらくしてからもう一度お試しください。',
-                details: expect.stringContaining('データベース接続 でエラーが発生しました: 管理者に連絡してください。\n詳細: Error: Database connection failed')
-            },
-            {status: 500}
-        );
-        expect(result).toEqual({
-            body: {
-                error: 'サーバーでエラーが発生しました。しばらくしてからもう一度お試しください。',
-                details: expect.stringContaining('データベース接続 でエラーが発生しました: 管理者に連絡してください。\n詳細: Error: Database connection failed')
-            },
-            init: {status: 500}
+        expect(result).toBeInstanceOf(Response);
+        const responseData = await result.json();
+        expect(responseData).toEqual({
+            error: 'サーバーでエラーが発生しました。しばらくしてからもう一度お試しください。',
+            details: expect.stringContaining('データベース接続 でエラーが発生しました: 管理者に連絡してください。\n詳細: Error: Database connection failed')
         });
+        expect(result.status).toBe(500);
     });
     
     it('401エラーを適切に処理する', async () => {
@@ -117,13 +89,13 @@ describe('handleApiError', () => {
         const result = await handleApiError(apiError);
         
         expect(console.error).toHaveBeenCalledWith('API Error:', apiError, undefined);
-        expect(NextResponse.json).toHaveBeenCalledWith(
-            {
-                error: 'ログインが必要です。ログインボタンからログインしてください。',
-                details: 'Login required'
-            },
-            {status: 401}
-        );
+        expect(result).toBeInstanceOf(Response);
+        const responseData = await result.json();
+        expect(responseData).toEqual({
+            error: 'ログインが必要です。ログインボタンからログインしてください。',
+            details: 'Login required'
+        });
+        expect(result.status).toBe(401);
     });
     
     it('403エラーを適切に処理する', async () => {
@@ -131,13 +103,13 @@ describe('handleApiError', () => {
         const result = await handleApiError(apiError);
         
         expect(console.error).toHaveBeenCalledWith('API Error:', apiError, undefined);
-        expect(NextResponse.json).toHaveBeenCalledWith(
-            {
-                error: 'アクセスが拒否されました',
-                details: 'この操作を行う権限がありません。\n詳細: Insufficient permissions'
-            },
-            {status: 403}
-        );
+        expect(result).toBeInstanceOf(Response);
+        const responseData = await result.json();
+        expect(responseData).toEqual({
+            error: 'アクセスが拒否されました',
+            details: 'この操作を行う権限がありません。\n詳細: Insufficient permissions'
+        });
+        expect(result.status).toBe(403);
     });
     
     it('404エラーを適切に処理する', async () => {
@@ -145,12 +117,12 @@ describe('handleApiError', () => {
         const result = await handleApiError(apiError);
         
         expect(console.error).toHaveBeenCalledWith('API Error:', apiError, undefined);
-        expect(NextResponse.json).toHaveBeenCalledWith(
-            {
-                error: 'リソースが見つかありません',
-                details: 'お探しのリソースが見つかりません。\n詳細: Resource not found'
-            },
-            {status: 404}
-        );
+        expect(result).toBeInstanceOf(Response);
+        const responseData = await result.json();
+        expect(responseData).toEqual({
+            error: 'リソースが見つかりません',
+            details: 'お探しのリソースが見つかりません。\n詳細: Resource not found'
+        });
+        expect(result.status).toBe(404);
     });
 });

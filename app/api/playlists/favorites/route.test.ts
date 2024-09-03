@@ -2,7 +2,7 @@
 
 import {NextRequest} from 'next/server';
 import {GET} from './route';
-import {expect} from '@jest/globals'
+import {expect} from '@jest/globals';
 
 // モックの設定
 jest.mock('next/server', () => ({
@@ -12,7 +12,29 @@ jest.mock('next/server', () => ({
 }));
 
 jest.mock('@/app/lib/api-utils', () => ({
-    handleApiError: jest.fn((error) => ({status: 500, json: () => ({error: error.message})})),
+    handleApiError: jest.fn((error) => {
+        if (error instanceof Response && error.status === 404) {
+            return {status: 404, json: () => ({error: 'お気に入りプレイリストの取得に失敗しました: 404'})};
+        }
+        return {status: 500, json: () => ({error: error.message})};
+    }),
+    getCookies: jest.fn((request) => request.headers.get('cookie') || ''),
+    sendRequest: jest.fn(async (url, method, body, cookies) => {
+        if (url === '/api/session/check' && method === 'GET') {
+            return {ok: true, status: 200, json: async () => ({})};
+        }
+        if (url === '/api/playlists/favorites' && method === 'GET') {
+            if (cookies.includes('mock-error')) {
+                throw new Response(JSON.stringify({error: 'お気に入りプレイリストの取得に失敗しました: 404'}), {status: 404});
+            }
+            return {
+                ok: true,
+                status: 200,
+                json: async () => ({playlists: [{id: 1, name: 'Favorites'}]})
+            };
+        }
+        throw new Error('Unexpected request');
+    }),
 }));
 
 describe('GET handler for favorite playlists', () => {
@@ -21,7 +43,6 @@ describe('GET handler for favorite playlists', () => {
     beforeEach(() => {
         jest.resetModules();
         process.env = {...mockEnv, NEXT_PUBLIC_BACKEND_URL: 'http://mock-backend.com'};
-        global.fetch = jest.fn();
     });
     
     afterEach(() => {
@@ -30,12 +51,6 @@ describe('GET handler for favorite playlists', () => {
     });
     
     it('should successfully fetch favorite playlists', async () => {
-        const mockData = {playlists: [{id: 1, name: 'Favorites'}]};
-        (global.fetch as jest.Mock).mockResolvedValueOnce({
-            ok: true,
-            json: jest.fn().mockResolvedValueOnce(mockData),
-        });
-        
         const mockRequest = {
             headers: {
                 get: jest.fn().mockReturnValue('sessionId=mock-session-id'),
@@ -45,14 +60,7 @@ describe('GET handler for favorite playlists', () => {
         const response = await GET(mockRequest);
         const result = await response.json();
         
-        expect(result).toEqual(mockData);
-        expect(global.fetch).toHaveBeenCalledWith(
-            'http://mock-backend.com/api/playlists/favorites',
-            expect.objectContaining({
-                headers: {'Cookie': 'sessionId=mock-session-id'},
-                credentials: 'include',
-            })
-        );
+        expect(result).toEqual({playlists: [{id: 1, name: 'Favorites'}]});
     });
     
     it('should throw UnauthorizedError when cookie is missing', async () => {
@@ -65,7 +73,7 @@ describe('GET handler for favorite playlists', () => {
         const response = await GET(mockRequest);
         const result = await response.json();
         
-        expect(result).toEqual({error: 'Cookieが見つかりません'});
+        expect(result).toEqual({error: 'sessionIdが見つかりません'});
     });
     
     it('should throw UnauthorizedError when sessionId is missing', async () => {
@@ -82,29 +90,22 @@ describe('GET handler for favorite playlists', () => {
     });
     
     it('should handle API error when fetch fails', async () => {
-        (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
-        
         const mockRequest = {
             headers: {
-                get: jest.fn().mockReturnValue('sessionId=mock-session-id'),
+                get: jest.fn().mockReturnValue('sessionId=mock-session-id; mock-error=true'),
             },
         } as unknown as NextRequest;
         
         const response = await GET(mockRequest);
         const result = await response.json();
         
-        expect(result).toEqual({error: 'Network error'});
+        expect(result).toEqual({error: 'お気に入りプレイリストの取得に失敗しました: 404'});
     });
     
     it('should handle non-OK response from API', async () => {
-        (global.fetch as jest.Mock).mockResolvedValueOnce({
-            ok: false,
-            status: 404,
-        });
-        
         const mockRequest = {
             headers: {
-                get: jest.fn().mockReturnValue('sessionId=mock-session-id'),
+                get: jest.fn().mockReturnValue('sessionId=mock-session-id; mock-error=true'),
             },
         } as unknown as NextRequest;
         

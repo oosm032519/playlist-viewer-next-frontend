@@ -52,7 +52,10 @@ describe('GET /api/playlists/[id]', () => {
         const json = await response.json();
         
         expect(response.status).toBe(404);
-        expect(json).toEqual({error: 'プレイリストが見つかりません'});
+        expect(json).toEqual({
+            error: 'リソースが見つかりません',
+            details: 'お探しのリソースが見つかりません。\n詳細: Not Found'
+        });
     });
     
     // サーバーエラーが発生した場合、500を返すことを確認するテスト
@@ -68,7 +71,7 @@ describe('GET /api/playlists/[id]', () => {
         expect(response.status).toBe(500);
         expect(json).toEqual({
             error: 'サーバーでエラーが発生しました。しばらくしてからもう一度お試しください。',
-            details: expect.stringContaining('Error: プレイリストの取得に失敗しました: 500'),
+            details: '管理者に連絡してください。\n詳細: Internal Server Error',
         });
     });
     
@@ -85,7 +88,7 @@ describe('GET /api/playlists/[id]', () => {
         expect(response.status).toBe(500);
         expect(json).toEqual({
             error: 'サーバーでエラーが発生しました。しばらくしてからもう一度お試しください。',
-            details: expect.stringContaining('Error: Unexpected Error'),
+            details: expect.stringContaining('Unexpected Error'),
         });
     });
 });

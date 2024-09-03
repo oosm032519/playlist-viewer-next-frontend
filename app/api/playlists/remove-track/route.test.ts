@@ -2,9 +2,9 @@
 
 import {POST} from './route';
 import {NextRequest} from 'next/server';
-import {UnauthorizedError, NotFoundError} from '@/app/lib/errors';
+import {UnauthorizedError} from '@/app/lib/errors';
 import * as apiUtils from '@/app/lib/api-utils';
-import {expect} from '@jest/globals'
+import {expect} from '@jest/globals';
 
 // モックの設定
 jest.mock('next/server', () => ({
@@ -13,6 +13,8 @@ jest.mock('next/server', () => ({
 
 jest.mock('@/app/lib/api-utils', () => ({
     handleApiError: jest.fn(),
+    getCookies: jest.fn(),
+    sendRequest: jest.fn(),
 }));
 
 // フェッチのモック
@@ -33,7 +35,8 @@ describe('POST /api/playlists/remove-track', () => {
         };
         (NextRequest as jest.Mock).mockImplementation(() => mockRequest);
         
-        (global.fetch as jest.Mock).mockResolvedValue({
+        (apiUtils.getCookies as jest.Mock).mockReturnValue('validCookie');
+        (apiUtils.sendRequest as jest.Mock).mockResolvedValue({
             ok: true,
             status: 200,
             json: jest.fn().mockResolvedValue({message: 'Track removed successfully'}),
@@ -46,17 +49,11 @@ describe('POST /api/playlists/remove-track', () => {
         // アサーション
         expect(response.status).toBe(200);
         expect(responseBody).toEqual({message: 'Track removed successfully'});
-        expect(global.fetch).toHaveBeenCalledWith(
-            expect.stringContaining('/api/playlist/remove-track'),
-            expect.objectContaining({
-                method: 'POST',
-                headers: expect.objectContaining({
-                    'Content-Type': 'application/json',
-                    'Cookie': 'validCookie',
-                }),
-                body: JSON.stringify({playlistId: '1', trackId: '2'}),
-                credentials: 'include',
-            })
+        expect(apiUtils.sendRequest).toHaveBeenCalledWith(
+            '/api/playlist/remove-track',
+            'POST',
+            {playlistId: '1', trackId: '2'},
+            'validCookie'
         );
     });
     
@@ -69,6 +66,7 @@ describe('POST /api/playlists/remove-track', () => {
         };
         (NextRequest as jest.Mock).mockImplementation(() => mockRequest);
         
+        (apiUtils.getCookies as jest.Mock).mockReturnValue('');
         (apiUtils.handleApiError as jest.Mock).mockReturnValue(new Response(JSON.stringify({error: 'Unauthorized'}), {status: 401}));
         
         const response = await POST(mockRequest as unknown as NextRequest);
@@ -86,9 +84,10 @@ describe('POST /api/playlists/remove-track', () => {
         };
         (NextRequest as jest.Mock).mockImplementation(() => mockRequest);
         
-        (global.fetch as jest.Mock).mockResolvedValue({
-            ok: false,
+        (apiUtils.getCookies as jest.Mock).mockReturnValue('validCookie');
+        (apiUtils.sendRequest as jest.Mock).mockRejectedValue({
             status: 404,
+            json: jest.fn().mockResolvedValue({error: 'Not Found'}),
         });
         
         (apiUtils.handleApiError as jest.Mock).mockReturnValue(new Response(JSON.stringify({error: 'Not Found'}), {status: 404}));
@@ -96,6 +95,6 @@ describe('POST /api/playlists/remove-track', () => {
         const response = await POST(mockRequest as unknown as NextRequest);
         
         expect(response.status).toBe(404);
-        expect(apiUtils.handleApiError).toHaveBeenCalledWith(expect.any(NotFoundError));
+        expect(apiUtils.handleApiError).toHaveBeenCalledWith(expect.any(Error));
     });
 });

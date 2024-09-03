@@ -1,3 +1,5 @@
+// app/api/session/check/route.test.ts
+
 import {NextRequest} from 'next/server';
 import {GET} from './route';
 import * as apiUtils from '@/app/lib/api-utils';
@@ -17,6 +19,8 @@ jest.mock('next/server', () => ({
 
 jest.mock('@/app/lib/api-utils', () => ({
     handleApiError: jest.fn(),
+    getCookies: jest.fn(),
+    sendRequest: jest.fn(),
 }));
 
 describe('GET /api/session/check', () => {
@@ -48,7 +52,8 @@ describe('GET /api/session/check', () => {
             },
         } as unknown as NextRequest;
         
-        mockFetch.mockResolvedValueOnce({
+        (apiUtils.getCookies as jest.Mock).mockReturnValue('session=test');
+        (apiUtils.sendRequest as jest.Mock).mockResolvedValueOnce({
             ok: true,
             status: 200,
             json: jest.fn().mockResolvedValueOnce({isLoggedIn: true}),
@@ -58,16 +63,13 @@ describe('GET /api/session/check', () => {
         const response = await GET(mockRequest);
         
         // アサーション
-        expect(mockFetch).toHaveBeenCalledWith(
-            'http://test-backend.com/api/session/check',
-            expect.objectContaining({
-                headers: {
-                    'Cookie': 'session=test',
-                },
-                credentials: 'include',
-            })
+        expect(apiUtils.sendRequest).toHaveBeenCalledWith(
+            '/api/session/check',
+            'GET',
+            undefined,
+            'session=test'
         );
-        expect(response.body).toEqual({isLoggedIn: true});
+        expect(await response.json()).toEqual({isLoggedIn: true});
         expect(response.status).toBe(200);
         expect(response.headers.get('Cache-Control')).toBe('no-store, no-cache, must-revalidate, proxy-revalidate');
         expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('GET /api/session/check - リクエスト開始'));
@@ -81,13 +83,15 @@ describe('GET /api/session/check', () => {
             },
         } as unknown as NextRequest;
         
-        mockFetch.mockRejectedValueOnce(new Error('Network error'));
+        const mockError = new Error('Network error');
+        (apiUtils.sendRequest as jest.Mock).mockRejectedValueOnce(mockError);
+        (apiUtils.handleApiError as jest.Mock).mockReturnValueOnce(new Response('Error', {status: 500}));
         
         // テスト実行
         await GET(mockRequest);
         
         // アサーション
-        expect(apiUtils.handleApiError).toHaveBeenCalledWith(expect.any(Error));
+        expect(apiUtils.handleApiError).toHaveBeenCalledWith(mockError);
         expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('GET /api/session/check - リクエスト終了'));
     });
 });
