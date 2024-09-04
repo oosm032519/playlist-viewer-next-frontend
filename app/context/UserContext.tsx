@@ -1,70 +1,95 @@
 // app/context/UserContext.tsx
+
 "use client";
 
 import React, {createContext, useContext, useState, useEffect} from "react";
+import {handleApiError} from "@/app/lib/api-utils";
 
-// ユーザーコンテキストの型定義
+/**
+ * ユーザーコンテキストの型定義
+ */
 interface UserContextType {
+    /** ログイン状態を示すフラグ */
     isLoggedIn: boolean;
+    /** ユーザーID（未ログイン時はnull） */
     userId: string | null;
+    /** エラーメッセージ（エラーがない場合はnull） */
     error: string | null;
+    /** ログイン状態を更新する関数 */
     setIsLoggedIn: (isLoggedIn: boolean) => void;
+    /** ユーザーIDを更新する関数 */
     setUserId: (userId: string | null) => void;
 }
 
-// ユーザーコンテキストの作成
+/** ユーザーコンテキストを生成 */
 const UserContext = createContext<UserContextType | null>(null);
 
 /**
  * UserContextProviderコンポーネント
- * @param {React.PropsWithChildren<{}>} props - 子コンポーネントを含むプロパティ
- * @returns {JSX.Element} ユーザーコンテキストプロバイダー
+ *
+ * @param children - コンテキストプロバイダー内でレンダリングされる子要素
+ * @returns UserContextを提供するプロバイダーコンポーネント
  */
 export const UserContextProvider: React.FC<React.PropsWithChildren<{}>> = ({children}) => {
-    // ユーザーのログイン状態を管理するステート
+    // ログイン状態を管理するステート
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     // ユーザーIDを管理するステート
     const [userId, setUserId] = useState<string | null>(null);
     // エラーメッセージを管理するステート
     const [error, setError] = useState<string | null>(null);
     
-    // コンポーネントのマウント時にセッションを初期化する
     useEffect(() => {
+        console.log("UserContextProvider useEffect 開始");
+        
+        // セッションを初期化する非同期関数
         const initializeSession = async () => {
             try {
-                // セッションストレージからJWTを取得
-                const jwt = sessionStorage.getItem('JWT');
-                if (jwt) {
+                console.log("セッション初期化開始");
+                const response = await fetch("/api/session/check", {
+                    method: 'GET',
+                    credentials: 'include', // Cookieを含める
+                });
+                
+                if (!response.ok) {
+                    console.log(`セッションチェックエラー: ${response.status}`);
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log("セッションチェック成功:", data);
+                
+                if (data.status === 'success') {
+                    console.log("ログイン状態です。");
                     setIsLoggedIn(true);
-                    
-                    // バックエンドAPIにJWTを送信してユーザーIDを取得
-                    const response = await fetch("/api/session/check", {
-                        credentials: "include",
-                        headers: {
-                            'Authorization': `Bearer ${jwt}`, // JWTをAuthorizationヘッダーに設定
-                        },
-                    });
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
                     setUserId(data.userId);
+                } else {
+                    console.log("未ログイン状態です。");
+                    setIsLoggedIn(false);
+                    setUserId(null);
                 }
             } catch (error) {
-                // エラーが発生した場合の処理
-                if (error instanceof Error) {
-                    console.error("ユーザーIDの取得中にエラーが発生しました:", error.message, (error as any).code);
-                    setError("ユーザーIDの取得中にエラーが発生しました。");
-                } else {
-                    console.error("ユーザーIDの取得中にエラーが発生しました:", error);
-                    setError("ユーザーIDの取得中にエラーが発生しました。");
-                }
+                handleApiError(error);
             }
         };
+        
         initializeSession();
     }, []);
     
-    // コンテキストの値を設定
+    useEffect(() => {
+        console.log("ログイン状態更新:", isLoggedIn);
+    }, [isLoggedIn]);
+    
+    useEffect(() => {
+        console.log("ユーザーID更新:", userId);
+    }, [userId]);
+    
+    useEffect(() => {
+        if (error) {
+            console.log("エラー状態更新:", error);
+        }
+    }, [error]);
+    
+    // コンテキストに提供する値を定義
     const contextValue = {isLoggedIn, userId, error, setIsLoggedIn, setUserId};
     
     return (
@@ -75,13 +100,15 @@ export const UserContextProvider: React.FC<React.PropsWithChildren<{}>> = ({chil
 };
 
 /**
- * useUserフック
- * @returns {UserContextType} ユーザーコンテキストの値
- * @throws {Error} UserContextProviderの外で使用された場合にエラーをスロー
+ * ユーザーコンテキストを利用するカスタムフック
+ *
+ * @returns UserContextの値
+ * @throws コンテキストプロバイダーの外で使用された場合にエラーをスロー
  */
 export const useUser = () => {
     const context = useContext(UserContext);
     if (!context) {
+        console.error("UserContextProviderの外でuseUserが使用されました");
         throw new Error("useUser must be used within a UserContextProvider");
     }
     return context;

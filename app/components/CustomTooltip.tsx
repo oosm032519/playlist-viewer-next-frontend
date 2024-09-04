@@ -7,7 +7,11 @@ import {NameType, ValueType} from 'recharts/types/component/DefaultTooltipConten
 /**
  * カスタムツールチップコンポーネント
  *
+ * Rechartsのツールチップをカスタマイズして表示します。
+ *
  * @param {TooltipProps<ValueType, NameType>} props - ツールチップのプロパティ
+ * @param {boolean} props.active - ツールチップがアクティブかどうか
+ * @param {Array} props.payload - ツールチップに表示するデータの配列
  * @returns {JSX.Element | null} ツールチップのJSX要素またはnull
  */
 const CustomTooltip: React.FC<TooltipProps<ValueType, NameType>> = ({
@@ -20,6 +24,7 @@ const CustomTooltip: React.FC<TooltipProps<ValueType, NameType>> = ({
         const data = payload[0].payload;
         // データの値をパーセンテージに変換
         const percentage = ((data.value / data.total) * 100).toFixed(2);
+        
         return (
             <div
                 style={{

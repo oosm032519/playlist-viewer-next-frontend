@@ -1,6 +1,8 @@
+// app/components/FavoritePlaylistsTable.tsx
+
 "use client";
 
-import React, {useContext} from 'react';
+import React, {useContext, useMemo} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {
     Table,
@@ -21,7 +23,13 @@ import {
     useReactTable,
 } from '@tanstack/react-table';
 import {FavoriteContext} from '@/app/context/FavoriteContext';
+import DOMPurify from 'dompurify';
+import {useUser} from '@/app/context/UserContext';
+import {handleApiError} from "@/app/lib/api-utils";
 
+/**
+ * お気に入りプレイリストの型定義
+ */
 interface FavoritePlaylist {
     playlistId: string;
     playlistName: string;
@@ -30,14 +38,15 @@ interface FavoritePlaylist {
     addedAt: string;
 }
 
+/**
+ * お気に入りプレイリストをAPIから取得する非同期関数
+ * @returns {Promise<FavoritePlaylist[]>} お気に入りプレイリストの配列
+ * @throws APIリクエストが失敗した場合にエラーをスロー
+ */
 const fetchFavoritePlaylists = async (): Promise<FavoritePlaylist[]> => {
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080'; // 環境変数を使用
-    // セッションストレージからJWTを取得
-    const jwt = sessionStorage.getItem('JWT');
-    const response = await fetch(`${backendUrl}/api/playlists/favorites`, { // バックエンドURLを付加
-        headers: {
-            'Authorization': `Bearer ${jwt}`, // JWTをAuthorizationヘッダーに設定
-        },
+    const response = await fetch('/api/playlists/favorites', {
+        method: 'GET',
+        credentials: 'include',
     });
     
     if (!response.ok) {
@@ -47,66 +56,97 @@ const fetchFavoritePlaylists = async (): Promise<FavoritePlaylist[]> => {
     return response.json();
 };
 
+/**
+ * FavoritePlaylistsTableコンポーネント
+ * お気に入りプレイリストをテーブル形式で表示する
+ */
 const FavoritePlaylistsTable: React.FC = () => {
     const {setSelectedPlaylistId} = usePlaylist();
     const {favorites, addFavorite, removeFavorite} = useContext(FavoriteContext);
-    const {data: playlists, isLoading, error} = useQuery<FavoritePlaylist[], Error>({
+    const {isLoggedIn} = useUser();
+    const {data: playlists, isLoading, error, refetch} = useQuery<FavoritePlaylist[], Error>({
         queryKey: ['favoritePlaylists'],
         queryFn: fetchFavoritePlaylists,
+        enabled: isLoggedIn, // isLoggedInがtrueの場合のみクエリを実行
     });
     
     const [sorting, setSorting] = React.useState<SortingState>([]);
     
+    /**
+     * お気に入りの星アイコンをクリックしたときのハンドラー
+     * @param {FavoritePlaylist} playlist 対象のプレイリスト
+     * @param {boolean} isFavorite 現在のお気に入り状態
+     * @param {React.MouseEvent} event クリックイベント
+     */
     const handleStarClick = async (playlist: FavoritePlaylist, isFavorite: boolean, event: React.MouseEvent) => {
         event.stopPropagation();
-        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080'; // 環境変数を使用
-        // セッションストレージからJWTを取得
-        const jwt = sessionStorage.getItem('JWT');
+        
         try {
-            const response = await fetch(
-                `${backendUrl}/api/playlists/favorite?playlistId=${playlist.playlistId}&playlistName=${encodeURIComponent(
-                    playlist.playlistName
-                )}&totalTracks=${playlist.totalTracks}&playlistOwnerName=${encodeURIComponent(playlist.playlistOwnerName)}`, // バックエンドURLを付加
-                {
-                    method: isFavorite ? 'DELETE' : 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${jwt}`, // JWTをAuthorizationヘッダーに設定
-                    },
-                }
-            );
+            const response = await fetch('/api/playlists/favorite', {
+                method: isFavorite ? 'DELETE' : 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    playlistId: playlist.playlistId,
+                    playlistName: playlist.playlistName,
+                    totalTracks: playlist.totalTracks,
+                    playlistOwnerName: playlist.playlistOwnerName
+                }),
+                credentials: 'include',
+            });
             
-            if (response.ok) {
-                if (isFavorite) {
-                    removeFavorite(playlist.playlistId);
-                } else {
-                    addFavorite(playlist.playlistId, playlist.playlistName, playlist.totalTracks);
-                }
-            } else {
-                console.error('お気に入り登録/解除に失敗しました。');
+            if (!response.ok) {
+                return handleApiError(new Error(`お気に入りプレイリストの${isFavorite ? '削除' : '追加'}に失敗しました: ${response.status}`));
             }
+            
+            if (isFavorite) {
+                removeFavorite(playlist.playlistId);
+            } else {
+                addFavorite(playlist.playlistId, playlist.playlistName, playlist.totalTracks);
+            }
+            refetch();
         } catch (error) {
-            console.error('お気に入り登録/解除中にエラーが発生しました。', error);
+            return handleApiError(error);
         }
     };
     
-    const columns: ColumnDef<FavoritePlaylist>[] = React.useMemo(
+    /**
+     * テーブルのカラム定義
+     */
+    const columns: ColumnDef<FavoritePlaylist>[] = useMemo(
         () => [
             {
                 accessorKey: 'playlistName',
                 header: 'プレイリスト名',
+                cell: ({getValue}) => {
+                    const value = getValue() as string;
+                    return <span>{DOMPurify.sanitize(value)}</span>;
+                },
             },
             {
                 accessorKey: 'playlistOwnerName',
                 header: '作成者',
+                cell: ({getValue}) => {
+                    const value = getValue() as string;
+                    return <span>{DOMPurify.sanitize(value)}</span>;
+                },
             },
             {
                 accessorKey: 'totalTracks',
                 header: '楽曲数',
+                cell: ({getValue}) => {
+                    const value = getValue() as number;
+                    return <span>{value}</span>;
+                },
             },
             {
                 accessorKey: 'addedAt',
                 header: 'お気に入り追加日時',
-                cell: ({getValue}) => format(new Date(getValue() as string), 'yyyy/MM/dd HH:mm'),
+                cell: ({getValue}) => {
+                    const value = getValue() as string;
+                    return <span>{format(new Date(value), 'yyyy/MM/dd HH:mm')}</span>;
+                },
             },
             {
                 id: 'favorite',
@@ -129,6 +169,9 @@ const FavoritePlaylistsTable: React.FC = () => {
         [favorites, handleStarClick]
     );
     
+    /**
+     * React Tableのインスタンスを作成
+     */
     const table = useReactTable({
         data: playlists || [],
         columns,

@@ -1,55 +1,58 @@
 // app/api/session/check/route.ts
 
-import {NextRequest, NextResponse} from 'next/server';
+import {NextRequest} from 'next/server';
+import {getCookies, handleApiError, sendRequest} from '@/app/lib/api-utils';
 
 /**
- * セッションの状態をチェックするためのGETリクエストを処理します。
+ * レスポンスを生成する関数
  *
- * @param {NextRequest} request - クライアントからのリクエストオブジェクト
- * @returns {Promise<NextResponse>} - セッションの状態を含むレスポンスオブジェクト
+ * @param body - レスポンスボディ
+ * @param status - HTTPステータスコード（デフォルトは200）
+ * @returns NextResponseオブジェクト
  */
-export async function GET(request: NextRequest): Promise<NextResponse> {
+function createResponse(body: any, status: number = 200): Response {
+    const response = new Response(JSON.stringify(body), {
+        status: status,
+        headers: {'Content-Type': 'application/json'}
+    });
+    
+    // キャッシュを無効化するためのヘッダーを設定
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    response.headers.set('Surrogate-Control', 'no-store');
+    
+    return response;
+}
+
+/**
+ * セッションをチェックするGETリクエストハンドラー
+ *
+ * @param request - Next.jsのNextRequestオブジェクト
+ * @returns セッションの状態を含むNextResponseオブジェクト
+ */
+export async function GET(request: NextRequest): Promise<Response> {
     console.log(`[${new Date().toISOString()}] GET /api/session/check - リクエスト開始`);
     
     try {
-        // 環境変数からバックエンドのURLを取得
-        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
-        console.log(`[${new Date().toISOString()}] 環境変数からバックエンドURLを取得: ${backendUrl}`);
+        // Cookieを取得
+        const cookies = getCookies(request);
+        console.log(`[${new Date().toISOString()}] 受け取ったCookie: ${cookies}`);
         
-        // リクエストヘッダーから Authorization ヘッダーを取得
-        const authorizationHeader = request.headers.get('Authorization');
-        console.log(`[${new Date().toISOString()}] リクエストヘッダーから Authorization ヘッダーを取得: ${authorizationHeader}`);
+        // バックエンドのセッションチェックAPIを呼び出し
+        const response = await sendRequest('/api/session/check', 'GET', undefined, cookies);
         
-        // Authorization ヘッダーが存在しない場合エラー
-        if (!authorizationHeader) {
-            return NextResponse.json({status: 'error', message: 'Authorization ヘッダーがありません'}, {status: 401});
-        }
-        
-        // セッションチェックのためのAPIリクエストを送信
-        console.log(`[${new Date().toISOString()}] セッションチェックのためのAPIリクエストを送信: ${backendUrl}/api/session/check`);
-        const response = await fetch(`${backendUrl}/api/session/check`, {
-            headers: {
-                'Authorization': authorizationHeader, // Authorization ヘッダーを設定
-            },
-        });
-        
-        // APIレスポンスのステータスコードをログ出力
         console.log(`[${new Date().toISOString()}] APIレスポンスステータス: ${response.status}`);
         
-        // APIレスポンスをJSON形式で取得
+        // レスポンスデータをJSONとして取得
         const data = await response.json();
         console.log(`[${new Date().toISOString()}] APIレスポンスデータを取得: ${JSON.stringify(data)}`);
         
-        // セッションの状態を含むレスポンスを返す
         console.log(`[${new Date().toISOString()}] セッションの状態を含むレスポンスを返す`);
-        return NextResponse.json(data);
+        return createResponse(data);
     } catch (error) {
-        // エラーログをコンソールに出力
-        console.error(`[${new Date().toISOString()}] セッションチェックエラー:`, error);
-        
-        // エラーレスポンスを返す
-        console.log(`[${new Date().toISOString()}] エラーレスポンスを返す`);
-        return NextResponse.json({status: 'error', message: 'セッションチェックに失敗しました'}, {status: 500});
+        // エラー発生時の処理
+        return handleApiError(error);
     } finally {
         console.log(`[${new Date().toISOString()}] GET /api/session/check - リクエスト終了`);
     }

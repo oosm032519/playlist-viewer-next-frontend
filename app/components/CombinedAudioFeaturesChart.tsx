@@ -14,12 +14,32 @@ import {AudioFeaturesChartProps} from '../types/audioFeaturesTypes';
 import {prepareAudioFeaturesData} from '../lib/audioFeaturesUtils';
 import {AudioFeatures} from '../types/audioFeaturesTypes';
 
+/**
+ * CombinedAudioFeaturesChartコンポーネントのプロパティを定義します。
+ */
 interface CombinedAudioFeaturesChartProps {
+    /**
+     * トラックのオーディオフィーチャー情報。オプションで指定可能。
+     */
     track?: AudioFeaturesChartProps['track'];
+    
+    /**
+     * 平均オーディオフィーチャー情報。
+     */
     averageAudioFeatures: AudioFeatures;
 }
 
+/**
+ * CombinedAudioFeaturesChartコンポーネント
+ *
+ * このコンポーネントは、与えられたトラックと平均のオーディオフィーチャーを
+ * レーダーチャートとして表示します。
+ *
+ * @param {CombinedAudioFeaturesChartProps} props - コンポーネントのプロパティ
+ * @returns {JSX.Element} レーダーチャートを描画するReactコンポーネント
+ */
 const CombinedAudioFeaturesChart: React.FC<CombinedAudioFeaturesChartProps> = ({track, averageAudioFeatures}) => {
+    // 平均オーディオフィーチャーのデータを準備
     const averageData = [
         {feature: 'Acousticness', value: averageAudioFeatures.acousticness},
         {feature: 'Danceability', value: averageAudioFeatures.danceability},
@@ -29,8 +49,10 @@ const CombinedAudioFeaturesChart: React.FC<CombinedAudioFeaturesChartProps> = ({
         {feature: 'Valence', value: averageAudioFeatures.valence},
     ];
     
+    // トラックのオーディオフィーチャーのデータを準備
     const trackData = track ? prepareAudioFeaturesData(track.audioFeatures) : [];
     
+    // 平均データとトラックデータを結合
     const combinedData = averageData.map((item, index) => ({
         ...item,
         trackValue: trackData[index]?.value,

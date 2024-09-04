@@ -1,27 +1,42 @@
 // components/ErrorAlert.tsx
 
 import {Alert, AlertDescription, AlertTitle} from "./ui/alert";
+import DOMPurify from 'dompurify';
 
 /**
- * ErrorAlertProps インターフェース
+ * `ErrorAlert`コンポーネントのpropsを定義
  * @property {string} error - 表示するエラーメッセージ
+ * @property {string} type - エラーの種類 (例: "認証エラー", "ネットワークエラー")
+ * @property {string} context - エラーが発生したコンテキスト情報 (例: "プレイリストの取得")
  */
 interface ErrorAlertProps {
     error: string;
+    type?: string;
+    context?: string;
 }
 
 /**
- * ErrorAlert コンポーネント
+ * エラーメッセージを表示するためのアラートを提供する
+ *
  * @param {ErrorAlertProps} props - コンポーネントのプロパティ
- * @returns {JSX.Element} エラーメッセージを表示するアラートコンポーネント
+ * @returns {JSX.Element} エラーメッセージを含むアラートコンポーネント
+ *
+ * @example
+ * <ErrorAlert error="An unexpected error occurred." type="ネットワークエラー" context="プレイリストの取得" />
  */
-const ErrorAlert: React.FC<ErrorAlertProps> = ({error}: ErrorAlertProps): JSX.Element => (
-    <Alert variant="destructive">
-        {/* アラートのタイトル */}
-        <AlertTitle>Error</AlertTitle>
-        {/* アラートの詳細説明としてエラーメッセージを表示 */}
-        <AlertDescription>{error}</AlertDescription>
-    </Alert>
-);
+const ErrorAlert: React.FC<ErrorAlertProps> = ({error, type, context}: ErrorAlertProps): JSX.Element => {
+    // サニタイズされたエラーメッセージを作成
+    const sanitizedError = DOMPurify.sanitize(error, {ALLOWED_TAGS: []});
+    
+    return (
+        <Alert variant="destructive">
+            <AlertTitle>Error: {type}</AlertTitle>
+            <AlertDescription>
+                {context && <p>{context} でエラーが発生しました。</p>}
+                <p>{sanitizedError}</p>
+            </AlertDescription>
+        </Alert>
+    );
+};
 
 export default ErrorAlert;

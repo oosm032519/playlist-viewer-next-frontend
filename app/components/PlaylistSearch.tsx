@@ -13,6 +13,7 @@ import {
     createColumnHelper,
 } from "@tanstack/react-table";
 import {useQuery} from "@tanstack/react-query";
+import DOMPurify from 'dompurify';
 
 import {Button} from "./ui/button";
 import {Input} from "./ui/input";
@@ -20,7 +21,9 @@ import {Form, FormControl, FormField, FormItem, FormMessage} from "./ui/form";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "./ui/table";
 import {Card, CardContent, CardHeader, CardTitle} from "./ui/card";
 
-// プレイリストのインターフェース定義
+/**
+ * プレイリストのインターフェース
+ */
 interface Playlist {
     id: string;
     name: string;
@@ -28,12 +31,16 @@ interface Playlist {
     images: { url: string }[];
 }
 
-// 検索フォームの入力データのインターフェース定義
+/**
+ * 検索フォームの入力インターフェース
+ */
 interface SearchFormInputs {
     query: string;
 }
 
-// バリデーションスキーマの定義
+/**
+ * 検索フォームのバリデーションスキーマ
+ */
 const schema = yup
     .object({
         query: yup
@@ -47,9 +54,10 @@ const schema = yup
  * プレイリストを検索する非同期関数
  * @param query - 検索クエリ
  * @returns プレイリストの配列
+ * @throws ネットワークエラー
  */
 const fetchPlaylists = async (query: string): Promise<Playlist[]> => {
-    const response = await fetch(`/api/playlists/search?query=${query}`);
+    const response = await fetch(`/api/playlists/search?query=${encodeURIComponent(query)}`);
     if (!response.ok) {
         throw new Error('ネットワークの応答が正しくありません');
     }
@@ -58,25 +66,28 @@ const fetchPlaylists = async (query: string): Promise<Playlist[]> => {
 
 /**
  * プレイリスト検索コンポーネント
- * @returns プレイリスト検索フォームと結果表示テーブル
+ * @returns JSX.Element
  */
 export default function PlaylistSearch() {
-    // フォームの設定
+    // フォームのセットアップ
     const form = useForm<SearchFormInputs>({
         resolver: yupResolver(schema),
         defaultValues: {query: ''},
     });
     
-    // プレイリストデータの取得と状態管理
+    // プレイリストデータの取得
     const {data: playlists = [], isLoading, refetch} = useQuery({
         queryKey: ['playlists', form.watch('query')],
         queryFn: () => fetchPlaylists(form.getValues('query')),
-        enabled: false, // クエリを手動でトリガーするために初期状態では無効化
+        enabled: false, // 手動でのフェッチを有効にする
     });
     
-    // フォーム送信時の処理
+    /**
+     * フォーム送信時の処理
+     * @param data - フォームデータ
+     */
     const onSubmit = async (data: SearchFormInputs) => {
-        refetch();
+        refetch(); // データの再取得
     };
     
     // テーブルのカラム設定
@@ -86,22 +97,29 @@ export default function PlaylistSearch() {
         () => [
             columnHelper.accessor("images", {
                 header: "Image",
-                cell: (info) => (
-                    <img
-                        src={info.getValue()[0]?.url}
-                        alt="Playlist"
-                        className="w-12 h-12 object-cover rounded-full"
-                    />
-                ),
+                cell: (info) => {
+                    const imageUrl = info.getValue()[0]?.url;
+                    return imageUrl ? (
+                        <img
+                            src={DOMPurify.sanitize(imageUrl, {ALLOWED_TAGS: [], ALLOWED_ATTR: []})}
+                            alt="Playlist"
+                            className="w-12 h-12 object-cover rounded-full"
+                        />
+                    ) : null;
+                },
             }),
             columnHelper.accessor("name", {
                 header: "Name",
+                cell: (info) => {
+                    const sanitizedName = DOMPurify.sanitize(info.getValue());
+                    return <span>{sanitizedName}</span>;
+                },
             }),
         ],
         []
     );
     
-    // テーブルの設定
+    // テーブルのセットアップ
     const table = useReactTable({
         data: playlists,
         columns,

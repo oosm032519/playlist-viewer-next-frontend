@@ -1,52 +1,35 @@
 // app/api/playlists/add-track/route.ts
 
 import {NextRequest} from "next/server";
+import {withAuth} from '@/app/middleware/auth';
+import {getCookies, handleApiError, sendRequest} from '@/app/lib/api-utils';
 
 /**
- * POSTリクエストを処理する非同期関数
- * @param {NextRequest} request - クライアントからのリクエストオブジェクト
- * @returns {Promise<Response>} - バックエンドからのレスポンスをクライアントに返す
+ * プレイリストにトラックを追加するためのAPIエンドポイント。
+ *
+ * @param request - クライアントからのHTTPリクエスト
+ * @returns プレイリストにトラックを追加した結果を含むHTTPレスポンス
  */
-export async function POST(request: NextRequest): Promise<Response> {
+export const POST = withAuth(async (request: NextRequest): Promise<Response> => {
     console.log(`[${new Date().toISOString()}] POST リクエスト開始: /api/playlists/add-track`);
     try {
-        // リクエストのJSONボディからplaylistIdとtrackIdを抽出
+        // リクエストボディからplaylistIdとtrackIdを取得
         const {playlistId, trackId} = await request.json();
         console.log(`[${new Date().toISOString()}] リクエストボディ解析完了: playlistId=${playlistId}, trackId=${trackId}`);
         
-        // バックエンドAPIのエンドポイントURLを環境変数から取得、デフォルトはローカルホスト
-        const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
-        console.log(`[${new Date().toISOString()}] バックエンドURL: ${backendUrl}`);
+        // Cookieを取得
+        const cookies = getCookies(request);
         
-        // AuthorizationヘッダーからJWTを取得
-        const authorizationHeader = request.headers.get('Authorization');
-        const jwt = authorizationHeader ? authorizationHeader.split(' ')[1] : null;
-        console.log(`[${new Date().toISOString()}] AuthorizationヘッダーからJWTを取得: ${jwt}`);
-        
-        if (!jwt) {
-            return new Response(JSON.stringify({error: "JWTが見つかりません"}), {
-                status: 401,
-                headers: {'Content-Type': 'application/json'}
-            });
-        }
-        
-        // バックエンドAPIにトラックをプレイリストに追加するためのリクエストを送信
-        console.log(`[${new Date().toISOString()}] バックエンドAPIリクエスト開始: ${backendUrl}/api/playlist/add-track`);
-        const response = await fetch(`${backendUrl}/api/playlist/add-track`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${jwt}`, // JWTをAuthorizationヘッダーに設定
-            },
-            body: JSON.stringify({playlistId, trackId}),
-        });
+        // バックエンドAPIにPOSTリクエストを送信
+        console.log(`[${new Date().toISOString()}] バックエンドAPIリクエスト開始: /api/playlist/add-track`);
+        const response = await sendRequest('/api/playlist/add-track', 'POST', {playlistId, trackId}, cookies);
         console.log(`[${new Date().toISOString()}] バックエンドAPIレスポンス受信: ステータス=${response.status}`);
         
-        // バックエンドからのレスポンスをJSON形式で取得
+        // 成功した場合のレスポンスデータを取得
         const data = await response.json();
         console.log(`[${new Date().toISOString()}] バックエンドAPIレスポンス内容:`, JSON.stringify(data));
         
-        // クライアントにレスポンスを返す
+        // クライアントへのレスポンスを送信
         console.log(`[${new Date().toISOString()}] クライアントへのレスポンス送信: ステータス=${response.status}`);
         return new Response(JSON.stringify(data), {
             status: response.status,
@@ -54,22 +37,8 @@ export async function POST(request: NextRequest): Promise<Response> {
         });
     } catch (error) {
         // エラーハンドリング
-        console.error(`[${new Date().toISOString()}] エラー発生:`, error);
-        if (error instanceof Error) {
-            console.error(`[${new Date().toISOString()}] エラー詳細: ${error.message}`);
-            console.error(`[${new Date().toISOString()}] スタックトレース:`, error.stack);
-            return new Response(
-                JSON.stringify({error: "プレイリストへのトラック追加に失敗しました", details: error.message}),
-                {status: 500, headers: {'Content-Type': 'application/json'}}
-            );
-        } else {
-            console.error(`[${new Date().toISOString()}] 不明なエラー:`, error);
-            return new Response(
-                JSON.stringify({error: "プレイリストへのトラック追加に失敗しました", details: "不明なエラー"}),
-                {status: 500, headers: {'Content-Type': 'application/json'}}
-            );
-        }
+        return handleApiError(error);
     } finally {
         console.log(`[${new Date().toISOString()}] POST リクエスト終了: /api/playlists/add-track`);
     }
-}
+});

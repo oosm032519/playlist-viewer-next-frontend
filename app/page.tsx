@@ -35,7 +35,7 @@ function HomeContent() {
             window.history.replaceState({}, document.title, window.location.pathname);
             document.title = 'Playlist Viewer';
         }
-    }, [window.location.search]);
+    }, []);
     
     const handlePlaylistClick = async (playlistId: string): Promise<void> => {
         setSelectedPlaylistId(playlistId);

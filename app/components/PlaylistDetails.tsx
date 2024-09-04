@@ -2,28 +2,40 @@
 
 "use client";
 
-import React, {useContext, useState, useEffect} from "react";
+import React, {useContext, useState, useEffect, useCallback} from "react";
 import {Track} from "../types/track";
 import {PlaylistDetailsTable} from "./PlaylistDetailsTable";
 import GenreChart from "./GenreChart";
 import {RecommendationsTable} from "./RecommendationsTable";
 import {AudioFeatures} from "../types/audioFeaturesTypes";
 import {FavoriteContext} from "../context/FavoriteContext";
+import DOMPurify from 'dompurify';
+import {useUser} from '@/app/context/UserContext'
 
+/**
+ * プレイリストの詳細情報を表示するためのコンポーネントのプロパティ
+ */
 interface PlaylistDetailsProps {
-    tracks: Track[];
-    genreCounts: { [genre: string]: number };
-    recommendations: Track[];
-    playlistName: string | null;
-    ownerId: string;
-    userId: string;
-    playlistId: string;
-    totalDuration: string;
-    averageAudioFeatures: AudioFeatures;
-    totalTracks: number;
-    ownerName: string;
+    tracks: Track[]; // プレイリスト内のトラックリスト
+    genreCounts: { [genre: string]: number }; // ジャンルごとのトラック数
+    recommendations: Track[]; // 推奨トラックリスト
+    playlistName: string | null; // プレイリスト名
+    ownerId: string; // プレイリスト所有者のID
+    userId: string; // 現在のユーザーのID
+    playlistId: string; // プレイリストのID
+    totalDuration: string; // プレイリストの総再生時間
+    averageAudioFeatures: AudioFeatures; // 平均的なオーディオ特徴量
+    totalTracks: number; // プレイリスト内のトラック数
+    ownerName: string; // プレイリスト所有者の名前
 }
 
+/**
+ * ジャンル分布を表示するためのコンポーネント
+ *
+ * @param genreCounts ジャンルごとのトラック数
+ * @param playlistName プレイリスト名
+ * @returns ジャンル分布チャート
+ */
 const GenreDistributionChart: React.FC<{
     genreCounts: { [genre: string]: number };
     playlistName: string | null;
@@ -39,6 +51,12 @@ const GenreDistributionChart: React.FC<{
     return null;
 };
 
+/**
+ * プレイリストの詳細を表示するコンポーネント
+ *
+ * @param props プレイリストの詳細情報
+ * @returns プレイリスト詳細ビュー
+ */
 const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                                                              tracks,
                                                              genreCounts = {},
@@ -53,26 +71,41 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                                                              ownerName,
                                                          }) => {
     const {favorites, addFavorite, removeFavorite} = useContext(FavoriteContext);
+    const {isLoggedIn} = useUser();
     const [isFavorite, setIsFavorite] = useState(false);
     
-    useEffect(() => {
+    /**
+     * お気に入りの状態をチェックする関数
+     */
+    const checkFavoriteStatus = useCallback(() => {
         setIsFavorite(playlistId in favorites);
     }, [favorites, playlistId]);
     
+    useEffect(() => {
+        if (isLoggedIn) {
+            checkFavoriteStatus();
+        }
+    }, [isLoggedIn, checkFavoriteStatus]);
+    
+    /**
+     * お気に入りの追加または削除を行うハンドラー
+     */
     const handleStarClick = async () => {
-        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080'; // 環境変数を使用
-        // セッションストレージからJWTを取得
-        const jwt = sessionStorage.getItem('JWT');
         try {
             const response = await fetch(
-                `${backendUrl}/api/playlists/favorite?playlistId=${playlistId}&playlistName=${encodeURIComponent(
-                    playlistName || ''
-                )}&totalTracks=${totalTracks}&playlistOwnerName=${encodeURIComponent(ownerName || '')}`, // バックエンドURLを付加
+                `/api/playlists/favorite`,
                 {
                     method: isFavorite ? 'DELETE' : 'POST',
                     headers: {
-                        'Authorization': `Bearer ${jwt}`, // JWTをAuthorizationヘッダーに設定
+                        'Content-Type': 'application/json',
                     },
+                    body: JSON.stringify({
+                        playlistId,
+                        playlistName: playlistName || '',
+                        totalTracks,
+                        playlistOwnerName: ownerName || '',
+                    }),
+                    credentials: 'include',
                 }
             );
             
@@ -82,6 +115,7 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                 } else {
                     addFavorite(playlistId, playlistName || '', totalTracks);
                 }
+                setIsFavorite(!isFavorite);
             } else {
                 console.error('お気に入り登録/解除に失敗しました。');
             }
@@ -90,17 +124,23 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
         }
     };
     
+    // DOMPurifyを使用して安全な文字列を作成
+    const sanitizedPlaylistName = DOMPurify.sanitize(playlistName || '');
+    const sanitizedOwnerName = DOMPurify.sanitize(ownerName || '');
+    
     return (
         <>
             {playlistName && (
                 <div className="text-center my-4 flex items-center justify-center">
-                    <h1 className="text-2xl font-bold mr-2">{playlistName} by {ownerName}</h1>
-                    <button onClick={handleStarClick} className="focus:outline-none">
-                        {isFavorite ? (
-                            <span className="text-yellow-400 text-2xl">★</span>
-                        ) : (
-                            <span className="text-gray-400 text-2xl">☆</span>
-                        )}
+                    <h1 className="text-2xl font-bold mr-2">
+                        {sanitizedPlaylistName}
+                    </h1>
+                    <span>by </span>
+                    <span>{sanitizedOwnerName}</span>
+                    <button onClick={handleStarClick} className="focus:outline-none ml-2">
+                        <span className={`text-2xl ${isFavorite ? 'text-yellow-400' : 'text-gray-400'}`}>
+                            {isFavorite ? '★' : '☆'}
+                        </span>
                     </button>
                 </div>
             )}

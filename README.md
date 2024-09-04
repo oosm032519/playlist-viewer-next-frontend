@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Playlist Viewer Next.js フロントエンド
 
-## Getting Started
+## 概要
 
-First, run the development server:
+このプロジェクトは、Spotify のプレイリストを閲覧、分析、操作するための Next.js フロントエンドアプリケーションです。ユーザーは
+Spotify アカウントでログインし、プレイリストを検索、詳細情報の表示、推奨トラックの取得、プレイリストへのトラックの追加・削除、新しいプレイリストの作成、お気に入りのプレイリストの管理などができます。
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+**[デモサイト](https://playlist-viewer-next-frontend.vercel.app)**
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 主な機能
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+* **Spotify ログイン**: Spotify OAuth2 を使用した安全なログイン
+* **プレイリスト操作**:
+    * プレイリストの検索、閲覧
+    * プレイリストの詳細情報の取得 (トラックリスト、ジャンル分布、オーディオ特徴量)
+    * プレイリストへのトラックの追加・削除
+    * 新しいプレイリストの作成
+* **プレイリスト分析**:
+    * ジャンル分布の表示 (円グラフ)
+    * Audio Features の分析 (レーダーチャート、danceability, energy, valence など)
+    * 推奨トラックの取得とプレビュー
+* **お気に入りのプレイリスト管理**:
+    * プレイリストをお気に入りに登録
+    * お気に入りのプレイリスト一覧表示
+* **フォロー中のプレイリスト表示**:
+    * Spotify でフォロー中のプレイリスト一覧表示
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+## 技術スタック
 
-## Learn More
+* **フレームワーク**: Next.js 14 (App Router)
+* **UI ライブラリ**: React
+* **データフェッチ**: TanStack Query
+* **スタイリング**: Tailwind CSS
+* **チャート**: Recharts
+* **フォーム**: React Hook Form, Yup
+* **セキュリティ**: DOMPurify
+* **その他**: TypeScript
 
-To learn more about Next.js, take a look at the following resources:
+## 開発環境のセットアップ
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **前提条件**:
+    * Node.js 16 以上
+    * npm または yarn
+2. **リポジトリのクローン**:
+    ```bash
+    git clone https://github.com/oosm032519/playlist-viewer-next-frontend.git
+    ```
+3. **環境変数の設定**:
+    * `.env.local` ファイルを作成します。
+    * `.env.local` に以下の環境変数を設定します。
+        * `NEXT_PUBLIC_BACKEND_URL`: バックエンドアプリケーションの URL (例: `http://localhost:8080`)
+4. **依存関係のインストール**:
+    ```bash
+    npm install
+    # または
+    yarn install
+    ```
+5. **開発サーバーの起動**:
+    ```bash
+    npm run dev
+    # または
+    yarn dev
+    ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## ビルドとデプロイ
 
-## Deploy on Vercel
+1. **ビルド**:
+    ```bash
+    npm run build
+    # または
+    yarn build
+    ```
+2. **デプロイ**:
+   Vercel, Netlify などのサービスを利用してデプロイできます。
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## ライセンス
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+MIT License
+
+## 免責事項
+
+このプロジェクトは、Spotify とは一切関係ありません。

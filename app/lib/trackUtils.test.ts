@@ -7,7 +7,6 @@ import {expect} from '@jest/globals';
 fetchMock.enableMocks();
 
 describe('trackUtils', () => {
-    // cn関数のテストは変更なし
     
     // addTrackToPlaylistのテスト
     describe('addTrackToPlaylist function', () => {
@@ -15,11 +14,21 @@ describe('trackUtils', () => {
             fetchMock.resetMocks();
             console.log = jest.fn();
             console.error = jest.fn();
+            sessionStorage.clear();
         });
         
-        // 正常系のテストは変更なし
+        it('正常系: 曲が追加された場合、trueを返す', async () => {
+            sessionStorage.setItem('JWT', 'dummy_jwt');
+            fetchMock.mockResponseOnce(JSON.stringify({success: true}));
+            
+            const result = await addTrackToPlaylist('playlist123', 'track456');
+            
+            expect(result).toBe(true);
+            expect(console.log).toHaveBeenCalledWith("[addTrackToPlaylist] 曲が正常に追加されました");
+        });
         
         it('APIエラーの場合、falseを返す', async () => {
+            sessionStorage.setItem('JWT', 'dummy_jwt');
             fetchMock.mockResponseOnce('Error message', {status: 400});
             
             const result = await addTrackToPlaylist('playlist123', 'track456');
@@ -29,13 +38,14 @@ describe('trackUtils', () => {
         });
         
         it('ネットワークエラーの場合、falseを返す', async () => {
+            sessionStorage.setItem('JWT', 'dummy_jwt');
             fetchMock.mockRejectOnce(new Error('Network error'));
             
             const result = await addTrackToPlaylist('playlist123', 'track456');
             
             expect(result).toBe(false);
             expect(console.error).toHaveBeenCalledWith(
-                '[addTrackToPlaylist] 予期せぬエラーが発生しました:',
+                expect.stringContaining('[addTrackToPlaylist] 予期せぬエラーが発生しました:'),
                 expect.any(Error)
             );
         });
@@ -47,11 +57,21 @@ describe('trackUtils', () => {
             fetchMock.resetMocks();
             console.log = jest.fn();
             console.error = jest.fn();
+            sessionStorage.clear();
         });
         
-        // 正常系のテストは変更なし
+        it('正常系: 曲が削除された場合、trueを返す', async () => {
+            sessionStorage.setItem('JWT', 'dummy_jwt');
+            fetchMock.mockResponseOnce(JSON.stringify({success: true}));
+            
+            const result = await removeTrackFromPlaylist('playlist123', 'track456');
+            
+            expect(result).toBe(true);
+            expect(console.log).toHaveBeenCalledWith("[removeTrackFromPlaylist] 曲が正常に削除されました");
+        });
         
         it('APIエラーの場合、falseを返す', async () => {
+            sessionStorage.setItem('JWT', 'dummy_jwt');
             fetchMock.mockResponseOnce('Error message', {status: 400});
             
             const result = await removeTrackFromPlaylist('playlist123', 'track456');
@@ -61,13 +81,14 @@ describe('trackUtils', () => {
         });
         
         it('ネットワークエラーの場合、falseを返す', async () => {
+            sessionStorage.setItem('JWT', 'dummy_jwt');
             fetchMock.mockRejectOnce(new Error('Network error'));
             
             const result = await removeTrackFromPlaylist('playlist123', 'track456');
             
             expect(result).toBe(false);
             expect(console.error).toHaveBeenCalledWith(
-                '[removeTrackFromPlaylist] 予期せぬエラーが発生しました:',
+                expect.stringContaining('[removeTrackFromPlaylist] 予期せぬエラーが発生しました:'),
                 expect.any(Error)
             );
         });

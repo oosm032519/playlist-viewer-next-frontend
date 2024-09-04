@@ -3,21 +3,25 @@
 import {Row} from '@tanstack/react-table';
 import {Track} from '../types/track';
 
+// AudioFeatureはTrackのaudioFeaturesプロパティのキーの型を表す
 type AudioFeature = keyof NonNullable<Track['audioFeatures']>;
 
 /**
- * @function audioFeatureSort
- * @description 指定された音声特徴量に基づいて、Trackの行をソートする関数
+ * 指定された音声特徴量に基づいて、Trackの行をソートする関数
+ *
  * @param {Row<Track>} a - ソート対象の最初の行
  * @param {Row<Track>} b - ソート対象の2番目の行
  * @param {AudioFeature} accessorKey - ソートに使用する音声特徴量のキー
  * @returns {number} ソート順を示す数値。負の値はaがbより小さいことを示し、正の値はaがbより大きいことを示す。
+ *
+ * @example
+ * const sortedRows = rows.sort((a, b) => audioFeatureSort(a, b, 'danceability'));
  */
 export const audioFeatureSort = (
     a: Row<Track>,
     b: Row<Track>,
     accessorKey: AudioFeature
-) => {
+): number => {
     // a行とb行の音声特徴量の値を取得
     const aValue = a.original.audioFeatures?.[accessorKey];
     const bValue = b.original.audioFeatures?.[accessorKey];

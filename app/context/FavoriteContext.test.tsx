@@ -1,140 +1,155 @@
-// app/context/FavoriteContext.test.tsx
-
 import React from 'react';
-import {render, screen, act, waitFor} from '@testing-library/react';
+import {render, screen, waitFor, act} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {FavoriteProvider, FavoriteContext} from '@/app/context/FavoriteContext';
-import {axe, toHaveNoViolations} from 'jest-axe';
-import {expect} from '@jest/globals';
+import {FavoriteProvider, FavoriteContext} from './FavoriteContext';
+import {UserContextProvider} from './UserContext';
+import {expect} from '@jest/globals'
 
-expect.extend(toHaveNoViolations);
+// モックの作成
+jest.mock('./UserContext', () => ({
+    ...jest.requireActual('./UserContext'),
+    useUser: jest.fn(() => ({
+        isLoggedIn: true,
+        userId: 'testUser',
+        error: null,
+        setIsLoggedIn: jest.fn(),
+        setUserId: jest.fn(),
+    })),
+}));
 
-// モックの設定
-global.fetch = jest.fn();
+// フェッチのモック
+const createMockResponse = (body: any): Response => ({
+    ok: true,
+    json: () => Promise.resolve(body),
+    headers: new Headers(),
+    redirected: false,
+    status: 200,
+    statusText: "OK",
+    type: 'default' as ResponseType,
+    url: '',
+    body: null,
+    bodyUsed: false,
+    text: () => Promise.resolve(''),
+} as unknown as Response);
 
-// テストコンポーネントの定義
-const TestComponent: React.FC = () => {
-    const {favorites, addFavorite, removeFavorite, fetchFavorites} = React.useContext(FavoriteContext);
+global.fetch = jest.fn(() => Promise.resolve(createMockResponse([])));
+
+describe('FavoriteProvider', () => {
+    // テスト前の準備
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
     
-    return (
-        <div>
-            <button onClick={() => addFavorite('1', 'Test Playlist', 10)}>Add Favorite</button>
-            <button onClick={() => removeFavorite('1')}>Remove Favorite</button>
-            <button onClick={() => fetchFavorites()}>Fetch Favorites</button>
-            <ul>
-                {Object.entries(favorites).map(([id, {playlistName}]) => (
-                    <li key={id}>{playlistName}</li>
-                ))}
-            </ul>
-        </div>
-    );
-};
-
-describe('FavoriteContext', () => {
-    describe('FavoriteContext', () => {
-        beforeEach(() => {
-            jest.clearAllMocks();
-        });
-        
-        it('初期状態でお気に入りが空であること', () => {
+    // 初期状態のテスト
+    it('should initialize with empty favorites', async () => {
+        await act(async () => {
             render(
-                <FavoriteProvider>
-                    <TestComponent/>
-                </FavoriteProvider>
+                <UserContextProvider>
+                    <FavoriteProvider>
+                        <FavoriteContext.Consumer>
+                            {(value) => <div data-testid="favorites">{JSON.stringify(value.favorites)}</div>}
+                        </FavoriteContext.Consumer>
+                    </FavoriteProvider>
+                </UserContextProvider>
             );
-            
-            expect(screen.queryByRole('listitem')).not.toBeInTheDocument();
         });
         
-        it('お気に入りを追加できること', async () => {
+        expect(screen.getByTestId('favorites')).toHaveTextContent('{}');
+    });
+    
+    // お気に入り追加のテスト
+    it('should add a favorite', async () => {
+        await act(async () => {
             render(
-                <FavoriteProvider>
-                    <TestComponent/>
-                </FavoriteProvider>
+                <UserContextProvider>
+                    <FavoriteProvider>
+                        <FavoriteContext.Consumer>
+                            {({favorites, addFavorite}) => (
+                                <>
+                                    <div data-testid="favorites">{JSON.stringify(favorites)}</div>
+                                    <button onClick={() => addFavorite('1', 'Test Playlist', 10)}>Add Favorite</button>
+                                </>
+                            )}
+                        </FavoriteContext.Consumer>
+                    </FavoriteProvider>
+                </UserContextProvider>
             );
-            
-            await act(async () => {
-                await userEvent.click(screen.getByText('Add Favorite'));
-            });
-            
-            expect(screen.getByText('Test Playlist')).toBeInTheDocument();
         });
         
-        it('お気に入りを削除できること', async () => {
-            render(
-                <FavoriteProvider>
-                    <TestComponent/>
-                </FavoriteProvider>
-            );
-            
-            await act(async () => {
-                await userEvent.click(screen.getByText('Add Favorite'));
-            });
-            
-            expect(screen.getByText('Test Playlist')).toBeInTheDocument();
-            
-            await act(async () => {
-                await userEvent.click(screen.getByText('Remove Favorite'));
-            });
-            
-            expect(screen.queryByText('Test Playlist')).not.toBeInTheDocument();
+        await act(async () => {
+            await userEvent.click(screen.getByText('Add Favorite'));
         });
         
-        it('お気に入りを取得できること', async () => {
-            const mockFetchResponse = {
-                ok: true,
-                json: jest.fn().mockResolvedValue([
-                    {
-                        playlistId: '1',
-                        playlistName: 'Fetched Playlist',
-                        totalTracks: 5,
-                        addedAt: '2024-07-23T00:00:00.000Z'
-                    }
-                ])
-            };
-            (global.fetch as jest.Mock).mockResolvedValue(mockFetchResponse);
-            
-            render(
-                <FavoriteProvider>
-                    <TestComponent/>
-                </FavoriteProvider>
-            );
-            
-            await waitFor(() => {
-                expect(screen.getByText('Fetched Playlist')).toBeInTheDocument();
-            });
-            
-            expect(global.fetch).toHaveBeenCalledWith('/api/playlists/favorite', {credentials: 'include'});
-        });
-        
-        it('お気に入り取得時にエラーが発生した場合、コンソールにエラーが出力されること', async () => {
-            const mockFetchResponse = {
-                ok: false,
-            };
-            (global.fetch as jest.Mock).mockResolvedValue(mockFetchResponse);
-            console.error = jest.fn();
-            
-            render(
-                <FavoriteProvider>
-                    <TestComponent/>
-                </FavoriteProvider>
-            );
-            
-            await waitFor(() => {
-                expect(console.error).toHaveBeenCalledWith('お気に入り情報の取得に失敗しました。');
-            });
-        });
-        
-        it('アクセシビリティ違反がないこと', async () => {
-            const {container} = render(
-                <FavoriteProvider>
-                    <TestComponent/>
-                </FavoriteProvider>
-            );
-            
-            const results = await axe(container);
-            expect(results).toHaveNoViolations();
+        await waitFor(() => {
+            const favoritesElement = screen.getByTestId('favorites');
+            expect(favoritesElement).toHaveTextContent('"1":{"playlistName":"Test Playlist","totalTracks":10');
         });
     });
     
+    // お気に入り削除のテスト
+    it('should remove a favorite', async () => {
+        global.fetch = jest.fn(() => Promise.resolve(createMockResponse([{
+            playlistId: '1',
+            playlistName: 'Test Playlist',
+            totalTracks: 10,
+            addedAt: '2023-01-01T00:00:00.000Z'
+        }])));
+        
+        await act(async () => {
+            render(
+                <UserContextProvider>
+                    <FavoriteProvider>
+                        <FavoriteContext.Consumer>
+                            {({favorites, removeFavorite}) => (
+                                <>
+                                    <div data-testid="favorites">{JSON.stringify(favorites)}</div>
+                                    <button onClick={() => removeFavorite('1')}>Remove Favorite</button>
+                                </>
+                            )}
+                        </FavoriteContext.Consumer>
+                    </FavoriteProvider>
+                </UserContextProvider>
+            );
+        });
+        
+        await waitFor(() => {
+            expect(screen.getByTestId('favorites')).toHaveTextContent('"1":');
+        });
+        
+        await act(async () => {
+            await userEvent.click(screen.getByText('Remove Favorite'));
+        });
+        
+        await waitFor(() => {
+            expect(screen.getByTestId('favorites')).toHaveTextContent('{}');
+        });
+    });
+    
+    // お気に入りフェッチのテスト
+    it('should fetch favorites when logged in', async () => {
+        global.fetch = jest.fn(() => Promise.resolve(createMockResponse([{
+            playlistId: '1',
+            playlistName: 'Test Playlist',
+            totalTracks: 10,
+            addedAt: '2023-01-01T00:00:00.000Z'
+        }])));
+        
+        await act(async () => {
+            render(
+                <UserContextProvider>
+                    <FavoriteProvider>
+                        <FavoriteContext.Consumer>
+                            {({favorites}) => <div data-testid="favorites">{JSON.stringify(favorites)}</div>}
+                        </FavoriteContext.Consumer>
+                    </FavoriteProvider>
+                </UserContextProvider>
+            );
+        });
+        
+        await waitFor(() => {
+            expect(screen.getByTestId('favorites')).toHaveTextContent('"1":{"playlistName":"Test Playlist","totalTracks":10');
+        });
+        
+        expect(global.fetch).toHaveBeenCalledWith('/api/playlists/favorites', {credentials: 'include'});
+    });
 });

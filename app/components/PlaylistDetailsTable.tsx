@@ -3,25 +3,47 @@
 "use client";
 
 import React, {useState} from "react";
-import {useReactTable, getCoreRowModel, getSortedRowModel, flexRender, SortingState} from "@tanstack/react-table";
+import {
+    useReactTable,
+    getCoreRowModel,
+    getSortedRowModel,
+    flexRender,
+    SortingState,
+} from "@tanstack/react-table";
 import {Track} from "../types/track";
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "./ui/table";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "./ui/table";
 import {ArrowUpDown} from "lucide-react";
 import {playlistDetailsTableColumns} from "../lib/PlaylistDetailsTableColumns";
-import {AudioFeatures} from '@/app/types/audioFeaturesTypes'
-import CombinedAudioFeaturesChart from './CombinedAudioFeaturesChart';
+import {AudioFeatures} from "@/app/types/audioFeaturesTypes";
+import CombinedAudioFeaturesChart from "./CombinedAudioFeaturesChart";
 
+/**
+ * プレイリストの詳細テーブルを表示するためのプロパティ
+ */
 interface PlaylistDetailsTableProps {
+    /** トラックの配列 */
     tracks: Track[];
+    /** 平均的なオーディオフィーチャー */
     averageAudioFeatures: AudioFeatures;
 }
 
 /**
  * プレイリストの詳細テーブルを表示するコンポーネント
- * @param {PlaylistDetailsTableProps} props - トラックの配列を含むプロパティ
+ * @param {PlaylistDetailsTableProps} props - トラックの配列と平均オーディオフィーチャーを含むプロパティ
  * @returns {JSX.Element} プレイリストの詳細テーブル
  */
-export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({tracks, averageAudioFeatures}) => {    // 選択されたトラックを管理するための状態
+export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
+                                                                              tracks,
+                                                                              averageAudioFeatures,
+                                                                          }) => {
+    // 選択されたトラックを管理するための状態
     const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
     // テーブルのソート状態を管理するための状態
     const [sorting, setSorting] = useState<SortingState>([]);
@@ -61,8 +83,14 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({track
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header, index) => (
-                                    <TableHead key={header.id} onClick={header.column.getToggleSortingHandler()}>
-                                        {flexRender(header.column.columnDef.header, header.getContext())}
+                                    <TableHead
+                                        key={header.id}
+                                        onClick={header.column.getToggleSortingHandler()}
+                                    >
+                                        {flexRender(
+                                            header.column.columnDef.header,
+                                            header.getContext()
+                                        )}
                                         {index !== 0 && <ArrowUpDown className="ml-2 h-4 w-4"/>}
                                     </TableHead>
                                 ))}

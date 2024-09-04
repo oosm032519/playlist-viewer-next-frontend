@@ -11,10 +11,6 @@ import {expect} from '@jest/globals';
 
 expect.extend(toHaveNoViolations);
 
-/**
- * モックデータ
- * テスト用のプレイリストデータを定義
- */
 const mockPlaylists: Playlist[] = [
     {
         id: '1',
@@ -39,23 +35,11 @@ const mockPlaylists: Playlist[] = [
     },
 ];
 
-/**
- * fetchのモック
- * グローバルなfetch関数をモックに置き換える
- */
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
-/**
- * onPlaylistClickのモック関数
- * プレイリストがクリックされたときのハンドラをモックに置き換える
- */
 const mockOnPlaylistClick = jest.fn();
 
-/**
- * テスト用のQueryClientを作成
- * @returns {QueryClient} テスト用のQueryClientインスタンス
- */
 const createTestQueryClient = () => new QueryClient({
     defaultOptions: {
         queries: {
@@ -64,11 +48,6 @@ const createTestQueryClient = () => new QueryClient({
     },
 });
 
-/**
- * テスト用のラッパーコンポーネント
- * @param {React.ReactElement} ui - テスト対象のReactコンポーネント
- * @returns {Object} テスト用のレンダリング結果と再レンダリング関数
- */
 const renderWithClient = (ui: React.ReactElement) => {
     const testQueryClient = createTestQueryClient();
     const {rerender, ...result} = render(
@@ -193,5 +172,36 @@ describe('FollowedPlaylists', () => {
         
         const results = await axe(container);
         expect(results).toHaveNoViolations();
+    });
+    
+    it('handles non-array response', async () => {
+        mockFetch.mockResolvedValueOnce({
+            ok: true,
+            json: () => Promise.resolve({items: mockPlaylists}),
+        } as Response);
+        
+        renderWithClient(<FollowedPlaylists onPlaylistClick={mockOnPlaylistClick}/>);
+        
+        await waitFor(() => {
+            expect(screen.getByText('フォロー中のプレイリスト')).toBeInTheDocument();
+        });
+        
+        mockPlaylists.forEach((playlist) => {
+            expect(screen.getByText(playlist.name)).toBeInTheDocument();
+        });
+    });
+    
+    it('handles non-ok response', async () => {
+        mockFetch.mockResolvedValueOnce({
+            ok: false,
+            status: 403,
+        } as Response);
+        
+        renderWithClient(<FollowedPlaylists onPlaylistClick={mockOnPlaylistClick}/>);
+        
+        await waitFor(() => {
+            expect(screen.getByText('Error')).toBeInTheDocument();
+            expect(screen.getByText('API request failed with status 403')).toBeInTheDocument();
+        });
     });
 });

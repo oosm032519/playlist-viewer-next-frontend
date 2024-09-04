@@ -1,20 +1,34 @@
-import {useMutation} from '@tanstack/react-query';
-import {useState} from "react";
+// app/hooks/useCreatePlaylistMutation.ts
 
+import {useMutation} from '@tanstack/react-query';
+import {useState} from 'react';
+
+/**
+ * プレイリスト作成のためのカスタムフック。
+ * @param tracks プレイリストに含めるトラックの配列。
+ * @param toast 通知を表示するための関数。
+ * @returns プレイリスト作成関数、作成されたプレイリストのID、作成中の状態を返す。
+ */
 export const useCreatePlaylistMutation = (tracks: any[], toast: any) => {
+    // 作成されたプレイリストのIDを保持するための状態
     const [createdPlaylistId, setCreatedPlaylistId] = useState<string | null>(null);
     
+    // プレイリスト作成のためのミューテーション
     const createPlaylistMutation = useMutation({
+        /**
+         * プレイリストを作成する非同期関数。
+         * @param trackIds プレイリストに含めるトラックのID配列。
+         * @returns 作成されたプレイリストのIDを返す。
+         * @throws プレイリスト作成中にエラーが発生した場合。
+         */
         mutationFn: async (trackIds: string[]) => {
-            // セッションストレージからJWTを取得
-            const jwt = sessionStorage.getItem('JWT');
             const response = await fetch('/api/playlists/create', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${jwt}`, // JWTをAuthorizationヘッダーに設定
                 },
                 body: JSON.stringify(trackIds),
+                credentials: 'include', // Cookieを含める
             });
             
             if (!response.ok) {
@@ -25,6 +39,10 @@ export const useCreatePlaylistMutation = (tracks: any[], toast: any) => {
             const data = await response.json();
             return data.playlistId;
         },
+        /**
+         * プレイリスト作成成功時のコールバック。
+         * @param data 作成されたプレイリストのID。
+         */
         onSuccess: (data: string) => {
             setCreatedPlaylistId(data);
             toast({
@@ -32,6 +50,10 @@ export const useCreatePlaylistMutation = (tracks: any[], toast: any) => {
                 description: "新しいプレイリストが正常に作成されました。",
             });
         },
+        /**
+         * プレイリスト作成失敗時のコールバック。
+         * @param error 発生したエラー。
+         */
         onError: (error) => {
             console.error("プレイリストの作成中にエラーが発生しました。", error);
             toast({
@@ -42,10 +64,19 @@ export const useCreatePlaylistMutation = (tracks: any[], toast: any) => {
         },
     });
     
+    /**
+     * プレイリストを作成するための関数。
+     */
     const createPlaylist = () => {
+        // 各トラックのIDを抽出
         const trackIds = tracks.map(track => track.id as string);
         createPlaylistMutation.mutate(trackIds);
     };
     
-    return {createPlaylist, createdPlaylistId, isCreating: createPlaylistMutation.isPending};
+    // フックが返すオブジェクト
+    return {
+        createPlaylist, // プレイリスト作成をトリガーする関数
+        createdPlaylistId, // 作成されたプレイリストのID
+        isCreating: createPlaylistMutation.isPending // プレイリスト作成中の状態
+    };
 };

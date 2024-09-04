@@ -1,54 +1,37 @@
 // app/api/playlists/followed/route.ts
-import {NextRequest, NextResponse} from 'next/server';
+
+import {NextRequest} from 'next/server';
+import {withAuth} from '@/app/middleware/auth';
+import {getCookies, handleApiError, sendRequest} from '@/app/lib/api-utils';
 
 /**
  * フォロー中のプレイリストを取得する非同期関数
  * @param {NextRequest} req - Next.jsのリクエストオブジェクト
  * @returns {Promise<any>} フォロー中のプレイリストデータ
- * @throws {Error} APIリクエストが失敗した場合にエラーをスロー
  */
-const getFollowedPlaylists = async (req: NextRequest): Promise<any> => {
+const getFollowedPlaylists = async (req: NextRequest): Promise<Response> => {
     console.log('getFollowedPlaylists関数が呼び出されました');
     
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
-    const apiUrl = `${backendUrl}/api/playlists/followed`;
-    
     try {
-        console.log('APIリクエストを送信します:', apiUrl);
+        // Cookieを取得
+        const cookies = getCookies(req);
         
-        // リクエストヘッダーからJWTを取得
-        const jwt = req.headers.get('Authorization')?.split(' ')[1]; // 'Bearer <token>' からトークン部分を抽出
-        console.log('JWTトークン:', jwt);
+        // APIにGETリクエストを送信
+        const response = await sendRequest('/api/playlists/followed', 'GET', undefined, cookies);
         
-        if (!jwt) {
-            throw new Error('Authorization header missing');
-        }
-        
-        const response = await fetch(apiUrl, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${jwt}`, // JWTをAuthorizationヘッダーに設定
-            },
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
+        // レスポンスデータをJSONとしてパース
         const data = await response.json();
         
         console.log('APIレスポンスを受信しました:', response.status);
         console.log('レスポンスデータ:', data);
         
-        return data;
+        return new Response(JSON.stringify(data), {
+            status: response.status,
+            headers: {'Content-Type': 'application/json'}
+        });
     } catch (error) {
-        console.error('APIリクエスト中にエラーが発生しました:', error);
-        
-        if (error instanceof Error) {
-            throw new Error(`Failed to fetch playlists: ${error.message}`);
-        } else {
-            throw new Error('Failed to fetch playlists: Unknown error');
-        }
+        // エラーをハンドルするユーティリティ関数を使用
+        return handleApiError(error);
     }
 };
 
@@ -57,21 +40,8 @@ const getFollowedPlaylists = async (req: NextRequest): Promise<any> => {
  * @param {NextRequest} req - Next.jsのリクエストオブジェクト
  * @returns {Promise<NextResponse>} フォロー中のプレイリストデータを含むレスポンス
  */
-export async function GET(req: NextRequest): Promise<NextResponse> {
+export const GET = withAuth(async (req: NextRequest): Promise<Response> => {
     console.log('GETハンドラーが呼び出されました');
     
-    try {
-        const playlists = await getFollowedPlaylists(req);
-        console.log('プレイリストの取得に成功しました:', playlists);
-        
-        return NextResponse.json(playlists);
-    } catch (error) {
-        console.error('GETハンドラーでエラーが発生しました:', error);
-        
-        if (error instanceof Error) {
-            return NextResponse.json({error: `フォロー中のプレイリストの取得中にエラーが発生しました: ${error.message}`}, {status: 500});
-        } else {
-            return NextResponse.json({error: 'フォロー中のプレイリストの取得中にエラーが発生しました: Unknown error'}, {status: 500});
-        }
-    }
-}
+    return getFollowedPlaylists(req);
+});

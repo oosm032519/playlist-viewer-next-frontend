@@ -1,136 +1,88 @@
-import {NextRequest} from 'next/server';
+// app/api/playlists/add-track/route.test.ts
+
 import {POST} from './route';
-import {cookies} from 'next/headers';
+import {NextRequest} from 'next/server';
+import {NotFoundError, UnauthorizedError} from '@/app/lib/errors';
+import * as apiUtils from '@/app/lib/api-utils';
 import {expect} from '@jest/globals';
 
 // モックの設定
-jest.mock('next/headers', () => ({
-    cookies: jest.fn(),
+jest.mock('next/server', () => ({
+    NextRequest: jest.fn(),
 }));
 
-// グローバルなfetchのモック
+jest.mock('@/app/lib/api-utils', () => ({
+    handleApiError: jest.fn(),
+    getCookies: jest.fn(),
+    sendRequest: jest.fn(),
+}));
+
+// フェッチのモック
 global.fetch = jest.fn();
 
 describe('POST /api/playlists/add-track', () => {
-    // テストごとにモックをリセット
+    let mockRequest: jest.Mocked<NextRequest>;
+    
     beforeEach(() => {
-        jest.resetAllMocks();
-        console.log = jest.fn();
-        console.error = jest.fn();
+        jest.clearAllMocks();
+        mockRequest = {
+            json: jest.fn(),
+            headers: {
+                get: jest.fn(),
+            },
+        } as unknown as jest.Mocked<NextRequest>;
+        mockRequest.json.mockResolvedValue({playlistId: '1', trackId: '2'});
+        (mockRequest.headers.get as jest.Mock).mockReturnValue('test-cookie');
+        process.env.NEXT_PUBLIC_BACKEND_URL = 'http://test-backend.com';
+        
+        // getCookiesのモック
+        (apiUtils.getCookies as jest.Mock).mockReturnValue('test-cookie');
+        
+        // sendRequestのモック
+        (apiUtils.sendRequest as jest.Mock).mockImplementation(() => {
+            return Promise.resolve({
+                ok: true,
+                status: 200,
+                json: () => Promise.resolve({success: true, message: 'Track added successfully'}),
+            });
+        });
     });
     
-    // 環境変数の設定
-    const originalEnv = process.env;
-    beforeEach(() => {
-        jest.resetModules();
-        process.env = {...originalEnv};
-    });
-    afterAll(() => {
-        process.env = originalEnv;
-    });
-    
-    it('正常系: トラックをプレイリストに追加できること', async () => {
-        // モックの設定
-        const mockRequest = {
-            json: jest.fn().mockResolvedValue({playlistId: '1', trackId: '2'}),
-        } as unknown as NextRequest;
-        
-        (cookies as jest.Mock).mockReturnValue({
-            get: jest.fn().mockReturnValue({value: 'mock-jwt-token'}),
-        });
-        
-        (global.fetch as jest.Mock).mockResolvedValue({
-            status: 200,
-            json: jest.fn().mockResolvedValue({message: 'Track added successfully'}),
-        });
-        
-        // テスト実行
+    it('正常にトラックをプレイリストに追加できる場合', async () => {
         const response = await POST(mockRequest);
-        const responseBody = await response.json();
+        const responseData = await response.json();
         
-        // アサーション
         expect(response.status).toBe(200);
-        expect(responseBody).toEqual({message: 'Track added successfully'});
-        expect(global.fetch).toHaveBeenCalledWith(
-            'http://localhost:8080/api/playlist/add-track',
-            expect.objectContaining({
-                method: 'POST',
-                headers: expect.objectContaining({
-                    'Content-Type': 'application/json',
-                    'Cookie': 'JWT=mock-jwt-token',
-                }),
-                body: JSON.stringify({playlistId: '1', trackId: '2'}),
-            })
+        expect(responseData).toEqual({success: true, message: 'Track added successfully'});
+        expect(apiUtils.sendRequest).toHaveBeenCalledWith(
+            '/api/playlist/add-track',
+            'POST',
+            {playlistId: '1', trackId: '2'},
+            'test-cookie'
         );
     });
     
-    it('異常系: バックエンドAPIがエラーを返した場合', async () => {
-        // モックの設定
-        const mockRequest = {
-            json: jest.fn().mockResolvedValue({playlistId: '1', trackId: '2'}),
-        } as unknown as NextRequest;
+    it('プレイリストが見つからない場合', async () => {
+        (apiUtils.sendRequest as jest.Mock).mockRejectedValueOnce(new NotFoundError('Playlist not found'));
         
-        (cookies as jest.Mock).mockReturnValue({
-            get: jest.fn().mockReturnValue({value: 'mock-jwt-token'}),
-        });
-        
-        (global.fetch as jest.Mock).mockResolvedValue({
-            status: 400,
-            json: jest.fn().mockResolvedValue({error: 'Invalid playlist ID'}),
-        });
-        
-        // テスト実行
-        const response = await POST(mockRequest);
-        const responseBody = await response.json();
-        
-        // アサーション
-        expect(response.status).toBe(400);
-        expect(responseBody).toEqual({error: 'Invalid playlist ID'});
-    });
-    
-    it('異常系: リクエストのJSONパースに失敗した場合', async () => {
-        // モックの設定
-        const mockRequest = {
-            json: jest.fn().mockRejectedValue(new Error('Invalid JSON')),
-        } as unknown as NextRequest;
-        
-        // テスト実行
-        const response = await POST(mockRequest);
-        const responseBody = await response.json();
-        
-        // アサーション
-        expect(response.status).toBe(500);
-        expect(responseBody).toEqual({
-            error: 'プレイリストへのトラック追加に失敗しました',
-            details: 'Invalid JSON',
-        });
-    });
-    
-    it('環境変数BACKEND_URLが設定されている場合、そのURLを使用すること', async () => {
-        // 環境変数の設定
-        process.env.BACKEND_URL = 'https://api.example.com';
-        
-        // モックの設定
-        const mockRequest = {
-            json: jest.fn().mockResolvedValue({playlistId: '1', trackId: '2'}),
-        } as unknown as NextRequest;
-        
-        (cookies as jest.Mock).mockReturnValue({
-            get: jest.fn().mockReturnValue({value: 'mock-jwt-token'}),
-        });
-        
-        (global.fetch as jest.Mock).mockResolvedValue({
-            status: 200,
-            json: jest.fn().mockResolvedValue({message: 'Track added successfully'}),
-        });
-        
-        // テスト実行
         await POST(mockRequest);
         
-        // アサーション
-        expect(global.fetch).toHaveBeenCalledWith(
-            'https://api.example.com/api/playlist/add-track',
-            expect.anything()
-        );
+        expect(apiUtils.handleApiError).toHaveBeenCalledWith(expect.any(NotFoundError));
+    });
+    
+    it('認証されていない場合', async () => {
+        (apiUtils.sendRequest as jest.Mock).mockRejectedValueOnce(new UnauthorizedError('Unauthorized'));
+        
+        await POST(mockRequest);
+        
+        expect(apiUtils.handleApiError).toHaveBeenCalledWith(expect.any(UnauthorizedError));
+    });
+    
+    it('その他のエラーが発生した場合', async () => {
+        (apiUtils.sendRequest as jest.Mock).mockRejectedValueOnce(new Error('Server error'));
+        
+        await POST(mockRequest);
+        
+        expect(apiUtils.handleApiError).toHaveBeenCalledWith(expect.any(Error));
     });
 });

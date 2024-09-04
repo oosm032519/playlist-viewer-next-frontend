@@ -14,12 +14,24 @@ import CustomTooltip from './CustomTooltip';
 import prepareChartData from '../utils/prepareChartData';
 
 interface GenreChartProps {
+    /**
+     * ジャンルごとのカウントを保持するオブジェクト
+     * キーはジャンル名、値はそのジャンルのカウント
+     */
     genreCounts: { [genre: string]: number };
+    /**
+     * プレイリストの名前
+     * nullの場合、空文字列として扱う
+     */
     playlistName: string | null;
 }
 
 /**
  * GenreChartコンポーネント
+ *
+ * ジャンルごとのカウントを円グラフとして表示するコンポーネント。
+ * プレイリスト名をグラフの中央に表示し、各ジャンルを異なる色で表現する。
+ *
  * @param {GenreChartProps} props - ジャンルのカウントとプレイリスト名を含むプロパティ
  * @returns {JSX.Element} - ジャンルごとのカウントを表示する円グラフ
  */

@@ -10,6 +10,7 @@ import LoadingSpinner from "./LoadingSpinner";
 import {Alert, AlertDescription, AlertTitle} from "./ui/alert";
 
 interface PlaylistIdFormProps {
+    /** プレイリストが選択されたときに呼び出されるコールバック関数 */
     onPlaylistSelect: (playlistId: string) => Promise<void>;
 }
 
@@ -24,7 +25,12 @@ const extractPlaylistIdFromUrl = (url: string): string | null => {
     return match ? match[1] : null;
 };
 
-export default ({onPlaylistSelect}: PlaylistIdFormProps) => {
+/**
+ * プレイリストIDを入力し、選択するためのフォームコンポーネント
+ * @param {PlaylistIdFormProps} props - コンポーネントのプロパティ
+ * @returns {JSX.Element} - プレイリストIDフォームのJSX要素
+ */
+const PlaylistIdForm = ({onPlaylistSelect}: PlaylistIdFormProps): JSX.Element => {
     // プレイリストIDの状態管理
     const [playlistId, setPlaylistId] = useState("");
     // エラーメッセージの状態管理
@@ -93,4 +99,6 @@ export default ({onPlaylistSelect}: PlaylistIdFormProps) => {
             <LoadingSpinner loading={mutation.isPending}/>
         </>
     );
-}
+};
+
+export default PlaylistIdForm;

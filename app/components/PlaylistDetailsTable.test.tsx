@@ -7,6 +7,8 @@ import {PlaylistDetailsTable} from './PlaylistDetailsTable';
 import {Track} from '../types/track';
 import {expect} from '@jest/globals';
 import {AudioFeatures} from "@/app/types/audioFeaturesTypes";
+import {msToMinutesAndSeconds} from '../lib/PlaylistDetailsTableColumns';
+import {keyToString} from '../lib/PlaylistDetailsTableColumns';
 
 expect.extend(toHaveNoViolations);
 
@@ -114,7 +116,8 @@ describe('PlaylistDetailsTable', () => {
         mockTracks.forEach((track) => {
             expect(screen.getByText(track.name)).toBeInTheDocument();
             expect(screen.getByText(track.artists[0].name)).toBeInTheDocument();
-            expect(screen.getByText(track.durationMs.toString())).toBeInTheDocument();
+            // msToMinutesAndSeconds関数で変換したテキストで検索
+            expect(screen.getByText(msToMinutesAndSeconds(track.durationMs))).toBeInTheDocument();
         });
     });
     
@@ -137,7 +140,7 @@ describe('PlaylistDetailsTable', () => {
                 
                 expect(withinRow.getByTestId(/danceability/i)).toHaveTextContent(track.audioFeatures.danceability.toFixed(3));
                 expect(withinRow.getByTestId(/energy/i)).toHaveTextContent(track.audioFeatures.energy.toFixed(3));
-                expect(withinRow.getByTestId(/key/i)).toHaveTextContent(track.audioFeatures.key.toString());
+                expect(withinRow.getByTestId(/key/i)).toHaveTextContent(keyToString(track.audioFeatures.key)); // keyToString関数を使用
                 expect(withinRow.getByTestId(/loudness/i)).toHaveTextContent(track.audioFeatures.loudness.toFixed(3));
                 expect(withinRow.getByTestId(/mode/i)).toHaveTextContent(track.audioFeatures.mode);
                 expect(withinRow.getByTestId(/timeSignature/i)).toHaveTextContent(track.audioFeatures.timeSignature.toString());

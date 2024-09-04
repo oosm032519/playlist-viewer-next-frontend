@@ -1,5 +1,3 @@
-// app/components/PlaylistDetailsLoader.test.tsx
-
 import React from 'react';
 import {render, screen, waitFor} from '@testing-library/react';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
@@ -44,10 +42,8 @@ describe('PlaylistDetailsLoader', () => {
     
     it('データ取得中にローディングスピナーを表示する', async () => {
         // フェッチが完了しないモックを設定
-        (global.fetch as jest.Mock).mockImplementationOnce(() =>
-            new Promise(() => {
-            })
-        );
+        (global.fetch as jest.Mock).mockImplementationOnce(() => new Promise(() => {
+        }));
         
         // コンポーネントをレンダリング
         render(
@@ -60,13 +56,49 @@ describe('PlaylistDetailsLoader', () => {
         expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
     });
     
-    it('データ取得成功時にプレイリスト詳細を表示する', async () => {
+    it('データ取得成功時にプレイリスト詳細を表示する（1時間以上）', async () => {
         const mockData = {
             tracks: {items: []},
             genreCounts: {},
             recommendations: [],
             playlistName: 'Test Playlist',
             ownerId: 'owner123',
+            totalDuration: 3600000, // 1 hour
+            averageAudioFeatures: {},
+            ownerName: 'Owner Name',
+        };
+        
+        // フェッチが成功するモックを設定
+        (global.fetch as jest.Mock).mockImplementationOnce(() =>
+            Promise.resolve({
+                ok: true,
+                json: () => Promise.resolve(mockData),
+            })
+        );
+        
+        // コンポーネントをレンダリング
+        render(
+            <QueryClientProvider client={queryClient}>
+                <PlaylistDetailsLoader playlistId="123"/>
+            </QueryClientProvider>
+        );
+        
+        // プレイリスト詳細が表示されていることを確認
+        await waitFor(() => {
+            expect(screen.getByTestId('playlist-details')).toBeInTheDocument();
+        });
+    });
+    
+    it('データ取得成功時にプレイリスト詳細を表示する（1時間未満）', async () => {
+        const mockData = {
+            tracks: {items: []},
+            genreCounts: {},
+            recommendations: [],
+            playlistName: 'Test Playlist',
+            ownerId: 'owner123',
+            totalDuration: 1800000, // 30 minutes
+            averageAudioFeatures: {},
+            ownerName: 'Owner Name',
         };
         
         // フェッチが成功するモックを設定
@@ -118,6 +150,9 @@ describe('PlaylistDetailsLoader', () => {
             recommendations: [],
             playlistName: 'Test Playlist',
             ownerId: 'owner123',
+            totalDuration: 3600000, // 1 hour
+            averageAudioFeatures: {},
+            ownerName: 'Owner Name',
         };
         
         // フェッチが成功するモックを設定
@@ -143,5 +178,27 @@ describe('PlaylistDetailsLoader', () => {
         // アクセシビリティ違反がないことを確認
         const results = await axe(container);
         expect(results).toHaveNoViolations();
+    });
+    
+    it('無効なデータレスポンスを処理する', async () => {
+        // 無効なデータレスポンスのモックを設定
+        (global.fetch as jest.Mock).mockImplementationOnce(() =>
+            Promise.resolve({
+                ok: true,
+                json: () => Promise.resolve(null),
+            })
+        );
+        
+        // コンポーネントをレンダリング
+        render(
+            <QueryClientProvider client={queryClient}>
+                <PlaylistDetailsLoader playlistId="123"/>
+            </QueryClientProvider>
+        );
+        
+        // エラーメッセージが表示されていることを確認
+        await waitFor(() => {
+            expect(screen.getByText('プレイリスト取得中にエラーが発生しました')).toBeInTheDocument();
+        });
     });
 });

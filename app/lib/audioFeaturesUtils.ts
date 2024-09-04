@@ -1,4 +1,4 @@
-// ファイルパス: app/utils/prepareAudioFeaturesData.ts
+// app/utils/prepareAudioFeaturesData.ts
 
 import {Track} from '../types/track';
 
