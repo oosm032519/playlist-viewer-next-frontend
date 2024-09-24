@@ -9,6 +9,7 @@ import {
     getSortedRowModel,
     flexRender,
     SortingState,
+    ColumnDef,
 } from "@tanstack/react-table";
 import {Track} from "../types/track";
 import {
@@ -23,6 +24,8 @@ import {ArrowUpDown} from "lucide-react";
 import {playlistDetailsTableColumns} from "../lib/PlaylistDetailsTableColumns";
 import {AudioFeatures} from "@/app/types/audioFeaturesTypes";
 import CombinedAudioFeaturesChart from "./CombinedAudioFeaturesChart";
+import {CSVLink} from "react-csv";
+import {Button} from "./ui/button";
 
 /**
  * プレイリストの詳細テーブルを表示するためのプロパティ
@@ -51,7 +54,7 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
     // React Tableの設定
     const table = useReactTable({
         data: tracks,
-        columns: playlistDetailsTableColumns,
+        columns: playlistDetailsTableColumns as ColumnDef<Track>[],
         state: {
             sorting,
         },
@@ -66,6 +69,32 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
      */
     const handleRowClick = (row: Track) => setSelectedTrack(row);
     
+    /**
+     * CSVデータを生成する関数
+     * @returns {Array<Array<string>>} CSVデータの2次元配列
+     */
+    const generateCsvData = () => {
+        const headers = playlistDetailsTableColumns.map((column) => column.header as string);
+        const data = tracks.map((track) =>
+            playlistDetailsTableColumns.map((column) => {
+                if (column.id === "album") {
+                    return track.album.name;
+                }
+                if (column.id === "artists") {
+                    return track.artists[0].name;
+                }
+                if ('accessorFn' in column && column.accessorFn) {
+                    return column.accessorFn(track, 0);
+                }
+                if ('accessorKey' in column && column.accessorKey) {
+                    return track[column.accessorKey as keyof Track];
+                }
+                return '';
+            })
+        );
+        return [headers, ...data];
+    };
+    
     // トラックが存在しない場合の表示
     if (tracks.length === 0) {
         return (
@@ -78,6 +107,11 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
     return (
         <div className="flex flex-col">
             <div className="w-full overflow-x-auto">
+                <CSVLink data={generateCsvData()} filename="playlist_details.csv">
+                    <Button variant="default" className="mb-4">
+                        CSVをエクスポート
+                    </Button>
+                </CSVLink>
                 <Table>
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
