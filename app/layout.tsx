@@ -6,7 +6,8 @@ import './globals.css';
 import {Inter} from 'next/font/google';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {UserContextProvider} from "./context/UserContext";
-import ErrorBoundary from "./components/ErrorBoundary"; // ErrorBoundaryコンポーネントをインポート
+import ErrorBoundary from "./components/ErrorBoundary";
+import {ThemeProvider} from 'next-themes';
 
 // Interフォントを設定
 const inter = Inter({subsets: ['latin']});
@@ -24,13 +25,14 @@ export default function RootLayout({children}: { children: React.ReactNode }): J
     return (
         <html lang="en">
         <body className={`${inter.className} bg-gray-dark text-gray-100`}>
-        {/* ErrorBoundaryコンポーネントでラップ */}
         <ErrorBoundary>
-            {/* React Queryのクライアントプロバイダでラップ */}
             <QueryClientProvider client={queryClient}>
-                {/* ユーザーコンテキストプロバイダでラップ */}
                 <UserContextProvider>
-                    {children}
+                    <ThemeProvider attribute="class">
+                        <main>
+                            {children}
+                        </main>
+                    </ThemeProvider>
                 </UserContextProvider>
             </QueryClientProvider>
         </ErrorBoundary>

@@ -15,6 +15,7 @@ import {Playlist} from "./types/playlist";
 import {Toaster} from "@/app/components/ui/toaster";
 import {FavoriteProvider, FavoriteContext} from '@/app/context/FavoriteContext';
 import FavoritePlaylistsTable from '@/app/components/FavoritePlaylistsTable';
+import {useTheme} from 'next-themes';
 
 /**
  * HomeContentコンポーネント
@@ -24,6 +25,7 @@ import FavoritePlaylistsTable from '@/app/components/FavoritePlaylistsTable';
 function HomeContent(): JSX.Element {
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
     const {isLoggedIn, userId, error, setIsLoggedIn, setUserId} = useUser();
+    const {theme, setTheme} = useTheme();
     const {setSelectedPlaylistId} = usePlaylist();
     const {fetchFavorites} = useContext(FavoriteContext);
     
@@ -99,8 +101,10 @@ function HomeContent(): JSX.Element {
     };
     
     return (
-        <main className="flex flex-col items-center justify-center p-8">
             <Card className="w-full max-w-4xl">
+                <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+                    {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+                </button>
                 <CardHeader>
                     <CardTitle className="text-4xl font-bold text-center text-spotify-green">
                         Playlist Viewer
@@ -121,7 +125,6 @@ function HomeContent(): JSX.Element {
                     {isLoggedIn && <FavoritePlaylistsTable/>}
                 </CardContent>
             </Card>
-        </main>
     );
 }
 
