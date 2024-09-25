@@ -101,7 +101,7 @@ function HomeContent(): JSX.Element {
     };
     
     return (
-            <Card className="w-full max-w-4xl">
+            <Card className="w-full h-full max-w-4xl mx-auto">
                 <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
                     {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
                 </button>
