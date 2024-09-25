@@ -28,7 +28,7 @@ export default function RootLayout({children}: { children: React.ReactNode }): J
         <ErrorBoundary>
             <QueryClientProvider client={queryClient}>
                 <UserContextProvider>
-                    <ThemeProvider attribute="class">
+                    <ThemeProvider enableSystem={true} attribute="class" storageKey="theme">
                         <main>
                             {children}
                         </main>
