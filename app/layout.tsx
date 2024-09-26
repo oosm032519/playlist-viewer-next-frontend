@@ -23,12 +23,13 @@ const queryClient = new QueryClient();
  */
 export default function RootLayout({children}: { children: React.ReactNode }): JSX.Element {
     return (
-        <html lang="en">
-        <body className={`${inter.className} bg-gray-dark text-gray-100`}>
+        <html lang="ja" suppressHydrationWarning>
+        <body
+            className={`${inter.className} bg-light-background dark:bg-dark-background text-light-foreground dark:text-dark-foreground`}>
         <ErrorBoundary>
             <QueryClientProvider client={queryClient}>
                 <UserContextProvider>
-                    <ThemeProvider enableSystem={true} attribute="class" storageKey="theme">
+                    <ThemeProvider enableSystem={true} attribute="class" defaultTheme="system">
                         <main>
                             {children}
                         </main>

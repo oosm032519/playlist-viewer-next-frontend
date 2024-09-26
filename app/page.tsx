@@ -101,30 +101,34 @@ function HomeContent(): JSX.Element {
     };
     
     return (
-            <Card className="w-full h-full max-w-4xl mx-auto">
-                <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
-                    {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-                </button>
-                <CardHeader>
-                    <CardTitle className="text-4xl font-bold text-center text-spotify-green">
-                        Playlist Viewer
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-6">
-                        <LoginButton/>
-                        <PlaylistIdForm onPlaylistSelect={handlePlaylistClick}/>
-                        <PlaylistSearchForm onSearch={handleSearch}/>
-                        {error && <ErrorAlert error={error}/>}
-                        <PlaylistDisplay
-                            playlists={playlists}
-                            userId={userId || undefined}
-                            onPlaylistClick={handlePlaylistClick}
-                        />
-                    </div>
-                    {isLoggedIn && <FavoritePlaylistsTable/>}
-                </CardContent>
-            </Card>
+        <Card
+            className="w-full h-full max-w-4xl mx-auto bg-light-background dark:bg-dark-background text-light-foreground dark:text-dark-foreground">
+            <button
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                className="absolute top-4 right-4 p-2 rounded-full bg-light-secondary dark:bg-dark-secondary text-light-foreground dark:text-dark-foreground"
+            >
+                {theme === 'dark' ? '🌞' : '🌙'}
+            </button>
+            <CardHeader>
+                <CardTitle className="text-4xl font-bold text-center text-spotify-green">
+                    Playlist Viewer
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-6">
+                    <LoginButton/>
+                    <PlaylistIdForm onPlaylistSelect={handlePlaylistClick}/>
+                    <PlaylistSearchForm onSearch={handleSearch}/>
+                    {error && <ErrorAlert error={error}/>}
+                    <PlaylistDisplay
+                        playlists={playlists}
+                        userId={userId || undefined}
+                        onPlaylistClick={handlePlaylistClick}
+                    />
+                </div>
+                {isLoggedIn && <FavoritePlaylistsTable/>}
+            </CardContent>
+        </Card>
     );
 }
 
