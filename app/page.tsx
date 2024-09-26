@@ -102,21 +102,23 @@ function HomeContent(): JSX.Element {
     
     return (
         <Card
-            className="w-full h-full max-w-4xl mx-auto bg-light-background dark:bg-dark-background text-light-foreground dark:text-dark-foreground">
-            <button
-                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                className="absolute top-4 right-4 p-2 rounded-full bg-light-secondary dark:bg-dark-secondary text-light-foreground dark:text-dark-foreground"
-            >
-                {theme === 'dark' ? '🌞' : '🌙'}
-            </button>
+            className="w-full h-screen max-w-none mx-auto bg-light-background dark:bg-dark-background text-light-foreground dark:text-dark-foreground">
             <CardHeader>
-                <CardTitle className="text-4xl font-bold text-center text-spotify-green">
-                    Playlist Viewer
-                </CardTitle>
+                <div className="flex justify-between items-center">
+                    <LoginButton/>
+                    <CardTitle className="text-4xl font-bold text-spotify-green">
+                        Playlist Viewer
+                    </CardTitle>
+                    <button
+                        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                        className="p-2 rounded-full bg-light-secondary dark:bg-dark-secondary text-light-foreground dark:text-dark-foreground"
+                    >
+                        {theme === 'dark' ? '🌞' : '🌙'}
+                    </button>
+                </div>
             </CardHeader>
             <CardContent>
                 <div className="space-y-6">
-                    <LoginButton/>
                     <PlaylistIdForm onPlaylistSelect={handlePlaylistClick}/>
                     <PlaylistSearchForm onSearch={handleSearch}/>
                     {error && <ErrorAlert error={error}/>}

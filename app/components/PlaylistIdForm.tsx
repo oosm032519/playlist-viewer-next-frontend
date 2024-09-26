@@ -68,7 +68,7 @@ const PlaylistIdForm = ({onPlaylistSelect}: PlaylistIdFormProps): JSX.Element =>
     
     return (
         <>
-            <Card className="w-full max-w-4xl mx-auto mt-8">
+            <Card className="w-full mx-auto">
                 <CardHeader>
                     <CardTitle>Enter Playlist URL</CardTitle>
                 </CardHeader>
