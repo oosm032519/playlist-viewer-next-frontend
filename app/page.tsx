@@ -16,6 +16,7 @@ import {Toaster} from "@/app/components/ui/toaster";
 import {FavoriteProvider, FavoriteContext} from '@/app/context/FavoriteContext';
 import FavoritePlaylistsTable from '@/app/components/FavoritePlaylistsTable';
 import {useTheme} from 'next-themes';
+import {Tabs, TabsList, TabsTrigger, TabsContent} from "./components/ui/tabs";
 
 /**
  * HomeContentコンポーネント
@@ -28,6 +29,7 @@ function HomeContent(): JSX.Element {
     const {theme, setTheme} = useTheme();
     const {setSelectedPlaylistId} = usePlaylist();
     const {fetchFavorites} = useContext(FavoriteContext);
+    const [activeTab, setActiveTab] = useState('playlistId');
     
     // お気に入りのプレイリストをフェッチ
     useEffect(() => {
@@ -119,8 +121,18 @@ function HomeContent(): JSX.Element {
             </CardHeader>
             <CardContent>
                 <div className="space-y-6">
-                    <PlaylistIdForm onPlaylistSelect={handlePlaylistClick}/>
-                    <PlaylistSearchForm onSearch={handleSearch}/>
+                    <Tabs defaultValue="playlistId" value={activeTab} onValueChange={setActiveTab}>
+                        <TabsList>
+                            <TabsTrigger value="playlistId">URLで検索</TabsTrigger>
+                            <TabsTrigger value="playlistSearch">プレイリスト名で検索</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="playlistId">
+                            <PlaylistIdForm onPlaylistSelect={handlePlaylistClick}/>
+                        </TabsContent>
+                        <TabsContent value="playlistSearch">
+                            <PlaylistSearchForm onSearch={handleSearch}/>
+                        </TabsContent>
+                    </Tabs>
                     {error && <ErrorAlert error={error}/>}
                     <PlaylistDisplay
                         playlists={playlists}
