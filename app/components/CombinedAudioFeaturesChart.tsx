@@ -1,4 +1,4 @@
-// app/components/CombinedAudioFeaturesChart.tsx
+// CombinedAudioFeaturesChart.tsx
 
 import React from 'react';
 import {
@@ -82,10 +82,18 @@ const CombinedAudioFeaturesChart: React.FC<CombinedAudioFeaturesChartProps> = ({
     const CustomTooltip = ({active, payload, label}: CustomTooltipProps) => {
         if (active && payload && payload.length) {
             return (
-                <div className="custom-tooltip">
-                    <p>{`${label}: ${featureDescriptions[label as keyof typeof featureDescriptions]}`}</p>
-                    {track && <p>{`${track.name}: ${payload[0].value}`}</p>}
-                    <p>{`プレイリスト平均: ${payload[track ? 1 : 0].value}`}</p>
+                <div
+                    style={{
+                        backgroundColor: '#333',
+                        color: 'white',
+                        padding: '10px',
+                        borderRadius: '5px',
+                        boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+                    }}
+                >
+                    <p style={{margin: 0}}>{`${label}: ${featureDescriptions[label as keyof typeof featureDescriptions]}`}</p>
+                    {track && <p style={{margin: 0}}>{`${track.name}: ${payload[0].value}`}</p>}
+                    <p style={{margin: 0}}>{`プレイリスト平均: ${payload[track ? 1 : 0].value}`}</p>
                 </div>
             );
         }
