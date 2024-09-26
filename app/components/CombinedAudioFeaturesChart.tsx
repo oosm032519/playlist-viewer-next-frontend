@@ -9,6 +9,7 @@ import {
     PolarRadiusAxis,
     ResponsiveContainer,
     Legend,
+    Tooltip
 } from 'recharts';
 import {AudioFeaturesChartProps} from '../types/audioFeaturesTypes';
 import {prepareAudioFeaturesData} from '../lib/audioFeaturesUtils';
@@ -30,6 +31,15 @@ interface CombinedAudioFeaturesChartProps {
 }
 
 /**
+ * カスタムツールチップのプロパティを定義します。
+ */
+type CustomTooltipProps = {
+    active?: boolean;
+    payload?: Array<{ value: number; name: string }>;
+    label?: string;
+};
+
+/**
  * CombinedAudioFeaturesChartコンポーネント
  *
  * このコンポーネントは、与えられたトラックと平均のオーディオフィーチャーを
@@ -39,6 +49,16 @@ interface CombinedAudioFeaturesChartProps {
  * @returns {JSX.Element} レーダーチャートを描画するReactコンポーネント
  */
 const CombinedAudioFeaturesChart: React.FC<CombinedAudioFeaturesChartProps> = ({track, averageAudioFeatures}) => {
+    // AudioFeaturesの説明
+    const featureDescriptions = {
+        Acousticness: 'アコースティックである度合い',
+        Danceability: 'ダンスに適している度合い',
+        Energy: '活気やインテンシティ',
+        Liveness: 'ライブパフォーマンスの特徴を持つ度合い',
+        Speechiness: '話し言葉の存在度合い',
+        Valence: '音楽的なポジティブさ'
+    };
+    
     // 平均オーディオフィーチャーのデータを準備
     const averageData = [
         {feature: 'Acousticness', value: averageAudioFeatures.acousticness},
@@ -58,6 +78,21 @@ const CombinedAudioFeaturesChart: React.FC<CombinedAudioFeaturesChartProps> = ({
         trackValue: trackData[index]?.value,
     }));
     
+    // Tooltip の内容をカスタマイズする関数
+    const CustomTooltip = ({active, payload, label}: CustomTooltipProps) => {
+        if (active && payload && payload.length) {
+            return (
+                <div className="custom-tooltip">
+                    <p>{`${label}: ${featureDescriptions[label as keyof typeof featureDescriptions]}`}</p>
+                    {track && <p>{`${track.name}: ${payload[0].value}`}</p>}
+                    <p>{`プレイリスト平均: ${payload[track ? 1 : 0].value}`}</p>
+                </div>
+            );
+        }
+        
+        return null;
+    };
+    
     return (
         <ResponsiveContainer width="100%" height={400}>
             <RadarChart cx="50%" cy="50%" outerRadius="80%" data={combinedData}>
@@ -66,7 +101,7 @@ const CombinedAudioFeaturesChart: React.FC<CombinedAudioFeaturesChartProps> = ({
                 <PolarRadiusAxis angle={30} domain={[0, 1]}/>
                 {track && (
                     <Radar
-                        name={`${track.name} の Audio Features`}
+                        name={`${track.name}`}
                         dataKey="trackValue"
                         stroke="#8884d8"
                         fill="#8884d8"
@@ -74,13 +109,14 @@ const CombinedAudioFeaturesChart: React.FC<CombinedAudioFeaturesChartProps> = ({
                     />
                 )}
                 <Radar
-                    name="平均 Audio Features"
+                    name="プレイリスト平均"
                     dataKey="value"
                     stroke="#82ca9d"
                     fill="#82ca9d"
                     fillOpacity={0.6}
                 />
                 <Legend/>
+                <Tooltip content={<CustomTooltip/>}/>
             </RadarChart>
         </ResponsiveContainer>
     );
