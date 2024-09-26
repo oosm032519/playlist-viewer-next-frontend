@@ -104,7 +104,7 @@ function HomeContent(): JSX.Element {
     
     return (
         <Card
-            className="w-full h-screen max-w-none mx-auto bg-light-background dark:bg-dark-background text-light-foreground dark:text-dark-foreground">
+            className="w-full h-full max-w-none mx-auto bg-light-background dark:bg-dark-background text-light-foreground dark:text-dark-foreground">
             <CardHeader>
                 <div className="flex justify-between items-center">
                     <LoginButton/>
