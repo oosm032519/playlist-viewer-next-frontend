@@ -97,7 +97,7 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
     };
     
     const {favorites, addFavorite, removeFavorite} = useContext(FavoriteContext);
-    const {isLoggedIn} = useUser();
+    const {isLoggedIn} = useUser(); // UserContextからisLoggedInを取得
     const [isFavorite, setIsFavorite] = useState(false);
     const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
     
@@ -164,11 +164,14 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                     </h1>
                     <span>by </span>
                     <span>{sanitizedOwnerName}</span>
-                    <button onClick={handleStarClick} className="focus:outline-none ml-2">
-                       <span className={`text-2xl ${isFavorite ? 'text-yellow-400' : 'text-gray-400'}`}>
-                           {isFavorite ? '★' : '☆'}
-                       </span>
-                    </button>
+                    {/* ログインしている場合のみ星ボタンを表示 */}
+                    {isLoggedIn && (
+                        <button onClick={handleStarClick} className="focus:outline-none ml-2">
+                            <span className={`text-2xl ${isFavorite ? 'text-yellow-400' : 'text-gray-400'}`}>
+                                {isFavorite ? '★' : '☆'}
+                            </span>
+                        </button>
+                    )}
                 </div>
             )}
             
