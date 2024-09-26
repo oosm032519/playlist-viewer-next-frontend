@@ -22,7 +22,7 @@ interface FollowedPlaylistsProps {
  */
 const fetchFollowedPlaylists = async (): Promise<Playlist[]> => {
     const playlistsResponse = await fetch('/api/playlists/followed', {
-        credentials: 'include', // クレデンシャルを含める
+        credentials: 'include',
     });
     
     if (!playlistsResponse.ok) {
@@ -30,7 +30,6 @@ const fetchFollowedPlaylists = async (): Promise<Playlist[]> => {
     }
     
     const data = await playlistsResponse.json();
-    // データが配列であることを確認し、配列でない場合はitemsプロパティを使用
     return Array.isArray(data) ? data : data.items || [];
 };
 
@@ -40,19 +39,16 @@ const fetchFollowedPlaylists = async (): Promise<Playlist[]> => {
  * @returns {JSX.Element} フォロー中のプレイリストを表示するJSX要素
  */
 const FollowedPlaylists: React.FC<FollowedPlaylistsProps> = ({onPlaylistClick}) => {
-    // useQueryフックを使用してプレイリストデータを取得
     const {data: playlists, isLoading, error} = useQuery<Playlist[], Error>({
         queryKey: ['followedPlaylists'],
         queryFn: fetchFollowedPlaylists,
     });
     
     if (isLoading) {
-        // データがロード中の場合、ローディングスピナーを表示
         return <LoadingSpinner loading={isLoading}/>;
     }
     
     if (error) {
-        // エラーが発生した場合、エラーメッセージを表示
         return (
             <Alert variant="destructive">
                 <AlertTitle>Error</AlertTitle>
@@ -67,9 +63,8 @@ const FollowedPlaylists: React.FC<FollowedPlaylistsProps> = ({onPlaylistClick}) 
             {playlists && playlists.length === 0 ? (
                 <p>フォロー中のプレイリストはありません。</p>
             ) : (
-                <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <ul className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-4">
                     {playlists && playlists.map((playlist) => {
-                        // プレイリスト名と画像URLをサニタイズ
                         const sanitizedName = DOMPurify.sanitize(playlist.name);
                         const sanitizedImageUrl = playlist.images && playlist.images.length > 0
                             ? DOMPurify.sanitize(playlist.images[0].url)
@@ -83,10 +78,12 @@ const FollowedPlaylists: React.FC<FollowedPlaylistsProps> = ({onPlaylistClick}) 
                                         <img
                                             src={sanitizedImageUrl}
                                             alt={sanitizedName}
-                                            className="w-full h-40 object-cover mb-2 cursor-pointer"
+                                            className="w-full h-auto mb-2 cursor-pointer"
+                                            style={{maxWidth: '100%', height: 'auto'}}
                                         />
                                     ) : (
-                                        <div className="w-full h-40 bg-gray-200 flex items-center justify-center mb-2">
+                                        <div className="w-full h-auto bg-gray-200 flex items-center justify-center mb-2"
+                                             style={{maxWidth: '100%'}}>
                                             <span className="text-gray-500">No Image</span>
                                         </div>
                                     )}
