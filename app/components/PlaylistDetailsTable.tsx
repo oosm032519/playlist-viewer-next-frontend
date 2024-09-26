@@ -23,7 +23,6 @@ import {
 import {ArrowUpDown} from "lucide-react";
 import {playlistDetailsTableColumns} from "../lib/PlaylistDetailsTableColumns";
 import {AudioFeatures} from "@/app/types/audioFeaturesTypes";
-import CombinedAudioFeaturesChart from "./CombinedAudioFeaturesChart";
 import {CSVLink} from "react-csv";
 import {Button} from "./ui/button";
 
@@ -35,6 +34,10 @@ interface PlaylistDetailsTableProps {
     tracks: Track[];
     /** 平均的なオーディオフィーチャー */
     averageAudioFeatures: AudioFeatures;
+    /** 選択されたトラック */
+    selectedTrack: Track | null;
+    /** トラックを選択したときのコールバック関数 */
+    onTrackSelect: (track: Track | null) => void;
 }
 
 /**
@@ -45,9 +48,9 @@ interface PlaylistDetailsTableProps {
 export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
                                                                               tracks,
                                                                               averageAudioFeatures,
+                                                                              selectedTrack,
+                                                                              onTrackSelect,
                                                                           }) => {
-    // 選択されたトラックを管理するための状態
-    const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
     // テーブルのソート状態を管理するための状態
     const [sorting, setSorting] = useState<SortingState>([]);
     
@@ -67,7 +70,7 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
      * 行がクリックされたときに選択されたトラックを設定するハンドラ
      * @param {Track} row - クリックされた行のトラックデータ
      */
-    const handleRowClick = (row: Track) => setSelectedTrack(row);
+    const handleRowClick = (row: Track) => onTrackSelect(row);
     
     /**
      * CSVデータを生成する関数
@@ -147,18 +150,6 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
                         ))}
                     </TableBody>
                 </Table>
-            </div>
-            <div className="w-full max-w-2xl mx-auto mb-8">
-                <h3 className="text-lg font-semibold mb-4">Audio Features 比較</h3>
-                <CombinedAudioFeaturesChart
-                    track={selectedTrack || undefined}
-                    averageAudioFeatures={averageAudioFeatures}
-                />
-                {!selectedTrack && (
-                    <p className="mt-4 text-center text-gray-500">
-                        トラックを選択すると、個別の Audio Features が表示されます。
-                    </p>
-                )}
             </div>
         </div>
     );

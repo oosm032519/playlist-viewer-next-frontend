@@ -10,7 +10,8 @@ import {RecommendationsTable} from "./RecommendationsTable";
 import {AudioFeatures} from "../types/audioFeaturesTypes";
 import {FavoriteContext} from "../context/FavoriteContext";
 import DOMPurify from 'dompurify';
-import {useUser} from '@/app/context/UserContext'
+import {useUser} from '@/app/context/UserContext';
+import CombinedAudioFeaturesChart from "./CombinedAudioFeaturesChart";
 
 /**
  * プレイリストの詳細情報を表示するためのコンポーネントのプロパティ
@@ -43,7 +44,6 @@ const GenreDistributionChart: React.FC<{
     if (Object.keys(genreCounts).length > 0) {
         return (
             <div className="mt-8">
-                <h3 className="text-lg font-semibold mb-4">ジャンル分布:</h3>
                 <GenreChart genreCounts={genreCounts} playlistName={playlistName}/>
             </div>
         );
@@ -73,6 +73,7 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
     const {favorites, addFavorite, removeFavorite} = useContext(FavoriteContext);
     const {isLoggedIn} = useUser();
     const [isFavorite, setIsFavorite] = useState(false);
+    const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
     
     /**
      * お気に入りの状態をチェックする関数
@@ -138,7 +139,8 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                     <span>by </span>
                     <span>{sanitizedOwnerName}</span>
                     <button onClick={handleStarClick} className="focus:outline-none ml-2">
-                        <span className={`text-2xl ${isFavorite ? 'text-yellow-400' : 'text-gray-400'}`}>
+                        <span
+                            className={`text-2xl ${isFavorite ? 'text-yellow-400' : 'text-gray-400'}`}>
                             {isFavorite ? '★' : '☆'}
                         </span>
                     </button>
@@ -153,12 +155,33 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
             <PlaylistDetailsTable
                 tracks={tracks}
                 averageAudioFeatures={averageAudioFeatures}
+                selectedTrack={selectedTrack}
+                onTrackSelect={setSelectedTrack}
             />
             
-            <GenreDistributionChart
-                genreCounts={genreCounts}
-                playlistName={playlistName}
-            />
+            <div className="flex flex-col md:flex-row gap-8">
+                <div className="w-full md:w-1/2">
+                    <h3 className="text-lg font-semibold mb-4">Audio Features:</h3>
+                    <div className="w-full max-w-2xl mx-auto mb-8">
+                        <CombinedAudioFeaturesChart
+                            track={selectedTrack || undefined}
+                            averageAudioFeatures={averageAudioFeatures}
+                        />
+                        {!selectedTrack && (
+                            <p className="mt-4 text-center text-gray-500">
+                                トラックを選択すると、個別の Audio Features が表示されます。
+                            </p>
+                        )}
+                    </div>
+                </div>
+                <div className="w-full md:w-1/2">
+                    <h3 className="text-lg font-semibold mb-4">ジャンル:</h3>
+                    <GenreDistributionChart
+                        genreCounts={genreCounts}
+                        playlistName={playlistName}
+                    />
+                </div>
+            </div>
             
             <div className="mt-8">
                 <h3 className="text-lg font-semibold mb-4">おすすめ:</h3>
