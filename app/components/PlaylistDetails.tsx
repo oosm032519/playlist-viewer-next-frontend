@@ -2,6 +2,7 @@
 
 "use client";
 
+import {playlistDetailsTableColumns} from '@/app/lib/PlaylistDetailsTableColumns'
 import React, {useContext, useState, useEffect, useCallback} from "react";
 import {Track} from "../types/track";
 import {PlaylistDetailsTable} from "./PlaylistDetailsTable";
@@ -12,6 +13,8 @@ import {FavoriteContext} from "../context/FavoriteContext";
 import DOMPurify from 'dompurify';
 import {useUser} from '@/app/context/UserContext';
 import CombinedAudioFeaturesChart from "./CombinedAudioFeaturesChart";
+import {CSVLink} from "react-csv"; // CSVLinkをインポート
+import {Button} from "./ui/button"; // Buttonコンポーネントをインポート
 
 /**
  * プレイリストの詳細情報を表示するためのコンポーネントのプロパティ
@@ -70,6 +73,29 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                                                              totalTracks,
                                                              ownerName,
                                                          }) => {
+    
+    const generateCsvData = () => {
+        const headers = playlistDetailsTableColumns.map((column) => column.header as string);
+        const data = tracks.map((track) =>
+            playlistDetailsTableColumns.map((column) => {
+                if (column.id === "album") {
+                    return track.album.name;
+                }
+                if (column.id === "artists") {
+                    return track.artists[0].name;
+                }
+                if ('accessorFn' in column && column.accessorFn) {
+                    return column.accessorFn(track, 0);
+                }
+                if ('accessorKey' in column && column.accessorKey) {
+                    return track[column.accessorKey as keyof Track];
+                }
+                return '';
+            })
+        );
+        return [headers, ...data];
+    };
+    
     const {favorites, addFavorite, removeFavorite} = useContext(FavoriteContext);
     const {isLoggedIn} = useUser();
     const [isFavorite, setIsFavorite] = useState(false);
@@ -139,17 +165,24 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                     <span>by </span>
                     <span>{sanitizedOwnerName}</span>
                     <button onClick={handleStarClick} className="focus:outline-none ml-2">
-                        <span
-                            className={`text-2xl ${isFavorite ? 'text-yellow-400' : 'text-gray-400'}`}>
-                            {isFavorite ? '★' : '☆'}
-                        </span>
+                       <span className={`text-2xl ${isFavorite ? 'text-yellow-400' : 'text-gray-400'}`}>
+                           {isFavorite ? '★' : '☆'}
+                       </span>
                     </button>
                 </div>
             )}
             
-            <div className="text-center my-4">
-                <h2 className="text-xl">楽曲数: {totalTracks}</h2>
-                <h2 className="text-xl">総再生時間: {totalDuration}</h2>
+            <div className="my-4 flex justify-between items-center">
+                {/* CSVエクスポートボタン */}
+                <CSVLink data={generateCsvData()} filename="playlist_details.csv" className="flex-none">
+                    <Button variant="default" className="mb-4">
+                        CSVをエクスポート
+                    </Button>
+                </CSVLink>
+                <div className="flex-grow text-center">
+                    <h2 className="text-xl">楽曲数: {totalTracks}</h2>
+                    <h2 className="text-xl">総再生時間: {totalDuration}</h2>
+                </div>
             </div>
             
             <PlaylistDetailsTable
@@ -176,21 +209,14 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                 </div>
                 <div className="w-full md:w-1/2">
                     <h3 className="text-lg font-semibold mb-4">ジャンル:</h3>
-                    <GenreDistributionChart
-                        genreCounts={genreCounts}
-                        playlistName={playlistName}
-                    />
+                    <GenreDistributionChart genreCounts={genreCounts} playlistName={playlistName}/>
                 </div>
             </div>
             
             <div className="mt-8">
                 <h3 className="text-lg font-semibold mb-4">おすすめ:</h3>
-                <RecommendationsTable
-                    tracks={recommendations}
-                    ownerId={ownerId}
-                    userId={userId}
-                    playlistId={playlistId}
-                />
+                <RecommendationsTable tracks={recommendations} ownerId={ownerId} userId={userId}
+                                      playlistId={playlistId}/>
             </div>
         </>
     );
