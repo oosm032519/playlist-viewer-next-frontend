@@ -1,65 +1,35 @@
 // CombinedAudioFeaturesChart.tsx
 
 import React from 'react';
-import {
-    Radar,
-    RadarChart,
-    PolarGrid,
-    PolarAngleAxis,
-    PolarRadiusAxis,
-    ResponsiveContainer,
-    Legend,
-    Tooltip
-} from 'recharts';
+import {Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis} from 'recharts';
 import {AudioFeaturesChartProps} from '../types/audioFeaturesTypes';
 import {prepareAudioFeaturesData} from '../lib/audioFeaturesUtils';
 import {AudioFeatures} from '../types/audioFeaturesTypes';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from "./ui/card";
+import {
+    ChartConfig,
+    ChartContainer,
+    ChartLegend,
+    ChartLegendContent,
+    ChartTooltip,
+    ChartTooltipContent,
+} from "./ui/chart";
 
-/**
- * CombinedAudioFeaturesChartコンポーネントのプロパティを定義します。
- */
 interface CombinedAudioFeaturesChartProps {
-    /**
-     * トラックのオーディオフィーチャー情報。オプションで指定可能。
-     */
     track?: AudioFeaturesChartProps['track'];
-    
-    /**
-     * 平均オーディオフィーチャー情報。
-     */
     averageAudioFeatures: AudioFeatures;
+    playlistName: string | null;
 }
 
-/**
- * カスタムツールチップのプロパティを定義します。
- */
-type CustomTooltipProps = {
-    active?: boolean;
-    payload?: Array<{ value: number; name: string }>;
-    label?: string;
-};
-
-/**
- * CombinedAudioFeaturesChartコンポーネント
- *
- * このコンポーネントは、与えられたトラックと平均のオーディオフィーチャーを
- * レーダーチャートとして表示します。
- *
- * @param {CombinedAudioFeaturesChartProps} props - コンポーネントのプロパティ
- * @returns {JSX.Element} レーダーチャートを描画するReactコンポーネント
- */
-const CombinedAudioFeaturesChart: React.FC<CombinedAudioFeaturesChartProps> = ({track, averageAudioFeatures}) => {
-    // AudioFeaturesの説明
-    const featureDescriptions = {
-        Acousticness: 'アコースティックである度合い',
-        Danceability: 'ダンスに適している度合い',
-        Energy: '活気やインテンシティ',
-        Liveness: 'ライブパフォーマンスの特徴を持つ度合い',
-        Speechiness: '話し言葉の存在度合い',
-        Valence: '音楽的なポジティブさ'
-    };
-    
-    // 平均オーディオフィーチャーのデータを準備
+const CombinedAudioFeaturesChart: React.FC<CombinedAudioFeaturesChartProps> = ({track, averageAudioFeatures,
+                                                                                   playlistName}) => {
     const averageData = [
         {feature: 'Acousticness', value: averageAudioFeatures.acousticness},
         {feature: 'Danceability', value: averageAudioFeatures.danceability},
@@ -69,64 +39,61 @@ const CombinedAudioFeaturesChart: React.FC<CombinedAudioFeaturesChartProps> = ({
         {feature: 'Valence', value: averageAudioFeatures.valence},
     ];
     
-    // トラックのオーディオフィーチャーのデータを準備
     const trackData = track ? prepareAudioFeaturesData(track.audioFeatures) : [];
     
-    // 平均データとトラックデータを結合
     const combinedData = averageData.map((item, index) => ({
         ...item,
         trackValue: trackData[index]?.value,
     }));
     
-    // Tooltip の内容をカスタマイズする関数
-    const CustomTooltip = ({active, payload, label}: CustomTooltipProps) => {
-        if (active && payload && payload.length) {
-            return (
-                <div
-                    style={{
-                        backgroundColor: '#333',
-                        color: 'white',
-                        padding: '10px',
-                        borderRadius: '5px',
-                        boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
-                    }}
-                >
-                    <p style={{margin: 0}}>{`${label}: ${featureDescriptions[label as keyof typeof featureDescriptions]}`}</p>
-                    {track && <p style={{margin: 0}}>{`${track.name}: ${payload[0].value}`}</p>}
-                    <p style={{margin: 0}}>{`プレイリスト平均: ${payload[track ? 1 : 0].value}`}</p>
-                </div>
-            );
-        }
-        
-        return null;
-    };
+    const chartConfig = {
+        trackValue: {
+            label: track ? track.name : "トラック",
+            color: "hsl(var(--chart-1))",
+        },
+        value: {
+            label: playlistName,
+            color: "hsl(var(--chart-2))",
+        },
+    } satisfies ChartConfig;
     
     return (
-        <ResponsiveContainer width="100%" height={400}>
-            <RadarChart cx="50%" cy="50%" outerRadius="80%" data={combinedData}>
-                <PolarGrid/>
-                <PolarAngleAxis dataKey="feature"/>
-                <PolarRadiusAxis angle={30} domain={[0, 1]}/>
-                {track && (
-                    <Radar
-                        name={`${track.name}`}
-                        dataKey="trackValue"
-                        stroke="#8884d8"
-                        fill="#8884d8"
-                        fillOpacity={0.6}
-                    />
-                )}
-                <Radar
-                    name="プレイリスト平均"
-                    dataKey="value"
-                    stroke="#82ca9d"
-                    fill="#82ca9d"
-                    fillOpacity={0.6}
-                />
-                <Legend/>
-                <Tooltip content={<CustomTooltip/>}/>
-            </RadarChart>
-        </ResponsiveContainer>
+        <Card>
+            <CardHeader className="items-center pb-4">
+                <CardTitle>{playlistName || 'Audio Features レーダーチャート'}</CardTitle>
+                <CardDescription>
+                    選択トラックとプレイリスト平均のAudio Featuresの比較
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[400px]">
+                    <RadarChart data={combinedData} cx="50%" cy="50%" outerRadius="80%">
+                        <PolarGrid/>
+                        <PolarAngleAxis dataKey="feature"/>
+                        <PolarRadiusAxis angle={30} domain={[0, 1]}/>
+                        {track && (
+                            <Radar
+                                name={`${track.name}`}
+                                dataKey="trackValue"
+                                fill="var(--color-trackValue)"
+                                fillOpacity={0.6}
+                            />
+                        )}
+                        <Radar
+                            name={`${playlistName}`}
+                            dataKey="value"
+                            fill="var(--color-value)"
+                            fillOpacity={0.6}
+                        />
+                        <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line"/>}/>
+                        <ChartLegend className="mt-8" content={<ChartLegendContent/>}/>
+                    </RadarChart>
+                </ChartContainer>
+            </CardContent>
+            <CardFooter className="flex-col gap-2 pt-4 text-sm">
+                {/* フッターコンテンツを追加する場合はここに */}
+            </CardFooter>
+        </Card>
     );
 };
 

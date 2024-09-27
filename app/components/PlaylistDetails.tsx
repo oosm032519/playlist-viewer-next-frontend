@@ -196,12 +196,12 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
             />
             
             <div className="flex flex-col md:flex-row gap-8">
-                <div className="w-full md:w-1/2">
-                    <h3 className="text-lg font-semibold mb-4">Audio Features:</h3>
+                <div className="w-full md:w-1/2 flex justify-center items-center">
                     <div className="w-full max-w-2xl mx-auto mb-8">
                         <CombinedAudioFeaturesChart
                             track={selectedTrack || undefined}
                             averageAudioFeatures={averageAudioFeatures}
+                            playlistName={playlistName}
                         />
                         {!selectedTrack && (
                             <p className="mt-4 text-center text-gray-500">
@@ -210,8 +210,7 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                         )}
                     </div>
                 </div>
-                <div className="w-full md:w-1/2">
-                    <h3 className="text-lg font-semibold mb-4">ジャンル:</h3>
+                <div className="w-full md:w-1/2 flex justify-center items-center">
                     <GenreDistributionChart genreCounts={genreCounts} playlistName={playlistName}/>
                 </div>
             </div>
