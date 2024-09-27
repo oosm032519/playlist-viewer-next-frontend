@@ -25,7 +25,7 @@ export default function RootLayout({children}: { children: React.ReactNode }): J
     return (
         <html lang="ja" suppressHydrationWarning>
         <body
-            className={`${inter.className} bg-light-background dark:bg-dark-background text-light-foreground dark:text-dark-foreground`}>
+            className={`${inter.className}`}>
         <ErrorBoundary>
             <QueryClientProvider client={queryClient}>
                 <UserContextProvider>
