@@ -19,10 +19,6 @@ const config = {
         },
         extend: {
             colors: {
-                'spotify-green': '#1DB954',
-                'gray-dark': '#121212',
-                'gray-medium': '#282828',
-                'gray-light': '#B3B3B3',
                 border: "hsl(var(--border))",
                 input: "hsl(var(--input))",
                 ring: "hsl(var(--ring))",
@@ -62,6 +58,8 @@ const config = {
                     primary: '#1ED760',
                     secondary: '#202222',
                     accent: '#2D2F2F',
+                    border: '#2B2C2D',
+                    placeholder: '#8D9191',
                 },
                 'light': {
                     background: '#E8E8E6',
@@ -69,6 +67,8 @@ const config = {
                     primary: '#1ED760',
                     secondary: '#F3F3EE',
                     accent: '#E8E8E3',
+                    border: '#EBEBE4',
+                    placeholder: '#64645F',
                 },
             },
             borderRadius: {

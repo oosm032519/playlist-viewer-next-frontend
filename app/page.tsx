@@ -104,16 +104,16 @@ function HomeContent(): JSX.Element {
     
     return (
         <Card
-            className="w-full h-full max-w-none mx-auto bg-light-background dark:bg-dark-background text-light-foreground dark:text-dark-foreground">
+            className="w-full h-full max-w-none mx-auto">
             <CardHeader>
                 <div className="flex justify-between items-center">
                     <LoginButton/>
-                    <CardTitle className="text-4xl font-bold text-spotify-green">
+                    <CardTitle className="text-4xl font-bold">
                         Playlist Viewer
                     </CardTitle>
                     <button
                         onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                        className="p-2 rounded-full bg-light-secondary dark:bg-dark-secondary text-light-foreground dark:text-dark-foreground"
+                        className="p-2 rounded-full"
                     >
                         {theme === 'dark' ? '🌞' : '🌙'}
                     </button>

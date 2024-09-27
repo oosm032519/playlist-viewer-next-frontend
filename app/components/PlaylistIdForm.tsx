@@ -68,7 +68,8 @@ const PlaylistIdForm = ({onPlaylistSelect}: PlaylistIdFormProps): JSX.Element =>
     
     return (
         <>
-            <Card className="w-full mx-auto">
+            <Card
+                className="w-full mx-auto">
                 <CardHeader>
                     <CardTitle>Enter Playlist URL</CardTitle>
                 </CardHeader>
@@ -88,9 +89,10 @@ const PlaylistIdForm = ({onPlaylistSelect}: PlaylistIdFormProps): JSX.Element =>
                             placeholder="Enter playlist URL"
                             value={playlistId}
                             onChange={(e) => setPlaylistId(e.target.value)}
-                            disabled={mutation.isPending}
-                        />
-                        <Button type="submit" disabled={mutation.isPending}>
+                            disabled={mutation.isPending}/>
+                        <Button
+                            type="submit"
+                            disabled={mutation.isPending}>
                             {mutation.isPending ? 'Submitting...' : 'Submit'}
                         </Button>
                     </form>

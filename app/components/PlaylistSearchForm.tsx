@@ -128,7 +128,8 @@ export default function PlaylistSearchForm({
     
     return (
         <>
-            <Card className="w-full mx-auto">
+            <Card
+                className="w-full mx-auto">
                 <CardHeader>
                     <CardTitle>Enter Playlist Name</CardTitle>
                 </CardHeader>
