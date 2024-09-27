@@ -19,7 +19,7 @@
       </option>
     </inspection_tool>
     <inspection_tool class="RequiredAttributes" enabled="true" level="WARNING" enabled_by_default="true">
-      <option name="myAdditionalRequiredHtmlAttributes" value="genreCounts" />
+      <option name="myAdditionalRequiredHtmlAttributes" value="genreCounts,config" />
     </inspection_tool>
   </profile>
 </component>
