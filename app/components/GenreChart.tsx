@@ -1,93 +1,149 @@
-// app/components/GenreChart.tsx
+"use client"
 
 import React from 'react';
+import {Pie, PieChart, Cell} from "recharts";
 import {
-    PieChart,
-    Pie,
-    Cell,
-    ResponsiveContainer,
-    Tooltip,
-    Legend,
-    Text as RechartsText,
-} from 'recharts';
-import CustomTooltip from './CustomTooltip';
-import prepareChartData from '../utils/prepareChartData';
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from "./ui/card";
+import {
+    ChartConfig,
+    ChartContainer,
+    ChartTooltip,
+} from "./ui/chart";
 
 interface GenreChartProps {
-    /**
-     * ジャンルごとのカウントを保持するオブジェクト
-     * キーはジャンル名、値はそのジャンルのカウント
-     */
     genreCounts: { [genre: string]: number };
-    /**
-     * プレイリストの名前
-     * nullの場合、空文字列として扱う
-     */
     playlistName: string | null;
 }
 
-/**
- * GenreChartコンポーネント
- *
- * ジャンルごとのカウントを円グラフとして表示するコンポーネント。
- * プレイリスト名をグラフの中央に表示し、各ジャンルを異なる色で表現する。
- *
- * @param {GenreChartProps} props - ジャンルのカウントとプレイリスト名を含むプロパティ
- * @returns {JSX.Element} - ジャンルごとのカウントを表示する円グラフ
- */
+const COLORS = [
+    'hsl(var(--chart-1))',
+    'hsl(var(--chart-2))',
+    'hsl(var(--chart-3))',
+    'hsl(var(--chart-4))',
+    'hsl(var(--chart-5))',
+];
+
 const GenreChart: React.FC<GenreChartProps> = ({
                                                    genreCounts,
                                                    playlistName,
                                                }) => {
-    // ジャンルのカウントの合計を計算
-    const total = Object.values(genreCounts).reduce(
-        (sum, count) => sum + count,
-        0
-    );
+    const total = Object.values(genreCounts).reduce((sum, count) => sum + count, 0);
     
-    // グラフ用のデータを準備
-    const data = prepareChartData(genreCounts, total);
+    const sortedGenres = Object.entries(genreCounts)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 4);
     
-    // グラフの各セクションの色を定義
-    const COLORS = [
-        '#FF8C9E', '#7FD8A6', '#7FBFFF', '#FFE066', '#FFAF7A',
-        '#C490D1', '#66E0E0', '#FF9EFF', '#B8D86B', '#FF6B6B',
+    const otherCount = Object.entries(genreCounts)
+        .sort(([, a], [, b]) => b - a)
+        .slice(4)
+        .reduce((sum, [, count]) => sum + count, 0);
+    
+    const data = [
+        ...sortedGenres.map(([name, value], index) => ({
+            name,
+            value,
+            percentage: (value / total) * 100,
+            color: COLORS[index % COLORS.length]
+        })),
+        {
+            name: 'その他',
+            value: otherCount,
+            percentage: (otherCount / total) * 100,
+            color: COLORS[4]
+        }
     ];
     
+    const chartConfig: ChartConfig = data.reduce((config, item) => {
+        config[item.name] = {
+            label: item.name,
+            color: item.color,
+        };
+        return config;
+    }, {} as ChartConfig);
+    
+    // カスタムツールチップコンテンツ
+    const CustomTooltipContent = ({active, payload}: any) => {
+        if (active && payload && payload.length) {
+            const data = payload[0].payload;
+            return (
+                <div
+                    style={{
+                        backgroundColor: '#333',
+                        color: 'white',
+                        padding: '10px',
+                        border: 'none',
+                        borderRadius: '5px',
+                        boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+                    }}
+                >
+                    <div style={{display: 'flex', alignItems: 'center'}}>
+                        <div
+                            style={{
+                                width: '10px',
+                                height: '10px',
+                                borderRadius: '50%',
+                                backgroundColor: data.color,
+                                marginRight: '8px',
+                            }}
+                        />
+                        <p style={{margin: 0}}>{`${data.name}: ${data.percentage.toFixed(1)}%`}</p>
+                    </div>
+                </div>
+            );
+        }
+        return null;
+    };
+    
     return (
-        <ResponsiveContainer width='100%' height={300}>
-            <PieChart>
-                {/* プレイリスト名を中央に表示 */}
-                <RechartsText
-                    x={125}
-                    y={150}
-                    textAnchor='middle'
-                    dominantBaseline='central'
-                    fontSize={16}
+        <Card className="flex flex-col">
+            <CardHeader className="items-center pb-0">
+                <CardTitle>{playlistName || 'ジャンル分布'}</CardTitle>
+                <CardDescription>プレイリストのジャンル分布</CardDescription>
+            </CardHeader>
+            <CardContent className="flex-1 pb-0">
+                <ChartContainer
+                    config={chartConfig}
+                    className="mx-auto aspect-square max-h-[250px]"
                 >
-                    {playlistName || ''}
-                </RechartsText>
-                <Pie
-                    data={data}
-                    cx='50%'
-                    cy='50%'
-                    labelLine={false}
-                    outerRadius={100}
-                    innerRadius={80}
-                    fill='#8884d8'
-                    dataKey='value'
-                >
-                    {/* 各セクションに色を適用 */}
-                    {data.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]}/>
-                    ))}
-                </Pie>
-                {/* カスタムツールチップを表示 */}
-                <Tooltip content={<CustomTooltip/>}/>
-                {/* 凡例を表示 */}
-                <Legend/>
-            </PieChart>
-        </ResponsiveContainer>
+                    <PieChart>
+                        <ChartTooltip
+                            cursor={false}
+                            content={<CustomTooltipContent/>}
+                        />
+                        <Pie
+                            data={data}
+                            dataKey="value"
+                            nameKey="name"
+                            innerRadius={60}
+                            outerRadius={80}
+                        >
+                            {data.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.color}/>
+                            ))}
+                        </Pie>
+                    </PieChart>
+                </ChartContainer>
+            </CardContent>
+            <CardFooter className="flex flex-wrap justify-center gap-4 pt-4">
+                {data.map((entry, index) => (
+                    <div key={`legend-${index}`} className="flex items-center">
+                        <div
+                            className="w-3 h-3 mr-2 rounded-full"
+                            style={{backgroundColor: entry.color}}
+                        />
+                        <span className="text-sm">
+                            {entry.name}: {entry.percentage.toFixed(1)}%
+                        </span>
+                    </div>
+                ))}
+            </CardFooter>
+        </Card>
     );
 };
 
