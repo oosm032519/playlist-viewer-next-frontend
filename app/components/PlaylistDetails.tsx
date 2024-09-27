@@ -195,22 +195,20 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                 onTrackSelect={setSelectedTrack}
             />
             
-            <div className="flex flex-col md:flex-row gap-8">
-                <div className="w-full md:w-1/2 flex justify-center items-center">
-                    <div className="w-full max-w-2xl mx-auto mb-8">
-                        <CombinedAudioFeaturesChart
-                            track={selectedTrack || undefined}
-                            averageAudioFeatures={averageAudioFeatures}
-                            playlistName={playlistName}
-                        />
-                        {!selectedTrack && (
-                            <p className="mt-4 text-center text-gray-500">
-                                トラックを選択すると、個別の Audio Features が表示されます。
-                            </p>
-                        )}
-                    </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="w-full">
+                    <CombinedAudioFeaturesChart
+                        track={selectedTrack || undefined}
+                        averageAudioFeatures={averageAudioFeatures}
+                        playlistName={playlistName}
+                    />
+                    {!selectedTrack && (
+                        <p className="mt-4 text-center text-gray-500">
+                            トラックを選択すると、個別の Audio Features が表示されます。
+                        </p>
+                    )}
                 </div>
-                <div className="w-full md:w-1/2 flex justify-center items-center">
+                <div className="w-full">
                     <GenreDistributionChart genreCounts={genreCounts} playlistName={playlistName}/>
                 </div>
             </div>
