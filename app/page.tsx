@@ -30,7 +30,7 @@ function HomeContent(): JSX.Element {
     const {fetchFavorites} = useContext(FavoriteContext);
     const [activeTab, setActiveTab] = useState('playlistId');
     const [showHeader, setShowHeader] = useState(true);
-    let lastScrollY = window.scrollY;
+    let lastScrollY = 0;
     
     // お気に入りのプレイリストをフェッチ
     useEffect(() => {
@@ -39,22 +39,23 @@ function HomeContent(): JSX.Element {
     
     // スクロールイベントによるヘッダーの表示制御
     useEffect(() => {
-        const handleScroll = () => {
-            if (window.scrollY > lastScrollY) {
-                // 下にスクロール
-                setShowHeader(false);
-            } else {
-                // 上にスクロール
-                setShowHeader(true);
-            }
-            lastScrollY = window.scrollY;
-        };
-        
-        window.addEventListener('scroll', handleScroll);
-        
-        return () => {
-            window.removeEventListener('scroll', handleScroll);
-        };
+        if (typeof window !== 'undefined') {
+            lastScrollY = window.scrollY; // クライアントサイドでのみ実行
+            const handleScroll = () => {
+                if (window.scrollY > lastScrollY) {
+                    setShowHeader(false);
+                } else {
+                    setShowHeader(true);
+                }
+                lastScrollY = window.scrollY;
+            };
+            
+            window.addEventListener('scroll', handleScroll);
+            
+            return () => {
+                window.removeEventListener('scroll', handleScroll);
+            };
+        }
     }, []);
     
     // URLのハッシュからトークンを取得し、セッションを確立
