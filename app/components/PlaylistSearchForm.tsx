@@ -129,9 +129,9 @@ export default function PlaylistSearchForm({
     return (
         <>
             <Card
-                className="w-full mx-auto">
+                className="w-full mt-4">
                 <CardHeader>
-                    <CardTitle>Enter Playlist Name</CardTitle>
+                    <CardTitle className="text-2xl font-bold">プレイリスト名</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <Form {...form}>

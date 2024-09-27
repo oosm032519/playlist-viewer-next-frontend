@@ -2,6 +2,7 @@
 
 "use client";
 
+import {Card, CardContent, CardHeader, CardTitle} from '@/app/components/ui/card'
 import {playlistDetailsTableColumns} from '@/app/lib/PlaylistDetailsTableColumns'
 import React, {useContext, useState, useEffect, useCallback} from "react";
 import {Track} from "../types/track";
@@ -157,12 +158,14 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
     
     return (
         <>
+            <Card>
+                <CardHeader>
             {playlistName && (
-                <div className="text-center my-4 flex items-center justify-center">
+                <CardTitle className="text-center my-4 flex items-center justify-center">
                     <h1 className="text-2xl font-bold mr-2">
                         {sanitizedPlaylistName}
                     </h1>
-                    <span>by </span>
+                    <span className="mr-2">by </span>
                     <span>{sanitizedOwnerName}</span>
                     {/* ログインしている場合のみ星ボタンを表示 */}
                     {isLoggedIn && (
@@ -172,9 +175,11 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                             </span>
                         </button>
                     )}
-                </div>
+                </CardTitle>
             )}
-            
+                </CardHeader>
+                
+                <CardContent>
             <div className="my-4 flex justify-between items-center">
                 {/* CSVエクスポートボタン */}
                 <CSVLink data={generateCsvData()} filename="playlist_details.csv" className="flex-none">
@@ -194,6 +199,8 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                 selectedTrack={selectedTrack}
                 onTrackSelect={setSelectedTrack}
             />
+                </CardContent>
+                </Card>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="w-full">
@@ -202,22 +209,19 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                         averageAudioFeatures={averageAudioFeatures}
                         playlistName={playlistName}
                     />
-                    {!selectedTrack && (
-                        <p className="mt-4 text-center text-gray-500">
-                            トラックを選択すると、個別の Audio Features が表示されます。
-                        </p>
-                    )}
                 </div>
                 <div className="w-full">
                     <GenreDistributionChart genreCounts={genreCounts} playlistName={playlistName}/>
                 </div>
             </div>
             
-            <div className="mt-8">
-                <h3 className="text-lg font-semibold mb-4">おすすめ:</h3>
+                <Card className="mt-4">
+                <CardHeader className="text-2xl font-bold">おすすめ楽曲</CardHeader>
+                    <CardContent>
                 <RecommendationsTable tracks={recommendations} ownerId={ownerId} userId={userId}
                                       playlistId={playlistId}/>
-            </div>
+                    </CardContent>
+                </Card>
         </>
     );
 };

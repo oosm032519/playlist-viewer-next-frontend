@@ -59,7 +59,7 @@ const CombinedAudioFeaturesChart: React.FC<CombinedAudioFeaturesChartProps> = ({
     
     return (
         <Card>
-            <CardHeader className="items-center pb-4">
+            <CardHeader className="items-center pb-0">
                 <CardTitle>{playlistName || 'Audio Features レーダーチャート'}</CardTitle>
                 <CardDescription>
                     選択トラックとプレイリスト平均のAudio Featuresの比較
@@ -91,7 +91,7 @@ const CombinedAudioFeaturesChart: React.FC<CombinedAudioFeaturesChartProps> = ({
                 </ChartContainer>
             </CardContent>
             <CardFooter className="flex-col gap-2 pt-4 text-sm">
-                {/* フッターコンテンツを追加する場合はここに */}
+                <span>トラックを選択すると、個別の Audio Features が表示されます。</span>
             </CardFooter>
         </Card>
     );

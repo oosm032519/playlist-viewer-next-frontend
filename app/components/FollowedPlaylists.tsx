@@ -58,8 +58,7 @@ const FollowedPlaylists: React.FC<FollowedPlaylistsProps> = ({onPlaylistClick}) 
     }
     
     return (
-        <div className="mt-8">
-            <h2 className="text-2xl font-bold mb-4">フォロー中のプレイリスト</h2>
+        <div>
             {playlists && playlists.length === 0 ? (
                 <p>フォロー中のプレイリストはありません。</p>
             ) : (

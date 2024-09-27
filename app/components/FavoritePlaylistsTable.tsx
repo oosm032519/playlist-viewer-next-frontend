@@ -193,7 +193,6 @@ const FavoritePlaylistsTable: React.FC = () => {
     
     return (
         <>
-            <h2 className="text-2xl font-bold mb-4">お気に入り</h2>
             <Table>
                 <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (

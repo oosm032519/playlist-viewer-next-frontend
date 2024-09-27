@@ -2,6 +2,7 @@
 
 "use client";
 
+import {Card, CardContent, CardHeader, CardTitle} from '@/app/components/ui/card'
 import React, {useEffect, useState, useContext} from "react";
 import PlaylistSearchForm from "./components/PlaylistSearchForm";
 import PlaylistIdForm from "./components/PlaylistIdForm";
@@ -157,7 +158,16 @@ function HomeContent(): JSX.Element {
                     onPlaylistClick={handlePlaylistClick}
                 />
             </div>
-            {isLoggedIn && <FavoritePlaylistsTable/>}
+            {isLoggedIn &&
+                <Card className="mt-4">
+                    <CardHeader>
+                        <CardTitle className="text-2xl font-bold">お気に入り</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <FavoritePlaylistsTable/>
+                    </CardContent>
+                </Card>
+            }
         </div>
     );
 }

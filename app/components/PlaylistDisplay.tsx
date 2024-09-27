@@ -1,5 +1,7 @@
 // app/components/PlaylistDisplay.tsx
 
+import {Card, CardContent, CardHeader, CardTitle} from '@/app/components/ui/card'
+import React from 'react'
 import PlaylistTable from "./PlaylistTable";
 import PlaylistDetailsLoader from "./PlaylistDetailsLoader";
 import FollowedPlaylists from "./FollowedPlaylists";
@@ -39,12 +41,19 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({
         <>
             {/* プレイリストが存在し、何も選択されていない場合にプレイリストテーブルを表示 */}
             {playlists.length > 0 && !selectedPlaylistId && (
-                <PlaylistTable
-                    playlists={playlists}
-                    onPlaylistClick={onPlaylistClick}
-                    totalPlaylists={playlists.length}
-                    currentPage={1} // 現在のページを固定で1に設定
-                />
+                <Card className="mt-4">
+                    <CardHeader>
+                        <CardTitle className="text-2xl font-bold">プレイリスト</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <PlaylistTable
+                            playlists={playlists}
+                            onPlaylistClick={onPlaylistClick}
+                            totalPlaylists={playlists.length}
+                            currentPage={1} // 現在のページを固定で1に設定
+                        />
+                    </CardContent>
+                </Card>
             )}
             
             {/* 選択されたプレイリストがある場合にその詳細をロード */}
@@ -56,7 +65,16 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({
             )}
             
             {/* ユーザーがログインしている場合にフォローしているプレイリストを表示 */}
-            {isLoggedIn && <FollowedPlaylists onPlaylistClick={onPlaylistClick}/>}
+            {isLoggedIn && (
+                <Card className="mt-4">
+                    <CardHeader>
+                        <CardTitle className="text-2xl font-bold">フォロー中のプレイリスト</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <FollowedPlaylists onPlaylistClick={onPlaylistClick}/>
+                    </CardContent>
+                </Card>
+            )}
         </>
     );
 };
