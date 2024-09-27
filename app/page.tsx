@@ -3,7 +3,6 @@
 "use client";
 
 import React, {useEffect, useState, useContext} from "react";
-import {Card, CardHeader, CardTitle, CardContent} from "./components/ui/card";
 import PlaylistSearchForm from "./components/PlaylistSearchForm";
 import PlaylistIdForm from "./components/PlaylistIdForm";
 import LoginButton from "./components/LoginButton";
@@ -30,11 +29,33 @@ function HomeContent(): JSX.Element {
     const {setSelectedPlaylistId} = usePlaylist();
     const {fetchFavorites} = useContext(FavoriteContext);
     const [activeTab, setActiveTab] = useState('playlistId');
+    const [showHeader, setShowHeader] = useState(true);
+    let lastScrollY = window.scrollY;
     
     // お気に入りのプレイリストをフェッチ
     useEffect(() => {
         fetchFavorites();
     }, [fetchFavorites]);
+    
+    // スクロールイベントによるヘッダーの表示制御
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.scrollY > lastScrollY) {
+                // 下にスクロール
+                setShowHeader(false);
+            } else {
+                // 上にスクロール
+                setShowHeader(true);
+            }
+            lastScrollY = window.scrollY;
+        };
+        
+        window.addEventListener('scroll', handleScroll);
+        
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+        };
+    }, []);
     
     // URLのハッシュからトークンを取得し、セッションを確立
     useEffect(() => {
@@ -103,46 +124,40 @@ function HomeContent(): JSX.Element {
     };
     
     return (
-        <Card
-            className="w-full h-full max-w-none mx-auto">
-            <CardHeader>
-                <div className="flex justify-between items-center">
-                    <LoginButton/>
-                    <CardTitle className="text-4xl font-bold">
-                        Playlist Viewer
-                    </CardTitle>
-                    <button
-                        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                        className="p-2 rounded-full"
-                    >
-                        {theme === 'dark' ? '🌞' : '🌙'}
-                    </button>
-                </div>
-            </CardHeader>
-            <CardContent>
-                <div className="space-y-6">
-                    <Tabs defaultValue="playlistId" value={activeTab} onValueChange={setActiveTab}>
-                        <TabsList>
-                            <TabsTrigger value="playlistId">URLで検索</TabsTrigger>
-                            <TabsTrigger value="playlistSearch">プレイリスト名で検索</TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="playlistId">
-                            <PlaylistIdForm onPlaylistSelect={handlePlaylistClick}/>
-                        </TabsContent>
-                        <TabsContent value="playlistSearch">
-                            <PlaylistSearchForm onSearch={handleSearch}/>
-                        </TabsContent>
-                    </Tabs>
-                    {error && <ErrorAlert error={error}/>}
-                    <PlaylistDisplay
-                        playlists={playlists}
-                        userId={userId || undefined}
-                        onPlaylistClick={handlePlaylistClick}
-                    />
-                </div>
-                {isLoggedIn && <FavoritePlaylistsTable/>}
-            </CardContent>
-        </Card>
+        <div className="w-full h-full max-w-none mx-auto pt-20 p-4 bg-background shadow-md rounded-lg">
+            <div
+                className={`fixed top-0 left-0 right-0 flex justify-between items-center bg-popover p-4 shadow-md z-10 transition-transform duration-300 ${showHeader ? 'transform-none' : '-translate-y-full'}`}>
+                <LoginButton/>
+                <h1 className="text-4xl font-bold text-primary">Playlist Viewer</h1>
+                <button
+                    onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                    className="p-2 rounded-full"
+                >
+                    {theme === 'dark' ? '🌞' : '🌙'}
+                </button>
+            </div>
+            <div className="space-y-6">
+                <Tabs defaultValue="playlistId" value={activeTab} onValueChange={setActiveTab}>
+                    <TabsList>
+                        <TabsTrigger value="playlistId">URLで検索</TabsTrigger>
+                        <TabsTrigger value="playlistSearch">プレイリスト名で検索</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="playlistId">
+                        <PlaylistIdForm onPlaylistSelect={handlePlaylistClick}/>
+                    </TabsContent>
+                    <TabsContent value="playlistSearch">
+                        <PlaylistSearchForm onSearch={handleSearch}/>
+                    </TabsContent>
+                </Tabs>
+                {error && <ErrorAlert error={error}/>}
+                <PlaylistDisplay
+                    playlists={playlists}
+                    userId={userId || undefined}
+                    onPlaylistClick={handlePlaylistClick}
+                />
+            </div>
+            {isLoggedIn && <FavoritePlaylistsTable/>}
+        </div>
     );
 }
 
