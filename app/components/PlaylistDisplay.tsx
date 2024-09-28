@@ -125,7 +125,7 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({
             {currentPlaylists.length > 0 && !selectedPlaylistId && (
                 <Card className="mt-4">
                     <CardHeader>
-                        <CardTitle className="text-2xl font-bold">プレイリスト</CardTitle>
+                        <CardTitle className="text-2xl font-bold">検索結果</CardTitle>
                         <Pagination>
                             <PaginationContent>
                                 <PaginationItem>

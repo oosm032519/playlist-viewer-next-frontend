@@ -1,9 +1,9 @@
 // app/components/PlaylistIdForm.tsx
+
 "use client";
 
 import {useState} from "react";
 import {useMutation} from "@tanstack/react-query";
-import {Card, CardContent, CardHeader, CardTitle} from "./ui/card";
 import {Button} from "./ui/button";
 import {Input} from "./ui/input";
 import LoadingSpinner from "./LoadingSpinner";
@@ -68,36 +68,28 @@ const PlaylistIdForm = ({onPlaylistSelect}: PlaylistIdFormProps): JSX.Element =>
     
     return (
         <>
-            <Card
-                className="w-full mt-4">
-                <CardHeader>
-                    <CardTitle className="text-2xl font-bold">プレイリストURL</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    {/* エラーメッセージ表示領域 */}
-                    {errorMessage && (
-                        <Alert variant="destructive">
-                            <AlertTitle>Error</AlertTitle>
-                            <AlertDescription>{errorMessage}</AlertDescription>
-                        </Alert>
-                    )}
-                    
-                    {/* プレイリストURL入力フォーム */}
-                    <form onSubmit={handleSubmit} className="flex space-x-2">
-                        <Input
-                            type="text"
-                            placeholder="Enter playlist URL"
-                            value={playlistId}
-                            onChange={(e) => setPlaylistId(e.target.value)}
-                            disabled={mutation.isPending}/>
-                        <Button
-                            type="submit"
-                            disabled={mutation.isPending}>
-                            {mutation.isPending ? 'Submitting...' : 'Submit'}
-                        </Button>
-                    </form>
-                </CardContent>
-            </Card>
+            {/* エラーメッセージ表示領域 */}
+            {errorMessage && (
+                <Alert variant="destructive">
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>{errorMessage}</AlertDescription>
+                </Alert>
+            )}
+            
+            {/* プレイリストURL入力フォーム */}
+            <form onSubmit={handleSubmit} className="flex space-x-2">
+                <Input
+                    type="text"
+                    placeholder="Enter playlist URL"
+                    value={playlistId}
+                    onChange={(e) => setPlaylistId(e.target.value)}
+                    disabled={mutation.isPending}/>
+                <Button type="submit" disabled={mutation.isPending}>
+                    {mutation.isPending ? 'Submitting...' : 'Submit'}
+                </Button>
+            </form>
+            
+            {/* ローディングスピナー */}
             <LoadingSpinner loading={mutation.isPending}/>
         </>
     );

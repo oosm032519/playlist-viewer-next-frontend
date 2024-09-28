@@ -2,7 +2,7 @@
 
 "use client";
 
-import {Card, CardContent, CardHeader, CardTitle} from '@/app/components/ui/card'
+import {Card, CardContent, CardHeader, CardTitle} from '@/app/components/ui/card';
 import React, {useEffect, useState, useContext} from "react";
 import PlaylistSearchForm from "./components/PlaylistSearchForm";
 import PlaylistIdForm from "./components/PlaylistIdForm";
@@ -140,24 +140,33 @@ function HomeContent(): JSX.Element {
                 </button>
             </div>
             <div className="space-y-6">
-                <Tabs defaultValue="playlistId" value={activeTab} onValueChange={setActiveTab}>
-                    <TabsList>
-                        <TabsTrigger value="playlistId">URLで検索</TabsTrigger>
-                        <TabsTrigger value="playlistSearch">プレイリスト名で検索</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="playlistId">
-                        <PlaylistIdForm onPlaylistSelect={handlePlaylistClick}/>
-                    </TabsContent>
-                    <TabsContent value="playlistSearch">
-                        <PlaylistSearchForm onSearch={handleSearch}/> {/* handleSearch を渡す */}
-                    </TabsContent>
-                </Tabs>
+                <Card className="mt-4">
+                    <CardHeader>
+                        <CardTitle className="text-2xl font-bold">プレイリスト検索</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <Tabs defaultValue="playlistId" value={activeTab} onValueChange={setActiveTab}>
+                            <TabsList>
+                                <TabsTrigger value="playlistId">URLで検索</TabsTrigger>
+                                <TabsTrigger value="playlistSearch">プレイリスト名で検索</TabsTrigger>
+                            </TabsList>
+                            <TabsContent value="playlistId">
+                                <PlaylistIdForm onPlaylistSelect={handlePlaylistClick}/>
+                            </TabsContent>
+                            <TabsContent value="playlistSearch">
+                                <PlaylistSearchForm onSearch={handleSearch}/>
+                            </TabsContent>
+                        </Tabs>
+                    </CardContent>
+                </Card>
+                
                 {error && <ErrorAlert error={error}/>}
+                
                 <PlaylistDisplay
                     playlists={playlists}
                     userId={userId || undefined}
                     onPlaylistClick={handlePlaylistClick}
-                    onSearchQuery={searchQuery} // onSearchQuery プロパティを追加
+                    onSearchQuery={searchQuery}
                 />
             </div>
             {isLoggedIn &&
