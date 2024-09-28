@@ -36,7 +36,6 @@ interface PlaylistTableProps {
 export default function PlaylistTable({
                                           playlists,
                                           onPlaylistClick,
-                                          currentPage,
                                           totalPlaylists,
                                       }: PlaylistTableProps): JSX.Element {
     return (

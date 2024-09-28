@@ -8,4 +8,9 @@ export interface Playlist {
     name: string;
     description: string;
     images: PlaylistImage[];
+    externalUrls: {
+        externalUrls: {
+            spotify: string;
+        }
+    }
 }

@@ -1,5 +1,7 @@
 // app/components/PlaylistTableRow.tsx
 
+// app/components/PlaylistTableRow.tsx
+
 import {Playlist} from "../types/playlist";
 import {TableCell, TableRow} from "./ui/table";
 import DOMPurify from 'dompurify';
@@ -27,22 +29,27 @@ export default function PlaylistTableRow({playlist, onClick}: PlaylistTableRowPr
     }, [playlist]);
     
     return (
-        <TableRow onClick={onClick}>
+        <TableRow>
             <TableCell>
                 {sanitizedImageUrl ? (
-                    <img
-                        src={sanitizedImageUrl}
-                        alt={sanitizedName}
-                        width={48}
-                        height={48}
-                        loading="lazy"
-                    />
+                    // 画像をクリックするとSpotifyページに遷移
+                    <a href={playlist.externalUrls.externalUrls.spotify} target="_blank" rel="noopener noreferrer">
+                        <img
+                            src={sanitizedImageUrl}
+                            alt={sanitizedName}
+                            width={48}
+                            height={48}
+                            loading="lazy"
+                            className="cursor-pointer"
+                        />
+                    </a>
                 ) : (
                     <div className="w-12 h-12 bg-gray-200 rounded-full" data-testid="image-placeholder"></div>
                 )}
             </TableCell>
-            <TableCell>{sanitizedName}</TableCell>
-            <TableCell>{playlist.tracks.total}</TableCell>
+            <TableCell onClick={onClick}>{sanitizedName}</TableCell> {/* 名前列をクリックすると詳細表示 */}
+            <TableCell
+                onClick={onClick}>{playlist.tracks.total}</TableCell> {/* トラック数列をクリックすると詳細表示 */}
         </TableRow>
     );
 }
