@@ -126,18 +126,33 @@ function HomeContent(): JSX.Element {
         setSelectedPlaylistId(playlistId);
     };
     
+    const ThemeToggleButton = () => {
+        const [mounted, setMounted] = useState(false);
+        const {theme, setTheme} = useTheme();
+        
+        useEffect(() => {
+            setMounted(true);
+        }, []);
+        
+        if (!mounted) return null;
+        
+        return (
+            <button
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                className="p-2 rounded-full"
+            >
+                {theme === 'dark' ? '🌞' : '🌙'}
+            </button>
+        );
+    };
+    
     return (
         <div className="w-full h-full max-w-none mx-auto pt-20 p-4 bg-background shadow-md rounded-lg">
             <div
                 className={`fixed top-0 left-0 right-0 flex justify-between items-center bg-popover p-4 shadow-md z-10 transition-transform duration-300 ${showHeader ? 'transform-none' : '-translate-y-full'}`}>
                 <LoginButton/>
                 <h1 className="text-4xl font-bold text-primary">Playlist Viewer</h1>
-                <button
-                    onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                    className="p-2 rounded-full"
-                >
-                    {theme === 'dark' ? '🌞' : '🌙'}
-                </button>
+                <ThemeToggleButton/>
             </div>
             <div className="space-y-6">
                 <Card className="mt-4">
