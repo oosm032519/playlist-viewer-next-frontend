@@ -31,6 +31,7 @@ function HomeContent(): JSX.Element {
     const {fetchFavorites} = useContext(FavoriteContext);
     const [activeTab, setActiveTab] = useState('playlistId');
     const [showHeader, setShowHeader] = useState(true);
+    const [searchQuery, setSearchQuery] = useState<string>(""); // 検索クエリを管理するステート
     let lastScrollY = 0;
     
     // お気に入りのプレイリストをフェッチ
@@ -106,11 +107,11 @@ function HomeContent(): JSX.Element {
     /**
      * プレイリスト検索結果を処理
      *
-     * @param {Playlist[]} playlists - 検索結果のプレイリスト
+     * @param {string} query - 検索クエリ
      */
-    const handleSearch = (playlists: Playlist[]) => {
-        console.log("handleSearch: プレイリスト検索結果", playlists);
-        setPlaylists(playlists);
+    const handleSearch = (query: string) => {
+        console.log("handleSearch: 検索クエリ", query);
+        setSearchQuery(query); // 検索クエリをステートに保存
         setSelectedPlaylistId(null);
     };
     
@@ -148,7 +149,7 @@ function HomeContent(): JSX.Element {
                         <PlaylistIdForm onPlaylistSelect={handlePlaylistClick}/>
                     </TabsContent>
                     <TabsContent value="playlistSearch">
-                        <PlaylistSearchForm onSearch={handleSearch}/>
+                        <PlaylistSearchForm onSearch={handleSearch}/> {/* handleSearch を渡す */}
                     </TabsContent>
                 </Tabs>
                 {error && <ErrorAlert error={error}/>}
@@ -156,6 +157,7 @@ function HomeContent(): JSX.Element {
                     playlists={playlists}
                     userId={userId || undefined}
                     onPlaylistClick={handlePlaylistClick}
+                    onSearchQuery={searchQuery} // onSearchQuery プロパティを追加
                 />
             </div>
             {isLoggedIn &&

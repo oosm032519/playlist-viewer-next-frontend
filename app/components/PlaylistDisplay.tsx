@@ -1,24 +1,30 @@
 // app/components/PlaylistDisplay.tsx
 
-import {Card, CardContent, CardHeader, CardTitle} from '@/app/components/ui/card'
-import React from 'react'
+import LoadingSpinner from '@/app/components/LoadingSpinner'
+import {Card, CardContent, CardHeader, CardTitle} from "@/app/components/ui/card";
+import React, {useState, useEffect} from "react";
 import PlaylistTable from "./PlaylistTable";
 import PlaylistDetailsLoader from "./PlaylistDetailsLoader";
 import FollowedPlaylists from "./FollowedPlaylists";
 import {Playlist} from "../types/playlist";
 import {useUser} from "../context/UserContext";
 import {usePlaylist} from "../context/PlaylistContext";
+import {useQueryClient} from "@tanstack/react-query";
+import PaginationButtons from "./PaginationButtons";
+import {useSearchPlaylists} from "../hooks/useSearchPlaylists";
 
 /**
  * PlaylistDisplayコンポーネントのプロパティ
  * @property {Playlist[]} playlists - 表示するプレイリストの配列
  * @property {string | undefined} userId - 現在のユーザーのID
  * @property {(playlistId: string) => void} onPlaylistClick - プレイリストがクリックされた時のハンドラー
+ * @property {string} onSearchQuery - 検索クエリ
  */
 interface PlaylistDisplayProps {
     playlists: Playlist[];
     userId: string | undefined;
     onPlaylistClick: (playlistId: string) => void;
+    onSearchQuery: string;
 }
 
 /**
@@ -31,26 +37,110 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({
                                                              playlists,
                                                              userId,
                                                              onPlaylistClick,
+                                                             onSearchQuery,
                                                          }) => {
     // ユーザーのログイン状態を取得
     const {isLoggedIn} = useUser();
     // 現在選択されているプレイリストのIDを取得
     const {selectedPlaylistId} = usePlaylist();
+    // 現在のページ番号を管理するステート
+    const [currentPage, setCurrentPage] = useState(1);
+    // 現在のプレイリストデータを管理するステート
+    const [currentPlaylists, setCurrentPlaylists] = useState<Playlist[]>([]);
+    // React Queryのクライアントを取得
+    const queryClient = useQueryClient();
+    
+    // プレイリスト検索のミューテーションを設定
+    const searchMutation = useSearchPlaylists((data) => {
+        setCurrentPlaylists(data);
+    });
+    
+    // 検索クエリを受け取って検索を実行
+    useEffect(() => {
+        setCurrentPage(1);
+        searchMutation.mutate({query: onSearchQuery, page: 1, limit: 20});
+    }, [onSearchQuery]);
+    
+    /**
+     * 次のページボタン押下時の処理
+     */
+    const handleNextPage = () => {
+        const nextPage = currentPage + 1;
+        setCurrentPage(nextPage);
+        
+        // キャッシュからデータを取得
+        const cachedData = queryClient.getQueryData([
+            "playlists",
+            onSearchQuery,
+            nextPage,
+        ]) as Playlist[] | undefined;
+        
+        if (cachedData) {
+            // キャッシュがある場合はキャッシュからデータを設定
+            setCurrentPlaylists(cachedData);
+        } else {
+            // キャッシュがない場合はAPIリクエストを送信
+            searchMutation.mutate({
+                query: onSearchQuery,
+                page: nextPage,
+                limit: 20,
+            });
+        }
+    };
+    
+    /**
+     * 前のページボタン押下時の処理
+     */
+    const handlePrevPage = () => {
+        const prevPage = currentPage - 1;
+        setCurrentPage(prevPage);
+        
+        // キャッシュからデータを取得
+        const cachedData = queryClient.getQueryData([
+            "playlists",
+            onSearchQuery,
+            prevPage,
+        ]) as Playlist[] | undefined;
+        
+        if (cachedData) {
+            // キャッシュがある場合はキャッシュからデータを設定
+            setCurrentPlaylists(cachedData);
+        } else {
+            // キャッシュがない場合はAPIリクエストを送信
+            searchMutation.mutate({
+                query: onSearchQuery,
+                page: prevPage,
+                limit: 20,
+            });
+        }
+    };
     
     return (
         <>
+            {/* LoadingSpinner を表示 */}
+            <LoadingSpinner loading={searchMutation.isPending}/>
             {/* プレイリストが存在し、何も選択されていない場合にプレイリストテーブルを表示 */}
-            {playlists.length > 0 && !selectedPlaylistId && (
+            {currentPlaylists.length > 0 && !selectedPlaylistId && (
                 <Card className="mt-4">
                     <CardHeader>
                         <CardTitle className="text-2xl font-bold">プレイリスト</CardTitle>
+                        {/* ページネーションボタン */}
+                        {currentPlaylists.length > 0 && !selectedPlaylistId && (
+                            <PaginationButtons
+                                currentPage={currentPage}
+                                isPending={searchMutation.isPending}
+                                hasNextPage={currentPlaylists.length === 20}
+                                onNextPage={handleNextPage}
+                                onPrevPage={handlePrevPage}
+                            />
+                        )}
                     </CardHeader>
                     <CardContent>
                         <PlaylistTable
-                            playlists={playlists}
+                            playlists={currentPlaylists}
                             onPlaylistClick={onPlaylistClick}
-                            totalPlaylists={playlists.length}
-                            currentPage={1} // 現在のページを固定で1に設定
+                            totalPlaylists={currentPlaylists.length}
+                            currentPage={currentPage}
                         />
                     </CardContent>
                 </Card>
@@ -58,17 +148,16 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({
             
             {/* 選択されたプレイリストがある場合にその詳細をロード */}
             {selectedPlaylistId && (
-                <PlaylistDetailsLoader
-                    playlistId={selectedPlaylistId}
-                    userId={userId}
-                />
+                <PlaylistDetailsLoader playlistId={selectedPlaylistId} userId={userId}/>
             )}
             
             {/* ユーザーがログインしている場合にフォローしているプレイリストを表示 */}
             {isLoggedIn && (
                 <Card className="mt-4">
                     <CardHeader>
-                        <CardTitle className="text-2xl font-bold">フォロー中のプレイリスト</CardTitle>
+                        <CardTitle className="text-2xl font-bold">
+                            フォロー中のプレイリスト
+                        </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <FollowedPlaylists onPlaylistClick={onPlaylistClick}/>

@@ -2,11 +2,9 @@
 
 "use client";
 
-import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {yupResolver} from "@hookform/resolvers/yup";
 import {schema} from "../validationSchema";
-import {useSearchPlaylists} from "../hooks/useSearchPlaylists";
 import {Button} from "./ui/button";
 import {Input} from "./ui/input";
 import {
@@ -18,17 +16,13 @@ import {
 } from "./ui/form";
 import {Card, CardContent, CardHeader, CardTitle} from "./ui/card";
 import LoadingSpinner from "./LoadingSpinner";
-import {Playlist} from "../types/playlist";
-import {useQueryClient} from "@tanstack/react-query";
-import PaginationButtons from "./PaginationButtons";
-import {usePlaylist} from "../context/PlaylistContext";
 
 interface SearchFormInputs {
     query: string;
 }
 
 interface PlaylistSearchFormProps {
-    onSearch(playlists: Playlist[]): void;
+    onSearch(query: string): void; // 検索クエリを受け取るコールバック関数
 }
 
 /**
@@ -39,26 +33,10 @@ interface PlaylistSearchFormProps {
 export default function PlaylistSearchForm({
                                                onSearch,
                                            }: PlaylistSearchFormProps) {
-    // 現在のページ番号を管理するステート
-    const [currentPage, setCurrentPage] = useState(1);
-    // 現在のプレイリストデータを管理するステート
-    const [currentPlaylists, setCurrentPlaylists] = useState<Playlist[]>([]);
-    // React Queryのクライアントを取得
-    const queryClient = useQueryClient();
-    
-    // 選択されたプレイリストIDをコンテキストから取得
-    const {selectedPlaylistId} = usePlaylist();
-    
     // フォームの設定
     const form = useForm<SearchFormInputs>({
         resolver: yupResolver(schema),
         defaultValues: {query: ""},
-    });
-    
-    // プレイリスト検索のミューテーションを設定
-    const searchMutation = useSearchPlaylists((data) => {
-        onSearch(data);
-        setCurrentPlaylists(data);
     });
     
     /**
@@ -66,70 +44,12 @@ export default function PlaylistSearchForm({
      * @param {SearchFormInputs} data - フォームの入力データ
      */
     const onSubmit = async (data: SearchFormInputs) => {
-        setCurrentPage(1);
-        searchMutation.mutate({query: data.query, page: 1, limit: 20});
-    };
-    
-    /**
-     * 次のページボタン押下時の処理
-     */
-    const handleNextPage = () => {
-        const nextPage = currentPage + 1;
-        setCurrentPage(nextPage);
-        
-        // キャッシュからデータを取得
-        const cachedData = queryClient.getQueryData([
-            "playlists",
-            form.getValues("query"),
-            nextPage,
-        ]) as Playlist[] | undefined;
-        
-        if (cachedData) {
-            // キャッシュがある場合はキャッシュからデータを設定し、親コンポーネントに通知
-            setCurrentPlaylists(cachedData);
-            onSearch(cachedData);
-        } else {
-            // キャッシュがない場合はAPIリクエストを送信
-            searchMutation.mutate({
-                query: form.getValues("query"),
-                page: nextPage,
-                limit: 20,
-            });
-        }
-    };
-    
-    /**
-     * 前のページボタン押下時の処理
-     */
-    const handlePrevPage = () => {
-        const prevPage = currentPage - 1;
-        setCurrentPage(prevPage);
-        
-        // キャッシュからデータを取得
-        const cachedData = queryClient.getQueryData([
-            "playlists",
-            form.getValues("query"),
-            prevPage,
-        ]) as Playlist[] | undefined;
-        
-        if (cachedData) {
-            // キャッシュがある場合はキャッシュからデータを設定し、親コンポーネントに通知
-            setCurrentPlaylists(cachedData);
-            onSearch(cachedData);
-        } else {
-            // キャッシュがない場合はAPIリクエストを送信
-            searchMutation.mutate({
-                query: form.getValues("query"),
-                page: prevPage,
-                limit: 20,
-            });
-        }
+        onSearch(data.query); // 検索クエリを PlaylistDisplay に渡す
     };
     
     return (
         <>
-            <Card
-                className="w-full mt-4">
+            <Card className="w-full mt-4">
                 <CardHeader>
                     <CardTitle className="text-2xl font-bold">プレイリスト名</CardTitle>
                 </CardHeader>
@@ -146,14 +66,8 @@ export default function PlaylistSearchForm({
                                                 <Input
                                                     placeholder="Enter playlist name"
                                                     {...field}
-                                                    disabled={searchMutation.isPending}
                                                 />
-                                                <Button
-                                                    type="submit"
-                                                    disabled={searchMutation.isPending}
-                                                >
-                                                    {searchMutation.isPending ? "Searching..." : "Search"}
-                                                </Button>
+                                                <Button type="submit">Search</Button>
                                             </div>
                                         </FormControl>
                                         <FormMessage/>
@@ -164,16 +78,6 @@ export default function PlaylistSearchForm({
                     </Form>
                 </CardContent>
             </Card>
-            <LoadingSpinner loading={searchMutation.isPending}/>
-            {currentPlaylists.length > 0 && !selectedPlaylistId && (
-                <PaginationButtons
-                    currentPage={currentPage}
-                    isPending={searchMutation.isPending}
-                    hasNextPage={currentPlaylists.length === 20}
-                    onNextPage={handleNextPage}
-                    onPrevPage={handlePrevPage}
-                />
-            )}
         </>
     );
 }
