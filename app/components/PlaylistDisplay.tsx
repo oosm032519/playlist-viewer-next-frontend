@@ -1,6 +1,6 @@
 // app/components/PlaylistDisplay.tsx
 
-import LoadingSpinner from '@/app/components/LoadingSpinner'
+import LoadingSpinner from "@/app/components/LoadingSpinner";
 import {Card, CardContent, CardHeader, CardTitle} from "@/app/components/ui/card";
 import React, {useState, useEffect} from "react";
 import PlaylistTable from "./PlaylistTable";
@@ -54,12 +54,15 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({
     const [currentPage, setCurrentPage] = useState(1);
     // 現在のプレイリストデータを管理するステート
     const [currentPlaylists, setCurrentPlaylists] = useState<Playlist[]>([]);
+    // 総プレイリスト数を管理するステート
+    const [totalPlaylists, setTotalPlaylists] = useState(0);
     // React Queryのクライアントを取得
     const queryClient = useQueryClient();
     
     // プレイリスト検索のミューテーションを設定
     const searchMutation = useSearchPlaylists((data) => {
-        setCurrentPlaylists(data);
+        setCurrentPlaylists(data.playlists);
+        setTotalPlaylists(data.total);
     });
     
     // 検索クエリを受け取って検索を実行
@@ -80,11 +83,12 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({
             "playlists",
             onSearchQuery,
             nextPage,
-        ]) as Playlist[] | undefined;
+        ]) as { playlists: Playlist[]; total: number } | undefined;
         
         if (cachedData) {
             // キャッシュがある場合はキャッシュからデータを設定
-            setCurrentPlaylists(cachedData);
+            setCurrentPlaylists(cachedData.playlists);
+            setTotalPlaylists(cachedData.total);
         } else {
             // キャッシュがない場合はAPIリクエストを送信
             searchMutation.mutate({
@@ -107,11 +111,12 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({
             "playlists",
             onSearchQuery,
             prevPage,
-        ]) as Playlist[] | undefined;
+        ]) as { playlists: Playlist[]; total: number } | undefined;
         
         if (cachedData) {
             // キャッシュがある場合はキャッシュからデータを設定
-            setCurrentPlaylists(cachedData);
+            setCurrentPlaylists(cachedData.playlists);
+            setTotalPlaylists(cachedData.total);
         } else {
             // キャッシュがない場合はAPIリクエストを送信
             searchMutation.mutate({
@@ -148,7 +153,7 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({
                                 <PaginationItem>
                                     <PaginationNext
                                         href="#"
-                                        onClick={currentPlaylists.length === 20 ? handleNextPage : undefined}
+                                        onClick={currentPage * 20 < totalPlaylists ? handleNextPage : undefined}
                                     />
                                 </PaginationItem>
                             </PaginationContent>
@@ -158,7 +163,7 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({
                         <PlaylistTable
                             playlists={currentPlaylists}
                             onPlaylistClick={onPlaylistClick}
-                            totalPlaylists={currentPlaylists.length}
+                            totalPlaylists={totalPlaylists} // totalPlaylists を渡す
                             currentPage={currentPage}
                         />
                     </CardContent>

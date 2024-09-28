@@ -42,7 +42,7 @@ export default function PlaylistTable({
     return (
         <Table>
             {/* テーブルのヘッダー部分 */}
-            <PlaylistTableHeader/>
+            <PlaylistTableHeader totalPlaylists={totalPlaylists}/> {/* totalPlaylists を渡す */}
             <TableBody>
                 {/* プレイリストごとに行を生成 */}
                 {playlists.map((playlist) => (

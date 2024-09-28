@@ -2,13 +2,24 @@
 
 import {TableHead, TableHeader, TableRow} from "./ui/table";
 
+interface PlaylistTableHeaderProps {
+    totalPlaylists: number;
+}
+
 /**
  * プレイリストのテーブルヘッダーを表示するコンポーネント
  * @returns テーブルヘッダーのJSX要素
  */
-export default function PlaylistTableHeader() {
+export default function PlaylistTableHeader({
+                                                totalPlaylists,
+                                            }: PlaylistTableHeaderProps) {
     return (
         <TableHeader>
+            <TableRow>
+                <TableHead colSpan={3} className="text-center">
+                    {`検索結果: ${totalPlaylists}件`}
+                </TableHead>
+            </TableRow>
             <TableRow>
                 {/* 画像列のヘッダー */}
                 <TableHead>Image</TableHead>

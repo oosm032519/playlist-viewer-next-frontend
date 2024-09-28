@@ -10,7 +10,7 @@ import {Playlist} from "../types/playlist";
  * @param {string} params.query - 検索クエリ
  * @param {number} params.page - ページ番号
  * @param {number} params.limit - 1ページあたりのアイテム数
- * @returns {Promise<Playlist[]>} - 検索結果のプレイリスト配列
+ * @returns {Promise<{ playlists: Playlist[], total: number }>} - 検索結果のプレイリスト配列と総数
  * @throws {Error} - ネットワークエラーが発生した場合
  */
 const searchPlaylists = async ({
@@ -21,7 +21,7 @@ const searchPlaylists = async ({
     query: string;
     page: number;
     limit: number;
-}): Promise<Playlist[]> => {
+}): Promise<{ playlists: Playlist[]; total: number }> => {
     // APIエンドポイントにリクエストを送信
     const response = await fetch(
         `/api/playlists/search?query=${query}&offset=${
@@ -31,11 +31,12 @@ const searchPlaylists = async ({
     
     // レスポンスが正常でない場合、エラーを投げる
     if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error("Network response was not ok");
     }
     
     // レスポンスをJSON形式で返す
-    return response.json();
+    const data = await response.json();
+    return {playlists: data.playlists, total: data.total};
 };
 
 /**
@@ -45,7 +46,7 @@ const searchPlaylists = async ({
  * @returns {Object} - useMutationの戻り値
  */
 export const useSearchPlaylists = (
-    onSearch: (playlists: Playlist[]) => void
+    onSearch: (data: { playlists: Playlist[]; total: number }) => void
 ) => {
     // React Queryのクライアントを取得
     const queryClient = useQueryClient();
@@ -63,12 +64,7 @@ export const useSearchPlaylists = (
             );
             
             // 現在のページのデータを取得して onSearch に渡す
-            const cachedData = queryClient.getQueryData([
-                "playlists",
-                variables.query,
-                variables.page,
-            ]) as Playlist[] | undefined;
-            onSearch(cachedData || []);
+            onSearch(data);
         },
         
         // エラー時の処理

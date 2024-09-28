@@ -15,7 +15,6 @@ import {
     FormMessage,
 } from "./ui/form";
 import {Card, CardContent, CardHeader, CardTitle} from "./ui/card";
-import LoadingSpinner from "./LoadingSpinner";
 
 interface SearchFormInputs {
     query: string;
@@ -63,10 +62,7 @@ export default function PlaylistSearchForm({
                                     <FormItem>
                                         <FormControl>
                                             <div className="flex space-x-2">
-                                                <Input
-                                                    placeholder="Enter playlist name"
-                                                    {...field}
-                                                />
+                                                <Input placeholder="Enter playlist name" {...field} />
                                                 <Button type="submit">Search</Button>
                                             </div>
                                         </FormControl>
