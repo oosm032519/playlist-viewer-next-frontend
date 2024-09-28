@@ -18,15 +18,9 @@ import {
     PaginationLink,
     PaginationNext,
     PaginationPrevious,
+    PaginationEllipsis,
 } from "@/app/components/ui/pagination";
 
-/**
- * PlaylistDisplayコンポーネントのプロパティ
- * @property {Playlist[]} playlists - 表示するプレイリストの配列
- * @property {string | undefined} userId - 現在のユーザーのID
- * @property {(playlistId: string) => void} onPlaylistClick - プレイリストがクリックされた時のハンドラー
- * @property {string} onSearchQuery - 検索クエリ
- */
 interface PlaylistDisplayProps {
     playlists: Playlist[];
     userId: string | undefined;
@@ -34,51 +28,32 @@ interface PlaylistDisplayProps {
     onSearchQuery: string;
 }
 
-/**
- * PlaylistDisplayコンポーネント
- * ユーザーにプレイリストを表示し、選択されたプレイリストの詳細をロードします。
- * @param {PlaylistDisplayProps} props - コンポーネントのプロパティ
- * @returns {JSX.Element} - プレイリスト表示のReact要素
- */
 const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({
-                                                             playlists,
                                                              userId,
                                                              onPlaylistClick,
                                                              onSearchQuery,
                                                          }) => {
-    // ユーザーのログイン状態を取得
     const {isLoggedIn} = useUser();
-    // 現在選択されているプレイリストのIDを取得
     const {selectedPlaylistId} = usePlaylist();
-    // 現在のページ番号を管理するステート
     const [currentPage, setCurrentPage] = useState(1);
-    // 現在のプレイリストデータを管理するステート
     const [currentPlaylists, setCurrentPlaylists] = useState<Playlist[]>([]);
-    // 総プレイリスト数を管理するステート
     const [totalPlaylists, setTotalPlaylists] = useState(0);
-    // React Queryのクライアントを取得
     const queryClient = useQueryClient();
     
-    // プレイリスト検索のミューテーションを設定
     const searchMutation = useSearchPlaylists((data) => {
         setCurrentPlaylists(data.playlists);
         setTotalPlaylists(data.total);
     });
     
-    // 検索クエリを受け取って検索を実行
     useEffect(() => {
         setCurrentPage(1);
         searchMutation.mutate({query: onSearchQuery, page: 1, limit: 20});
     }, [onSearchQuery]);
     
-    /**
-     * 次のページボタン押下時の処理
-     */
     const handleNextPage = () => {
         const nextPage = currentPage + 1;
         setCurrentPage(nextPage);
         
-        // キャッシュからデータを取得
         const cachedData = queryClient.getQueryData([
             "playlists",
             onSearchQuery,
@@ -86,11 +61,9 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({
         ]) as { playlists: Playlist[]; total: number } | undefined;
         
         if (cachedData) {
-            // キャッシュがある場合はキャッシュからデータを設定
             setCurrentPlaylists(cachedData.playlists);
             setTotalPlaylists(cachedData.total);
         } else {
-            // キャッシュがない場合はAPIリクエストを送信
             searchMutation.mutate({
                 query: onSearchQuery,
                 page: nextPage,
@@ -99,14 +72,10 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({
         }
     };
     
-    /**
-     * 前のページボタン押下時の処理
-     */
     const handlePrevPage = () => {
         const prevPage = currentPage - 1;
         setCurrentPage(prevPage);
         
-        // キャッシュからデータを取得
         const cachedData = queryClient.getQueryData([
             "playlists",
             onSearchQuery,
@@ -114,11 +83,9 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({
         ]) as { playlists: Playlist[]; total: number } | undefined;
         
         if (cachedData) {
-            // キャッシュがある場合はキャッシュからデータを設定
             setCurrentPlaylists(cachedData.playlists);
             setTotalPlaylists(cachedData.total);
         } else {
-            // キャッシュがない場合はAPIリクエストを送信
             searchMutation.mutate({
                 query: onSearchQuery,
                 page: prevPage,
@@ -127,16 +94,38 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({
         }
     };
     
+    // ページ数を計算
+    const totalPages = Math.ceil(totalPlaylists / 20);
+    
+    // 指定したページに移動する関数
+    const goToPage = (pageNumber: number) => {
+        setCurrentPage(pageNumber);
+        
+        const cachedData = queryClient.getQueryData([
+            "playlists",
+            onSearchQuery,
+            pageNumber,
+        ]) as { playlists: Playlist[]; total: number } | undefined;
+        
+        if (cachedData) {
+            setCurrentPlaylists(cachedData.playlists);
+            setTotalPlaylists(cachedData.total);
+        } else {
+            searchMutation.mutate({
+                query: onSearchQuery,
+                page: pageNumber,
+                limit: 20,
+            });
+        }
+    };
+    
     return (
         <>
-            {/* LoadingSpinner を表示 */}
             <LoadingSpinner loading={searchMutation.isPending}/>
-            {/* プレイリストが存在し、何も選択されていない場合にプレイリストテーブルを表示 */}
             {currentPlaylists.length > 0 && !selectedPlaylistId && (
                 <Card className="mt-4">
                     <CardHeader>
                         <CardTitle className="text-2xl font-bold">プレイリスト</CardTitle>
-                        {/* ページネーション */}
                         <Pagination>
                             <PaginationContent>
                                 <PaginationItem>
@@ -145,11 +134,41 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({
                                         onClick={currentPage > 1 ? handlePrevPage : undefined}
                                     />
                                 </PaginationItem>
-                                <PaginationItem>
-                                    <PaginationLink href="#" isActive>
-                                        {currentPage}
-                                    </PaginationLink>
-                                </PaginationItem>
+                                {currentPage > 2 && (
+                                    <PaginationItem>
+                                        <PaginationLink href="#" onClick={() => goToPage(1)}>
+                                            1
+                                        </PaginationLink>
+                                    </PaginationItem>
+                                )}
+                                {currentPage > 3 && (
+                                    <PaginationItem>
+                                        <PaginationEllipsis/>
+                                    </PaginationItem>
+                                )}
+                                {[...Array(totalPages).keys()].slice(Math.max(currentPage - 2, 0), Math.min(currentPage + 1, totalPages)).map(page => (
+                                    <PaginationItem key={page}>
+                                        <PaginationLink
+                                            href="#"
+                                            isActive={page + 1 === currentPage}
+                                            onClick={() => goToPage(page + 1)}
+                                        >
+                                            {page + 1}
+                                        </PaginationLink>
+                                    </PaginationItem>
+                                ))}
+                                {currentPage < totalPages - 2 && (
+                                    <PaginationItem>
+                                        <PaginationEllipsis/>
+                                    </PaginationItem>
+                                )}
+                                {currentPage < totalPages - 1 && (
+                                    <PaginationItem>
+                                        <PaginationLink href="#" onClick={() => goToPage(totalPages)}>
+                                            {totalPages}
+                                        </PaginationLink>
+                                    </PaginationItem>
+                                )}
                                 <PaginationItem>
                                     <PaginationNext
                                         href="#"
@@ -163,19 +182,17 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({
                         <PlaylistTable
                             playlists={currentPlaylists}
                             onPlaylistClick={onPlaylistClick}
-                            totalPlaylists={totalPlaylists} // totalPlaylists を渡す
+                            totalPlaylists={totalPlaylists}
                             currentPage={currentPage}
                         />
                     </CardContent>
                 </Card>
             )}
             
-            {/* 選択されたプレイリストがある場合にその詳細をロード */}
             {selectedPlaylistId && (
                 <PlaylistDetailsLoader playlistId={selectedPlaylistId} userId={userId}/>
             )}
             
-            {/* ユーザーがログインしている場合にフォローしているプレイリストを表示 */}
             {isLoggedIn && (
                 <Card className="mt-4">
                     <CardHeader>
