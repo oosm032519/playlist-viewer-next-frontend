@@ -35,6 +35,7 @@ export default function PlaylistTableRow({playlist, onClick}: PlaylistTableRowPr
                         alt={sanitizedName}
                         width={48}
                         height={48}
+                        loading="lazy"
                     />
                 ) : (
                     <div className="w-12 h-12 bg-gray-200 rounded-full" data-testid="image-placeholder"></div>
