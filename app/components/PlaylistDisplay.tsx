@@ -10,8 +10,15 @@ import {Playlist} from "../types/playlist";
 import {useUser} from "../context/UserContext";
 import {usePlaylist} from "../context/PlaylistContext";
 import {useQueryClient} from "@tanstack/react-query";
-import PaginationButtons from "./PaginationButtons";
 import {useSearchPlaylists} from "../hooks/useSearchPlaylists";
+import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/app/components/ui/pagination";
 
 /**
  * PlaylistDisplayコンポーネントのプロパティ
@@ -124,16 +131,28 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({
                 <Card className="mt-4">
                     <CardHeader>
                         <CardTitle className="text-2xl font-bold">プレイリスト</CardTitle>
-                        {/* ページネーションボタン */}
-                        {currentPlaylists.length > 0 && !selectedPlaylistId && (
-                            <PaginationButtons
-                                currentPage={currentPage}
-                                isPending={searchMutation.isPending}
-                                hasNextPage={currentPlaylists.length === 20}
-                                onNextPage={handleNextPage}
-                                onPrevPage={handlePrevPage}
-                            />
-                        )}
+                        {/* ページネーション */}
+                        <Pagination>
+                            <PaginationContent>
+                                <PaginationItem>
+                                    <PaginationPrevious
+                                        href="#"
+                                        onClick={currentPage > 1 ? handlePrevPage : undefined}
+                                    />
+                                </PaginationItem>
+                                <PaginationItem>
+                                    <PaginationLink href="#" isActive>
+                                        {currentPage}
+                                    </PaginationLink>
+                                </PaginationItem>
+                                <PaginationItem>
+                                    <PaginationNext
+                                        href="#"
+                                        onClick={currentPlaylists.length === 20 ? handleNextPage : undefined}
+                                    />
+                                </PaginationItem>
+                            </PaginationContent>
+                        </Pagination>
                     </CardHeader>
                     <CardContent>
                         <PlaylistTable
