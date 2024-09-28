@@ -4,6 +4,7 @@ import {createColumnHelper} from "@tanstack/react-table";
 import {Track} from "../types/track";
 import {audioFeatureSort} from "./tableUtils";
 import Image from "next/image";
+import DOMPurify from 'dompurify';
 
 // AudioFeature型を定義し、使用可能なオーディオフィーチャーを列挙
 type AudioFeature =
@@ -53,18 +54,29 @@ export const playlistDetailsTableColumns = [
     columnHelper.accessor("album", {
         header: "Album",
         cell: (info) => (
-            <Image src={info.getValue().images[0].url} alt={info.getValue().name} width={50} height={50}/>
+            <a href={info.getValue().externalUrls.externalUrls.spotify} target="_blank" rel="noopener noreferrer">
+                <Image src={info.getValue().images[0].url} alt={info.getValue().name} width={50} height={50}/>
+            </a>
         ),
         enableSorting: false, // ソートを無効化
     }),
     // タイトルカラムの定義
     columnHelper.accessor("name", {
         header: "Title",
+        cell: (info) => (
+            <a href={info.row.original.externalUrls.externalUrls.spotify} target="_blank" rel="noopener noreferrer">
+                <span>{DOMPurify.sanitize(info.getValue())}</span>
+            </a>
+        ),
     }),
     // アーティストカラムの定義
     columnHelper.accessor("artists", {
         header: "Artist",
-        cell: (info) => <span>{info.getValue()[0].name}</span>,
+        cell: (info) => (
+            <a href={info.getValue()[0].externalUrls.externalUrls.spotify} target="_blank" rel="noopener noreferrer">
+                <span>{DOMPurify.sanitize(info.getValue()[0].name)}</span>
+            </a>
+        ),
     }),
     // 各オーディオフィーチャーのカラムを動的に生成
     ...(["danceability", "energy", "key", "loudness", "speechiness", "acousticness", "instrumentalness", "liveness", "valence", "tempo"] as AudioFeature[]).map((feature) =>

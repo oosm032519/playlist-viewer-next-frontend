@@ -30,4 +30,9 @@ export interface Track {
         tempo: number;
         timeSignature: number;
     };
+    externalUrls: {
+        externalUrls: {
+            spotify: string;
+        }
+    }
 }
