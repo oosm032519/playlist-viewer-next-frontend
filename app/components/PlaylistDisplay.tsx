@@ -47,7 +47,10 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({
     
     useEffect(() => {
         setCurrentPage(1);
-        searchMutation.mutate({query: onSearchQuery, page: 1, limit: 20});
+        // onSearchQuery が空文字列でない場合のみAPIリクエストを実行
+        if (onSearchQuery !== "") {
+            searchMutation.mutate({query: onSearchQuery, page: 1, limit: 20});
+        }
     }, [onSearchQuery]);
     
     const handleNextPage = () => {
