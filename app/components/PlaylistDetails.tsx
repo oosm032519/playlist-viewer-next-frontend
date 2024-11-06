@@ -3,7 +3,6 @@
 "use client";
 
 import {Card, CardContent, CardHeader, CardTitle} from '@/app/components/ui/card'
-import {playlistDetailsTableColumns} from '@/app/lib/PlaylistDetailsTableColumns'
 import React, {useContext, useState, useEffect, useCallback} from "react";
 import {Track} from "../types/track";
 import {PlaylistDetailsTable} from "./PlaylistDetailsTable";
@@ -76,24 +75,33 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                                                          }) => {
     
     const generateCsvData = () => {
-        const headers = playlistDetailsTableColumns.map((column) => column.header as string);
-        const data = tracks.map((track) =>
-            playlistDetailsTableColumns.map((column) => {
-                if (column.id === "album") {
-                    return track.album.name;
-                }
-                if (column.id === "artists") {
-                    return track.artists[0].name;
-                }
-                if ('accessorFn' in column && column.accessorFn) {
-                    return column.accessorFn(track, 0);
-                }
-                if ('accessorKey' in column && column.accessorKey) {
-                    return track[column.accessorKey as keyof Track];
-                }
-                return '';
-            })
-        );
+        const headers = [
+            "Album", "Title", "Artist", "Danceability", "Energy", "Key", "Loudness",
+            "Speechiness", "Acousticness", "Instrumentalness", "Liveness", "Valence",
+            "Tempo", "Mode", "Duration", "Time Signature"
+        ];
+        
+        const data = tracks.map((track) => {
+            return [
+                track.album.name,
+                track.name,
+                track.artists.map((artist) => artist.name).join(", "),
+                track.audioFeatures?.danceability ?? "",
+                track.audioFeatures?.energy ?? "",
+                track.audioFeatures?.key ?? "",
+                track.audioFeatures?.loudness ?? "",
+                track.audioFeatures?.speechiness ?? "",
+                track.audioFeatures?.acousticness ?? "",
+                track.audioFeatures?.instrumentalness ?? "",
+                track.audioFeatures?.liveness ?? "",
+                track.audioFeatures?.valence ?? "",
+                track.audioFeatures?.tempo ?? "",
+                track.audioFeatures?.mode ?? "",
+                track.durationMs ?? "",
+                track.audioFeatures?.timeSignature ?? "",
+            ];
+        });
+        
         return [headers, ...data];
     };
     
