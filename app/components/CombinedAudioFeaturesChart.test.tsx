@@ -49,6 +49,11 @@ const mockTrack: Track = {
         tempo: 130,
         timeSignature: 4
     },
+    externalUrls: {
+        externalUrls: {
+            spotify: ""
+        }
+    }
 };
 
 // Rechartsのモックを改善
@@ -61,11 +66,12 @@ jest.mock('recharts', () => ({
     PolarRadiusAxis: () => <div data-testid="polar-radius-axis">PolarRadiusAxis</div>,
     Radar: ({name, dataKey}: { name: string; dataKey: string }) => <div data-testid={`radar-${dataKey}`}>{name}</div>,
     Legend: () => <div data-testid="legend">Legend</div>,
+    Tooltip: () => <div data-testid="tooltip">Tooltip</div>,
 }));
 
 describe('CombinedAudioFeaturesChart', () => {
     it('renders without crashing', () => {
-        render(<CombinedAudioFeaturesChart averageAudioFeatures={mockAverageAudioFeatures}/>);
+        render(<CombinedAudioFeaturesChart averageAudioFeatures={mockAverageAudioFeatures} playlistName={"test"}/>);
         expect(screen.getByTestId('responsive-container')).toBeInTheDocument();
         expect(screen.getByTestId('radar-chart')).toBeInTheDocument();
         expect(screen.getByTestId('polar-grid')).toBeInTheDocument();
@@ -73,17 +79,19 @@ describe('CombinedAudioFeaturesChart', () => {
         expect(screen.getByTestId('polar-radius-axis')).toBeInTheDocument();
         expect(screen.getByTestId('radar-value')).toBeInTheDocument();
         expect(screen.getByTestId('legend')).toBeInTheDocument();
+        expect(screen.getByTestId('tooltip')).toBeInTheDocument();
     });
     
     it('renders both average and track data when track is provided', () => {
-        render(<CombinedAudioFeaturesChart averageAudioFeatures={mockAverageAudioFeatures} track={mockTrack}/>);
-        expect(screen.getByTestId('radar-value')).toHaveTextContent('平均 Audio Features');
-        expect(screen.getByTestId('radar-trackValue')).toHaveTextContent('Test Track の Audio Features');
+        render(<CombinedAudioFeaturesChart averageAudioFeatures={mockAverageAudioFeatures} track={mockTrack}
+                                           playlistName={"test"}/>);
+        expect(screen.getByTestId('radar-value')).toHaveTextContent('test');
+        expect(screen.getByTestId('radar-trackValue')).toHaveTextContent('Test Track');
     });
     
     it('renders only average data when track is not provided', () => {
-        render(<CombinedAudioFeaturesChart averageAudioFeatures={mockAverageAudioFeatures}/>);
-        expect(screen.getByTestId('radar-value')).toHaveTextContent('平均 Audio Features');
+        render(<CombinedAudioFeaturesChart averageAudioFeatures={mockAverageAudioFeatures} playlistName={"test"}/>);
+        expect(screen.getByTestId('radar-value')).toHaveTextContent('test');
         expect(screen.queryByTestId('radar-trackValue')).not.toBeInTheDocument();
     });
 });
@@ -91,7 +99,8 @@ describe('CombinedAudioFeaturesChart', () => {
 describe('Accessibility', () => {
     it('should not have any accessibility violations', async () => {
         const {container} = render(
-            <CombinedAudioFeaturesChart averageAudioFeatures={mockAverageAudioFeatures} track={mockTrack}/>
+            <CombinedAudioFeaturesChart averageAudioFeatures={mockAverageAudioFeatures} track={mockTrack}
+                                        playlistName={"test"}/>
         );
         const results = await axe(container);
         expect(results).toHaveNoViolations();
@@ -100,12 +109,13 @@ describe('Accessibility', () => {
 
 describe('Data processing', () => {
     it('correctly processes average audio features', () => {
-        render(<CombinedAudioFeaturesChart averageAudioFeatures={mockAverageAudioFeatures}/>);
+        render(<CombinedAudioFeaturesChart averageAudioFeatures={mockAverageAudioFeatures} playlistName={"test"}/>);
         expect(screen.getByTestId('polar-angle-axis')).toHaveTextContent('feature');
     });
     
     it('correctly processes track audio features when provided', () => {
-        render(<CombinedAudioFeaturesChart averageAudioFeatures={mockAverageAudioFeatures} track={mockTrack}/>);
+        render(<CombinedAudioFeaturesChart averageAudioFeatures={mockAverageAudioFeatures} track={mockTrack}
+                                           playlistName={"test"}/>);
         expect(screen.getByTestId('radar-trackValue')).toBeInTheDocument();
     });
 });

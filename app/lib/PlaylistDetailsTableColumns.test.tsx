@@ -11,13 +11,18 @@ import {CellContext} from '@tanstack/react-table';
 expect.extend(toHaveNoViolations);
 
 const mockTrack: Track = {
+    externalUrls: {externalUrls: {spotify: ''}},
     id: '1',
     name: 'Test Track',
-    artists: [{name: 'Test Artist', externalUrls: {}}],
+    artists: [{name: 'Test Artist', externalUrls: {
+        externalUrls: {spotify: 'https://example.com/artist'}
+        }}],
     album: {
         name: 'Test Album',
         images: [{url: 'https://example.com/image.jpg'}],
-        externalUrls: {},
+        externalUrls: {
+            externalUrls: {spotify: 'https://example.com/album'},
+        },
     },
     durationMs: 180000,
     previewUrl: 'https://example.com/preview.mp3',
@@ -34,7 +39,7 @@ const mockTrack: Track = {
         tempo: 120,
         mode: 'Major',
         timeSignature: 4,
-    },
+    }
 };
 
 describe('PlaylistDetailsTableColumns', () => {
