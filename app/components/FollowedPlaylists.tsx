@@ -86,7 +86,7 @@ const FollowedPlaylists: React.FC<FollowedPlaylistsProps> = ({onPlaylistClick}) 
                                             <span className="text-gray-500">No Image</span>
                                         </div>
                                     )}
-                                    <h3 className="font-semibold cursor-pointer">
+                                    <h3 className="font-semibold cursor-pointer text-black">
                                         {sanitizedName}
                                     </h3>
                                     <p className="text-sm text-gray-600">
