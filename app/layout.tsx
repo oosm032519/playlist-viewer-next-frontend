@@ -3,6 +3,7 @@
 "use client";
 
 import './globals.css';
+import Footer from '@/app/components/Footer'
 import {Inter} from 'next/font/google';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {UserContextProvider} from "./context/UserContext";
@@ -30,9 +31,10 @@ export default function RootLayout({children}: { children: React.ReactNode }): J
             <QueryClientProvider client={queryClient}>
                 <UserContextProvider>
                     <ThemeProvider enableSystem={true} attribute="class" defaultTheme="system">
-                        <main>
+                        <main className="flex-grow">
                             {children}
                         </main>
+                        <Footer/>
                     </ThemeProvider>
                 </UserContextProvider>
             </QueryClientProvider>
