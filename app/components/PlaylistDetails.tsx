@@ -170,9 +170,9 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                 <CardHeader>
             {playlistName && (
                 <CardTitle className="text-center my-4 flex items-center justify-center">
-                    <h1 className="text-2xl font-bold mr-2">
+                    <p className="text-2xl font-bold mr-2">
                         {sanitizedPlaylistName}
-                    </h1>
+                    </p>
                     <span className="mr-2">by </span>
                     <span>{sanitizedOwnerName}</span>
                     {/* ログインしている場合のみ星ボタンを表示 */}
