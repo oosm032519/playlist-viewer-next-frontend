@@ -1,5 +1,3 @@
-// app/components/PlaylistDisplay.tsx
-
 import LoadingSpinner from "@/app/components/LoadingSpinner";
 import {Card, CardContent, CardHeader, CardTitle} from "@/app/components/ui/card";
 import React, {useState, useEffect} from "react";
@@ -47,7 +45,6 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({
     
     useEffect(() => {
         setCurrentPage(1);
-        // onSearchQuery が空文字列でない場合のみAPIリクエストを実行
         if (onSearchQuery !== "") {
             searchMutation.mutate({query: onSearchQuery, page: 1, limit: 20});
         }
@@ -97,10 +94,8 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({
         }
     };
     
-    // ページ数を計算
     const totalPages = Math.ceil(totalPlaylists / 20);
     
-    // 指定したページに移動する関数
     const goToPage = (pageNumber: number) => {
         setCurrentPage(pageNumber);
         
@@ -129,6 +124,7 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({
                 <Card className="mt-4">
                     <CardHeader>
                         <CardTitle className="text-2xl font-bold">検索結果</CardTitle>
+                        {/* ページネーション（上部） */}
                         <Pagination>
                             <PaginationContent>
                                 <PaginationItem>
@@ -188,6 +184,58 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({
                             totalPlaylists={totalPlaylists}
                             currentPage={currentPage}
                         />
+                        {/* ページネーション（下部） */}
+                        <Pagination className="mt-4">
+                            <PaginationContent>
+                                <PaginationItem>
+                                    <PaginationPrevious
+                                        href="#"
+                                        onClick={currentPage > 1 ? handlePrevPage : undefined}
+                                    />
+                                </PaginationItem>
+                                {currentPage > 2 && (
+                                    <PaginationItem>
+                                        <PaginationLink href="#" onClick={() => goToPage(1)}>
+                                            1
+                                        </PaginationLink>
+                                    </PaginationItem>
+                                )}
+                                {currentPage > 3 && (
+                                    <PaginationItem>
+                                        <PaginationEllipsis/>
+                                    </PaginationItem>
+                                )}
+                                {[...Array(totalPages).keys()].slice(Math.max(currentPage - 2, 0), Math.min(currentPage + 1, totalPages)).map(page => (
+                                    <PaginationItem key={page}>
+                                        <PaginationLink
+                                            href="#"
+                                            isActive={page + 1 === currentPage}
+                                            onClick={() => goToPage(page + 1)}
+                                        >
+                                            {page + 1}
+                                        </PaginationLink>
+                                    </PaginationItem>
+                                ))}
+                                {currentPage < totalPages - 2 && (
+                                    <PaginationItem>
+                                        <PaginationEllipsis/>
+                                    </PaginationItem>
+                                )}
+                                {currentPage < totalPages - 1 && (
+                                    <PaginationItem>
+                                        <PaginationLink href="#" onClick={() => goToPage(totalPages)}>
+                                            {totalPages}
+                                        </PaginationLink>
+                                    </PaginationItem>
+                                )}
+                                <PaginationItem>
+                                    <PaginationNext
+                                        href="#"
+                                        onClick={currentPage * 20 < totalPlaylists ? handleNextPage : undefined}
+                                    />
+                                </PaginationItem>
+                            </PaginationContent>
+                        </Pagination>
                     </CardContent>
                 </Card>
             )}
