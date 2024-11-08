@@ -29,27 +29,15 @@ export default function PlaylistTableRow({playlist, onClick}: PlaylistTableRowPr
     
     return (
         <TableRow>
-            <TableCell>
-                {sanitizedImageUrl ? (
-                    // 画像をクリックするとSpotifyページに遷移
-                    <a href={playlist.externalUrls.externalUrls.spotify} target="_blank" rel="noopener noreferrer">
-                        <div className="w-12 h-12 relative">
-                            <Image
-                                src={sanitizedImageUrl}
-                                alt={sanitizedName}
-                                className="object-contain w-full h-full"
-                                width={640}
-                                height={640}
-                            />
-                        </div>
-                    </a>
-                ) : (
-                    <div className="w-12 h-12 bg-gray-200 rounded-full" data-testid="image-placeholder"></div>
-                )}
-            </TableCell>
-            <TableCell onClick={onClick}>{sanitizedName}</TableCell> {/* 名前列をクリックすると詳細表示 */}
-            <TableCell
-                onClick={onClick}>{playlist.tracks.total}</TableCell> {/* トラック数列をクリックすると詳細表示 */}
+            <TableCell>{sanitizedImageUrl ? (
+                <a href={playlist.externalUrls.externalUrls.spotify} target="_blank" rel="noopener noreferrer">
+                    <div className="w-12 h-12 relative"><Image src={sanitizedImageUrl} alt={sanitizedName}
+                                                               className="object-contain w-full h-full" width={640}
+                                                               height={640}/></div>
+                </a>) : (
+                <div className="w-12 h-12 bg-gray-200 rounded-full" data-testid="image-placeholder"></div>)}</TableCell>
+            <TableCell onClick={onClick}>{sanitizedName}</TableCell>
+            <TableCell onClick={onClick}>{playlist.tracks.total}</TableCell>
         </TableRow>
     );
 }
