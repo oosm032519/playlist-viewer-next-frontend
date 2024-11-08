@@ -1,5 +1,4 @@
 // app/components/PlaylistDetailsLoader.tsx
-
 "use client";
 
 import {useQuery} from '@tanstack/react-query';
@@ -8,58 +7,54 @@ import PlaylistDetails from "./PlaylistDetails";
 import LoadingSpinner from "./LoadingSpinner";
 import {AudioFeatures} from '../types/audioFeaturesTypes';
 
-/**
- * プレイリストの詳細をロードするコンポーネントのプロパティを定義します。
- */
 interface PlaylistDetailsLoaderProps {
-    /** プレイリストのID */
     playlistId: string;
-    /** ユーザーのID（オプション） */
     userId?: string;
 }
 
-/**
- * プレイリストデータのインターフェースを定義します。
- */
-interface PlaylistData {
+interface PlaylistDetailsData {
+    seedArtists: string[];
     tracks: Track[];
     genreCounts: { [genre: string]: number };
-    recommendations: Track[];
     playlistName: string | null;
     ownerId: string;
     totalDuration: number;
     averageAudioFeatures: AudioFeatures;
     ownerName: string;
+    maxAudioFeatures: { [key: string]: number };
+    minAudioFeatures: { [key: string]: number };
 }
 
-/**
- * プレイリストの詳細をAPIから取得します。
- *
- * @param playlistId - プレイリストのID
- * @returns プレイリストデータ
- * @throws ネットワークエラーまたは無効なデータの場合
- */
-const fetchPlaylistDetails = async (playlistId: string): Promise<PlaylistData> => {
-    const response = await fetch(`/api/playlists/${playlistId}`);
+interface RecommendationRequest {
+    seedArtists: string[];
+    maxAudioFeatures: { [key: string]: number };
+    minAudioFeatures: { [key: string]: number };
+}
+
+const fetchPlaylistDetails = async (playlistId: string): Promise<PlaylistDetailsData> => {
+    const response = await fetch(`/api/playlists/${playlistId}/details`, {
+        credentials: 'include', // 重要: Cookieを含める
+    });
     if (!response.ok) {
         throw new Error('Network response was not ok');
     }
     const data = await response.json();
     if (data) {
-        console.log(data);
         const tracks = data.tracks?.items?.map((item: any) => ({
             ...item.track,
             audioFeatures: item.audioFeatures,
         })) || [];
         return {
+            seedArtists: data.seedArtists || [],
             tracks: tracks,
             genreCounts: data.genreCounts || {},
-            recommendations: data.recommendations || [],
             playlistName: data.playlistName || null,
             ownerId: data.ownerId || '',
             totalDuration: data.totalDuration || 0,
             averageAudioFeatures: data.averageAudioFeatures || {},
             ownerName: data.ownerName || '',
+            maxAudioFeatures: data.maxAudioFeatures || {},
+            minAudioFeatures: data.minAudioFeatures || {}
         };
     }
     throw new Error('Invalid response data');
@@ -93,39 +88,72 @@ const PlaylistDetailsLoader: React.FC<PlaylistDetailsLoaderProps> = ({
                                                                          playlistId,
                                                                          userId,
                                                                      }) => {
-    // プレイリストデータを取得するクエリを実行
-    const {data: playlistData, isLoading, error} = useQuery<PlaylistData, Error>({
+    const {
+        data: playlistDetails,
+        isLoading: isLoadingDetails,
+        error: detailsError
+    } = useQuery<PlaylistDetailsData, Error>({
         queryKey: ['playlistDetails', playlistId],
         queryFn: () => fetchPlaylistDetails(playlistId),
     });
     
-    if (isLoading) {
-        // データがロード中の場合、ローディングスピナーを表示
-        return <LoadingSpinner loading={isLoading}/>;
+    const {
+        data: recommendations,
+        isLoading: isLoadingRecommendations,
+        error: recommendationsError
+    } = useQuery<Track[], Error>({
+        queryKey: ['recommendations', playlistId],
+        queryFn: async () => {
+            if (!playlistDetails) return [];
+            
+            const requestBody: RecommendationRequest = {
+                seedArtists: playlistDetails.seedArtists,
+                maxAudioFeatures: playlistDetails.maxAudioFeatures,
+                minAudioFeatures: playlistDetails.minAudioFeatures,
+            };
+            
+            const response = await fetch(`/api/playlists/recommendations`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody),
+                credentials: 'include',
+            });
+            if (!response.ok) {
+                throw new Error(`recommendations fetch failed: ${response.status}`);
+            }
+            return response.json();
+        },
+        enabled: !!playlistDetails,
+        retry: 3,
+    });
+    
+    
+    if (isLoadingDetails) {
+        return <LoadingSpinner loading={isLoadingDetails}/>;
     }
     
-    if (error || !playlistData) {
-        // エラーが発生した場合、エラーメッセージを表示
-        return <div>プレイリスト取得中にエラーが発生しました</div>;
+    if (detailsError || !playlistDetails) {
+        return <div>プレイリスト取得中にエラーが発生しました: {detailsError?.message}</div>;
     }
     
-    // トータルの再生時間をフォーマット
-    const formattedDuration = formatDuration(playlistData.totalDuration);
+    const formattedDuration = formatDuration(playlistDetails.totalDuration);
     
-    // プレイリストの詳細を表示
     return (
         <PlaylistDetails
-            tracks={playlistData.tracks}
-            genreCounts={playlistData.genreCounts}
-            recommendations={playlistData.recommendations}
-            playlistName={playlistData.playlistName}
-            ownerId={playlistData.ownerId}
+            tracks={playlistDetails.tracks}
+            genreCounts={playlistDetails.genreCounts}
+            recommendations={recommendations || []}
+            playlistName={playlistDetails.playlistName}
+            ownerId={playlistDetails.ownerId}
             userId={userId || ''}
             playlistId={playlistId}
             totalDuration={formattedDuration}
-            averageAudioFeatures={playlistData.averageAudioFeatures}
-            totalTracks={playlistData.tracks.length}
-            ownerName={playlistData.ownerName}
+            averageAudioFeatures={playlistDetails.averageAudioFeatures}
+            totalTracks={playlistDetails.tracks.length}
+            ownerName={playlistDetails.ownerName}
+            isLoadingRecommendations={isLoadingRecommendations}
         />
     );
 };
