@@ -2,7 +2,6 @@
 
 "use client";
 
-import LoadingSpinner from '@/app/components/LoadingSpinner'
 import {Card, CardContent, CardHeader, CardTitle} from '@/app/components/ui/card'
 import React, {useContext, useState, useEffect, useCallback} from "react";
 import {Track} from "../types/track";
@@ -74,7 +73,6 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                                                              averageAudioFeatures,
                                                              totalTracks,
                                                              ownerName,
-                                                             isLoadingRecommendations,
                                                          }) => {
     
     const generateCsvData = () => {
@@ -226,11 +224,7 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                 </div>
             </div>
             
-            {isLoadingRecommendations ? ( // おすすめ楽曲を読み込み中の場合
-                <div className="mt-4">
-                    <LoadingSpinner loading={isLoadingRecommendations}/>
-                </div>
-            ) : recommendations && recommendations.length > 0 ? ( // おすすめ楽曲が取得できている場合
+            {recommendations && recommendations.length > 0 ? ( // おすすめ楽曲が取得できている場合
                 <Card className="mt-4">
                     <CardHeader className="text-2xl font-bold">おすすめ楽曲</CardHeader>
                     <CardContent>
@@ -238,7 +232,7 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                                               playlistId={playlistId}/>
                     </CardContent>
                 </Card>
-            ) : null} {/* おすすめ楽曲がない場合 */}
+            ) : null}
         </>
     );
 };
