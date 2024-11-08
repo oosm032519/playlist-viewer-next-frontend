@@ -98,15 +98,15 @@ export default function PlaylistSearch() {
             columnHelper.accessor("images", {
                 header: "Image",
                 cell: (info) => {
-                    const imageUrl = info.getValue()[0]?.url;
+                    const imageUrl = info.getValue()[2]?.url;
                     return imageUrl ? (
                         <div className="w-12 h-12 relative">
                             <Image
                                 src={DOMPurify.sanitize(imageUrl, {ALLOWED_TAGS: [], ALLOWED_ATTR: []})}
                                 alt="Playlist"
                                 className="object-contain w-full h-full"
-                                width={640}
-                                height={640}
+                                width={60}
+                                height={60}
                             />
                         </div>
                     ) : null;

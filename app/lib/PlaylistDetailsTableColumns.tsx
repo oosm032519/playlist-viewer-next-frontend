@@ -60,8 +60,8 @@ export const playlistDetailsTableColumns = [
                         src={info.getValue().images[0].url}
                         alt={info.getValue().name}
                         className="object-contain w-full h-full"
-                        width={640}
-                        height={640}
+                        width={60}
+                        height={60}
                     />
                 </div>
             </a>

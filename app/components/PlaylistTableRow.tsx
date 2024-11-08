@@ -32,8 +32,7 @@ export default function PlaylistTableRow({playlist, onClick}: PlaylistTableRowPr
             <TableCell>{sanitizedImageUrl ? (
                 <a href={playlist.externalUrls.externalUrls.spotify} target="_blank" rel="noopener noreferrer">
                     <div className="w-12 h-12 relative"><Image src={sanitizedImageUrl} alt={sanitizedName}
-                                                               className="object-contain w-full h-full" width={640}
-                                                               height={640}/></div>
+                                                               className="object-contain w-full h-full" width={60} height={60}/></div>
                 </a>) : (
                 <div className="w-12 h-12 bg-gray-200 rounded-full" data-testid="image-placeholder"></div>)}</TableCell>
             <TableCell onClick={onClick}>{sanitizedName}</TableCell>
