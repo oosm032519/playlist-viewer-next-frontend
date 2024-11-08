@@ -55,12 +55,20 @@ export const playlistDetailsTableColumns = [
         header: "Album",
         cell: (info) => (
             <a href={info.getValue().externalUrls.externalUrls.spotify} target="_blank" rel="noopener noreferrer">
-                <Image src={info.getValue().images[0].url} alt={info.getValue().name} width={50} height={50}/>
+                <div className="w-12 h-12 relative">
+                    <Image
+                        src={info.getValue().images[0].url}
+                        alt={info.getValue().name}
+                        className="object-contain w-full h-full"
+                        width={640}
+                        height={640}
+                    />
+                </div>
             </a>
-        ),
-        enableSorting: false, // ソートを無効化
-    }),
-    // タイトルカラムの定義
+),
+enableSorting: false, // ソートを無効化
+}),
+// タイトルカラムの定義
     columnHelper.accessor("name", {
         header: "Title",
         cell: (info) => (

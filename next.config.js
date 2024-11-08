@@ -20,6 +20,7 @@ const nextConfig = {
         // 画像のサイズ制限を追加
         deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
         imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+        domains: ['mosaic.scdn.co', 'newjams-images.scdn.co', 'dailymix-images.scdn.co', 'image-cdn-ak.spotifycdn.com', 'image-cdn-fa.spotifycdn.com', 'pickasso.spotifycdn.com'],
     },
 
     // セキュリティヘッダーの強化

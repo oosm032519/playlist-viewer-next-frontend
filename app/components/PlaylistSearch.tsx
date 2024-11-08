@@ -19,6 +19,7 @@ import {Input} from "./ui/input";
 import {Form, FormControl, FormField, FormItem, FormMessage} from "./ui/form";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "./ui/table";
 import {Card, CardContent, CardHeader, CardTitle} from "./ui/card";
+import Image from "next/image";
 
 /**
  * プレイリストのインターフェース
@@ -99,11 +100,15 @@ export default function PlaylistSearch() {
                 cell: (info) => {
                     const imageUrl = info.getValue()[0]?.url;
                     return imageUrl ? (
-                        <img
-                            src={DOMPurify.sanitize(imageUrl, {ALLOWED_TAGS: [], ALLOWED_ATTR: []})}
-                            alt="Playlist"
-                            className="w-12 h-12 object-cover rounded-full"
-                        />
+                        <div className="w-12 h-12 relative">
+                            <Image
+                                src={DOMPurify.sanitize(imageUrl, {ALLOWED_TAGS: [], ALLOWED_ATTR: []})}
+                                alt="Playlist"
+                                className="object-contain w-full h-full"
+                                width={640}
+                                height={640}
+                            />
+                        </div>
                     ) : null;
                 },
             }),

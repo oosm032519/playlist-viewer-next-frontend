@@ -54,12 +54,15 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({track
             {
                 header: 'Album',
                 cell: info => (
-                    <Image
-                        src={sanitize(info.row.original.album.images[0].url)}
-                        alt={sanitize(info.row.original.album.name)}
-                        width={50}
-                        height={50}
-                    />
+                    <div className="w-12 h-12 relative">
+                        <Image
+                            src={sanitize(info.row.original.album.images[0].url)}
+                            alt={sanitize(info.row.original.album.name)}
+                            className="object-contain w-full h-full"
+                            width={640}
+                            height={640}
+                        />
+                    </div>
                 ),
             },
             {

@@ -6,6 +6,7 @@ import {Playlist} from '../types/playlist';
 import {Alert, AlertDescription, AlertTitle} from "./ui/alert";
 import LoadingSpinner from "./LoadingSpinner";
 import DOMPurify from 'dompurify';
+import Image from "next/image";
 
 /**
  * FollowedPlaylistsコンポーネントのプロパティ
@@ -74,11 +75,12 @@ const FollowedPlaylists: React.FC<FollowedPlaylistsProps> = ({onPlaylistClick}) 
                             <li key={playlist.id} className="bg-gray-100 p-4 rounded-lg shadow">
                                 <div onClick={() => onPlaylistClick(playlist.id)}>
                                     {sanitizedImageUrl ? (
-                                        <img
+                                        <Image
                                             src={sanitizedImageUrl}
                                             alt={sanitizedName}
-                                            className="w-full h-auto mb-2 cursor-pointer"
-                                            style={{maxWidth: '100%', height: 'auto'}}
+                                            className="w-auto h-auto mb-2 cursor-pointer"
+                                            width={640}
+                                            height={640}
                                         />
                                     ) : (
                                         <div className="w-full h-auto bg-gray-200 flex items-center justify-center mb-2"

@@ -1,11 +1,10 @@
 // app/components/PlaylistTableRow.tsx
 
-// app/components/PlaylistTableRow.tsx
-
 import {Playlist} from "../types/playlist";
 import {TableCell, TableRow} from "./ui/table";
 import DOMPurify from 'dompurify';
 import {useEffect, useState} from 'react';
+import Image from "next/image";
 
 interface PlaylistTableRowProps {
     playlist: Playlist;
@@ -34,14 +33,15 @@ export default function PlaylistTableRow({playlist, onClick}: PlaylistTableRowPr
                 {sanitizedImageUrl ? (
                     // 画像をクリックするとSpotifyページに遷移
                     <a href={playlist.externalUrls.externalUrls.spotify} target="_blank" rel="noopener noreferrer">
-                        <img
-                            src={sanitizedImageUrl}
-                            alt={sanitizedName}
-                            width={48}
-                            height={48}
-                            loading="lazy"
-                            className="cursor-pointer"
-                        />
+                        <div className="w-12 h-12 relative">
+                            <Image
+                                src={sanitizedImageUrl}
+                                alt={sanitizedName}
+                                className="object-contain w-full h-full"
+                                width={640}
+                                height={640}
+                            />
+                        </div>
                     </a>
                 ) : (
                     <div className="w-12 h-12 bg-gray-200 rounded-full" data-testid="image-placeholder"></div>
