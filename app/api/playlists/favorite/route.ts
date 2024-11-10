@@ -12,15 +12,12 @@ import {getCookies, handleApiError, sendRequest} from '@/app/lib/api-utils';
  * @returns APIからのレスポンスデータ
  */
 const handleFavoritePlaylist = async (req: NextRequest, method: 'POST' | 'DELETE'): Promise<Response> => {
-    console.log(`handle${method}FavoritePlaylist関数が呼び出されました`);
-    
     try {
         // Cookieを取得
         const cookies = getCookies(req);
         
         // リクエストボディを解析
         const body = await req.json();
-        console.log('リクエストボディ:', body);
         
         // URLSearchParamsを使用してクエリパラメータを構築
         const params = new URLSearchParams({
@@ -31,15 +28,11 @@ const handleFavoritePlaylist = async (req: NextRequest, method: 'POST' | 'DELETE
         });
         
         const fullUrl = `/api/playlists/favorite?${params.toString()}`;
-        console.log('完全なURL:', fullUrl);
         
         // APIリクエストを実行
         const response = await sendRequest(fullUrl, method, undefined, cookies);
         
         const data = await response.json();
-        
-        console.log('APIレスポンスを受信しました:', response.status);
-        console.log('レスポンスデータ:', data);
         
         return new Response(JSON.stringify(data), {
             status: response.status,
@@ -57,7 +50,6 @@ const handleFavoritePlaylist = async (req: NextRequest, method: 'POST' | 'DELETE
  * @returns APIからのレスポンスデータを含むNextResponseオブジェクト
  */
 export const POST = withAuth(async (req: NextRequest): Promise<Response> => {
-    console.log('POSTハンドラーが呼び出されました');
     
     return handleFavoritePlaylist(req, 'POST');
 });
@@ -69,7 +61,5 @@ export const POST = withAuth(async (req: NextRequest): Promise<Response> => {
  * @returns APIからのレスポンスデータを含むNextResponseオブジェクト
  */
 export const DELETE = withAuth(async (req: NextRequest): Promise<Response> => {
-    console.log('DELETEハンドラーが呼び出されました');
-    
     return handleFavoritePlaylist(req, 'DELETE');
 });
