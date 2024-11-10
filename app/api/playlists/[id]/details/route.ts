@@ -1,8 +1,8 @@
 // api/playlists/[id]/details/route.ts
 import {NextResponse} from 'next/server';
-import type {NextApiRequest} from 'next'
+import type {NextRequest} from 'next/server';
 
-export async function GET(req: NextApiRequest, {params}: { params: { id: string } }) {
+export async function GET(req: NextRequest, {params}: { params: { id: string } }) {
     const {id} = params;
     try {
         const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
@@ -11,7 +11,7 @@ export async function GET(req: NextApiRequest, {params}: { params: { id: string 
         });
         
         if (!response.ok) {
-            const errorData = await response.json(); // エラーメッセージがあれば取得
+            const errorData = await response.json();  // エラーメッセージがあれば取得
             return new NextResponse(JSON.stringify(errorData), {
                 status: response.status,
                 headers: {'Content-Type': 'application/json'}
