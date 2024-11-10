@@ -6,7 +6,7 @@ import {
     UnauthorizedError,
     BadRequestError,
     ForbiddenError
-} from './errors';
+} from '@/app/lib/errors';
 import {expect} from '@jest/globals';
 
 describe('Custom Error Classes', () => {

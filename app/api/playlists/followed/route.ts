@@ -10,8 +10,6 @@ import {getCookies, handleApiError, sendRequest} from '@/app/lib/api-utils';
  * @returns {Promise<any>} フォロー中のプレイリストデータ
  */
 const getFollowedPlaylists = async (req: NextRequest): Promise<Response> => {
-    console.log('getFollowedPlaylists関数が呼び出されました');
-    
     try {
         // Cookieを取得
         const cookies = getCookies(req);
@@ -21,9 +19,6 @@ const getFollowedPlaylists = async (req: NextRequest): Promise<Response> => {
         
         // レスポンスデータをJSONとしてパース
         const data = await response.json();
-        
-        console.log('APIレスポンスを受信しました:', response.status);
-        console.log('レスポンスデータ:', data);
         
         return new Response(JSON.stringify(data), {
             status: response.status,
@@ -41,7 +36,5 @@ const getFollowedPlaylists = async (req: NextRequest): Promise<Response> => {
  * @returns {Promise<NextResponse>} フォロー中のプレイリストデータを含むレスポンス
  */
 export const GET = withAuth(async (req: NextRequest): Promise<Response> => {
-    console.log('GETハンドラーが呼び出されました');
-    
     return getFollowedPlaylists(req);
 });

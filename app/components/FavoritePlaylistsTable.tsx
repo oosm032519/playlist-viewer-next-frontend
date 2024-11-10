@@ -11,7 +11,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from './ui/table';
+} from '@/app/components/ui/table';
 import {format} from 'date-fns';
 import {usePlaylist} from '@/app/context/PlaylistContext';
 import {

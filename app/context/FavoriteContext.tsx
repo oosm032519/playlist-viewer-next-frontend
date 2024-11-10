@@ -1,7 +1,7 @@
 // app/context/FavoriteContext.tsx
 
 import React, {createContext, useState, useCallback, useEffect} from 'react';
-import {useUser} from './UserContext'; // UserContextをインポート
+import {useUser} from '@/app/context/UserContext';
 
 /**
  * @typedef Favorite
@@ -111,10 +111,8 @@ export const FavoriteProvider: React.FC<{ children: React.ReactNode }> = ({child
                 });
                 setFavorites(newFavorites);
             } else {
-                console.error('お気に入り情報の取得に失敗しました。');
             }
         } catch (error) {
-            console.error('お気に入り情報の取得中にエラーが発生しました。', error);
         }
     }, [isLoggedIn]);
     

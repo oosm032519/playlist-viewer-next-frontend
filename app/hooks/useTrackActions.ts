@@ -1,5 +1,7 @@
+// app/hooks/useTrackActions.ts
+
 import {useState} from "react";
-import {addTrackToPlaylist, removeTrackFromPlaylist} from "../lib/trackUtils";
+import {addTrackToPlaylist, removeTrackFromPlaylist} from "@/app/lib/trackUtils";
 
 /**
  * プレイリストにトラックを追加または削除するためのカスタムフック。
@@ -30,7 +32,6 @@ export const useTrackActions = (playlistId: string, toast: any) => {
             });
         } catch (error) {
             // エラーが発生した場合の処理
-            console.error("楽曲の追加中にエラーが発生しました。", error);
             toast({
                 title: "エラー",
                 description: "楽曲の追加中にエラーが発生しました。",
@@ -61,7 +62,6 @@ export const useTrackActions = (playlistId: string, toast: any) => {
             });
         } catch (error) {
             // エラーが発生した場合の処理
-            console.error("楽曲の削除中にエラーが発生しました。", error);
             toast({
                 title: "エラー",
                 description: "楽曲の削除中にエラーが発生しました。",

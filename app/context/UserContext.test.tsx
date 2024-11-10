@@ -2,7 +2,7 @@
 
 import React from 'react';
 import {render, screen, act} from '@testing-library/react';
-import {UserContextProvider, useUser} from './UserContext';
+import {UserContextProvider, useUser} from '@/app/context/UserContext';
 import {axe, toHaveNoViolations} from 'jest-axe';
 import {expect} from '@jest/globals';
 

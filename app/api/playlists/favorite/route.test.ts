@@ -1,7 +1,7 @@
 // app/api/playlists/favorite/route.test.ts
 
 import {NextRequest} from 'next/server';
-import {POST, DELETE} from './route';
+import {POST, DELETE} from '@/app/api/playlists/favorite/route';
 import * as apiUtils from '@/app/lib/api-utils';
 import {UnauthorizedError} from '@/app/lib/errors';
 import {expect} from '@jest/globals'

@@ -1,7 +1,7 @@
 // app/hooks/useSearchPlaylists.ts
 
 import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {Playlist} from "../types/playlist";
+import {Playlist} from "@/app/types/playlist";
 
 /**
  * プレイリストを検索する非同期関数
@@ -65,11 +65,6 @@ export const useSearchPlaylists = (
             
             // 現在のページのデータを取得して onSearch に渡す
             onSearch(data);
-        },
-        
-        // エラー時の処理
-        onError: (error: any) => {
-            console.error("プレイリスト検索中にエラーが発生しました:", error);
         },
     });
 };

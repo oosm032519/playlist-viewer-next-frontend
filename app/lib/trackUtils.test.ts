@@ -1,6 +1,6 @@
 // trackUtils.test.ts
 
-import {addTrackToPlaylist, removeTrackFromPlaylist} from './trackUtils';
+import {addTrackToPlaylist, removeTrackFromPlaylist} from '@/app/lib/trackUtils';
 import fetchMock from 'jest-fetch-mock';
 import {expect} from '@jest/globals';
 
@@ -12,8 +12,6 @@ describe('trackUtils', () => {
     describe('addTrackToPlaylist function', () => {
         beforeEach(() => {
             fetchMock.resetMocks();
-            console.log = jest.fn();
-            console.error = jest.fn();
             sessionStorage.clear();
         });
         
@@ -24,7 +22,6 @@ describe('trackUtils', () => {
             const result = await addTrackToPlaylist('playlist123', 'track456');
             
             expect(result).toBe(true);
-            expect(console.log).toHaveBeenCalledWith("[addTrackToPlaylist] 曲が正常に追加されました");
         });
         
         it('APIエラーの場合、falseを返す', async () => {
@@ -34,7 +31,6 @@ describe('trackUtils', () => {
             const result = await addTrackToPlaylist('playlist123', 'track456');
             
             expect(result).toBe(false);
-            expect(console.error).toHaveBeenCalledWith(expect.stringContaining('曲の追加に失敗しました'));
         });
         
         it('ネットワークエラーの場合、falseを返す', async () => {
@@ -44,10 +40,6 @@ describe('trackUtils', () => {
             const result = await addTrackToPlaylist('playlist123', 'track456');
             
             expect(result).toBe(false);
-            expect(console.error).toHaveBeenCalledWith(
-                expect.stringContaining('[addTrackToPlaylist] 予期せぬエラーが発生しました:'),
-                expect.any(Error)
-            );
         });
     });
     
@@ -55,8 +47,6 @@ describe('trackUtils', () => {
     describe('removeTrackFromPlaylist function', () => {
         beforeEach(() => {
             fetchMock.resetMocks();
-            console.log = jest.fn();
-            console.error = jest.fn();
             sessionStorage.clear();
         });
         
@@ -67,7 +57,6 @@ describe('trackUtils', () => {
             const result = await removeTrackFromPlaylist('playlist123', 'track456');
             
             expect(result).toBe(true);
-            expect(console.log).toHaveBeenCalledWith("[removeTrackFromPlaylist] 曲が正常に削除されました");
         });
         
         it('APIエラーの場合、falseを返す', async () => {
@@ -77,7 +66,6 @@ describe('trackUtils', () => {
             const result = await removeTrackFromPlaylist('playlist123', 'track456');
             
             expect(result).toBe(false);
-            expect(console.error).toHaveBeenCalledWith(expect.stringContaining('曲の削除に失敗しました'));
         });
         
         it('ネットワークエラーの場合、falseを返す', async () => {
@@ -87,10 +75,6 @@ describe('trackUtils', () => {
             const result = await removeTrackFromPlaylist('playlist123', 'track456');
             
             expect(result).toBe(false);
-            expect(console.error).toHaveBeenCalledWith(
-                expect.stringContaining('[removeTrackFromPlaylist] 予期せぬエラーが発生しました:'),
-                expect.any(Error)
-            );
         });
     });
 });

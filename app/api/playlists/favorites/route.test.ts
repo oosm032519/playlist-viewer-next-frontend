@@ -1,7 +1,7 @@
 // app/api/playlists/favorites/route.test.ts
 
 import {NextRequest} from 'next/server';
-import {GET} from './route';
+import {GET} from '@/app/api/playlists/favorites/route';
 import {expect} from '@jest/globals';
 
 // モックの設定

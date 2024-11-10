@@ -4,10 +4,9 @@ import React from 'react';
 import {render, screen} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import {axe, toHaveNoViolations} from 'jest-axe';
-import PlaylistTableHeader from './PlaylistTableHeader';
+import PlaylistTableHeader from '@/app/components/PlaylistTableHeader';
 import {expect} from '@jest/globals';
 
-// jest-axeのカスタムマッチャーを追加
 expect.extend(toHaveNoViolations);
 
 describe('PlaylistTableHeader', () => {

@@ -1,6 +1,6 @@
 // app/api/playlists/search/route.test.ts
 
-import {GET} from './route';
+import {GET} from '@/app/api/playlists/search/route';
 import {NextRequest} from 'next/server';
 import * as apiUtils from '@/app/lib/api-utils';
 import {BadRequestError} from '@/app/lib/errors';

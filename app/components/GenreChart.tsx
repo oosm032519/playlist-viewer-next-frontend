@@ -9,12 +9,12 @@ import {
     CardFooter,
     CardHeader,
     CardTitle,
-} from "./ui/card";
+} from "@/app/components/ui/card";
 import {
     ChartConfig,
     ChartContainer,
     ChartTooltip,
-} from "./ui/chart";
+} from "@/app/components/ui/chart";
 
 interface GenreChartProps {
     genreCounts: { [genre: string]: number };

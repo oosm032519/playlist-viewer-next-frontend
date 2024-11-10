@@ -1,11 +1,10 @@
 // app/api/playlists/[id]/route.test.ts
 
-import {GET} from './route';
+import {GET} from '@/app/api/playlists/[id]/route';
 import fetchMock from 'jest-fetch-mock';
 import {expect} from '@jest/globals';
 import {NextRequest} from 'next/server';
 
-// fetchMockを有効にする
 fetchMock.enableMocks();
 
 // next/serverモジュールをモックする

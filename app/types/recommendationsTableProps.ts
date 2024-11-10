@@ -1,3 +1,5 @@
+// app/types/recommendationsTableProps.ts
+
 import { Track } from './track';
 
 export interface RecommendationsTableProps {

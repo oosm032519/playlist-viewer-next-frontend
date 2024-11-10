@@ -5,7 +5,7 @@ import {render, screen, waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {QueryClient, QueryClientProvider, useQuery} from '@tanstack/react-query';
 import {axe, toHaveNoViolations} from 'jest-axe';
-import PlaylistSearch from './PlaylistSearch';
+import PlaylistSearch from '@/app/components/PlaylistSearch';
 import {expect} from '@jest/globals';
 
 expect.extend(toHaveNoViolations);

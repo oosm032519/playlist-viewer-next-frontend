@@ -14,11 +14,11 @@ import {
 } from "@tanstack/react-table";
 import {useQuery} from "@tanstack/react-query";
 import DOMPurify from 'dompurify';
-import {Button} from "./ui/button";
-import {Input} from "./ui/input";
-import {Form, FormControl, FormField, FormItem, FormMessage} from "./ui/form";
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "./ui/table";
-import {Card, CardContent, CardHeader, CardTitle} from "./ui/card";
+import {Button} from "@/app/components/ui/button";
+import {Input} from "@/app/components/ui/input";
+import {Form, FormControl, FormField, FormItem, FormMessage} from "@/app/components/ui/form";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/app/components/ui/table";
+import {Card, CardContent, CardHeader, CardTitle} from "@/app/components/ui/card";
 import Image from "next/image";
 
 /**

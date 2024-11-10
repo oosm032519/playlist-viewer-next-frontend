@@ -1,6 +1,8 @@
+// app/components/PlaylistTable.test.tsx
+
 import {render, screen, fireEvent} from '@testing-library/react';
-import PlaylistTable from './PlaylistTable';
-import {Playlist} from "../types/playlist";
+import PlaylistTable from '@/app/components/PlaylistTable';
+import {Playlist} from "@/app/types/playlist";
 import '@testing-library/jest-dom';
 import {expect} from "@jest/globals";
 

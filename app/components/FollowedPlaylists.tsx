@@ -2,9 +2,9 @@
 
 import React from 'react';
 import {useQuery} from '@tanstack/react-query';
-import {Playlist} from '../types/playlist';
-import {Alert, AlertDescription, AlertTitle} from "./ui/alert";
-import LoadingSpinner from "./LoadingSpinner";
+import {Playlist} from '@/app/types/playlist';
+import {Alert, AlertDescription, AlertTitle} from "@/app/components/ui/alert";
+import LoadingSpinner from "@/app/components/LoadingSpinner";
 import DOMPurify from 'dompurify';
 import Image from "next/image";
 

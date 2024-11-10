@@ -1,7 +1,7 @@
 // app/lib/api-utils.test.ts
 
-import {handleApiError} from './api-utils';
-import {ApiError} from './errors';
+import {handleApiError} from '@/app/lib/api-utils';
+import {ApiError} from '@/app/lib/errors';
 import {expect, jest, describe, it, beforeAll, afterAll, beforeEach} from '@jest/globals';
 
 // NextResponseをモック化

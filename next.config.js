@@ -2,7 +2,6 @@
 const nextConfig = {
     reactStrictMode: true,
 
-    // 画像最適化の設定
     images: {
         remotePatterns: [
             {
@@ -23,13 +22,11 @@ const nextConfig = {
             }
         ],
         minimumCacheTTL: 60,
-        // 画像のサイズ制限を追加
         deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
         imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
         domains: [],
     },
 
-    // セキュリティヘッダーの強化
     async headers() {
         return [
             {
@@ -97,7 +94,6 @@ const nextConfig = {
               child-src 'self';
             `.replace(/\s+/g, ' ').trim(),
                     },
-                    // キャッシュ制御ヘッダーの追加
                     {
                         key: 'Cache-Control',
                         value: 'public, max-age=3600, must-revalidate',
@@ -107,20 +103,16 @@ const nextConfig = {
         ];
     },
 
-    // 追加のセキュリティ設定
-    poweredByHeader: false, // 'X-Powered-By' ヘッダーを無効化
-    compress: true, // レスポンスの圧縮を有効化
-    productionBrowserSourceMaps: false, // 本番環境でのソースマップ生成を無効化
+    poweredByHeader: false,
+    compress: true,
+    productionBrowserSourceMaps: false,
 
-    // ビルド出力の最適化
     output: 'standalone',
 
-    // 環境変数の検証
     env: {
         NEXT_PUBLIC_BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL,
     },
 
-    // セキュリティ強化: ランタイム設定
     experimental: {
         scrollRestoration: true,
         optimizeCss: true,

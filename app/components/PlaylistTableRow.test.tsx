@@ -1,12 +1,13 @@
+// app/components/PlaylistTableRow.test.tsx
+
 import React from 'react';
 import {render, screen, fireEvent} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import {axe, toHaveNoViolations} from 'jest-axe';
-import PlaylistTableRow from './PlaylistTableRow';
-import {Playlist} from '../types/playlist';
+import PlaylistTableRow from '@/app/components/PlaylistTableRow';
+import {Playlist} from '@/app/types/playlist';
 import {expect} from '@jest/globals';
 
-// jest-axeのカスタムマッチャーを追加
 expect.extend(toHaveNoViolations);
 
 // テスト用のモックデータ: 画像ありのプレイリスト

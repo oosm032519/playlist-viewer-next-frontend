@@ -3,7 +3,7 @@
 import React from 'react';
 import {render, screen} from '@testing-library/react';
 import {axe, toHaveNoViolations} from 'jest-axe';
-import ErrorAlert from './ErrorAlert';
+import ErrorAlert from '@/app/components/ErrorAlert';
 import {expect} from '@jest/globals';
 
 expect.extend(toHaveNoViolations);

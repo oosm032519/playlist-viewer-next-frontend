@@ -1,8 +1,10 @@
+// app/context/FavoriteContext.test.tsx
+
 import React from 'react';
 import {render, screen, waitFor, act} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {FavoriteProvider, FavoriteContext} from './FavoriteContext';
-import {UserContextProvider} from './UserContext';
+import {FavoriteProvider, FavoriteContext} from '@/app/context/FavoriteContext';
+import {UserContextProvider} from '@/app/context/UserContext';
 import {expect} from '@jest/globals'
 
 // モックの作成

@@ -1,7 +1,7 @@
 // app/components/ErrorBoundary.tsx
 
 import React, {Component, ErrorInfo} from 'react';
-import {Alert, AlertDescription, AlertTitle} from "./ui/alert";
+import {Alert, AlertDescription, AlertTitle} from "@/app/components/ui/alert";
 
 interface ErrorBoundaryProps {
     children: React.ReactNode;

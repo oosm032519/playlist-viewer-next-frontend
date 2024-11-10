@@ -4,19 +4,19 @@
 
 import {Card, CardContent, CardHeader, CardTitle} from '@/app/components/ui/card';
 import React, {useEffect, useState, useContext} from "react";
-import PlaylistSearchForm from "./components/PlaylistSearchForm";
-import PlaylistIdForm from "./components/PlaylistIdForm";
-import LoginButton from "./components/LoginButton";
-import {useUser, UserContextProvider} from "./context/UserContext";
-import {PlaylistContextProvider, usePlaylist} from "./context/PlaylistContext";
-import ErrorAlert from "./components/ErrorAlert";
-import PlaylistDisplay from "./components/PlaylistDisplay";
-import {Playlist} from "./types/playlist";
+import PlaylistSearchForm from "@/app/components/PlaylistSearchForm";
+import PlaylistIdForm from "@/app/components/PlaylistIdForm";
+import LoginButton from "@/app/components/LoginButton";
+import {useUser, UserContextProvider} from "@/app/context/UserContext";
+import {PlaylistContextProvider, usePlaylist} from "@/app/context/PlaylistContext";
+import ErrorAlert from "@/app/components/ErrorAlert";
+import PlaylistDisplay from "@/app/components/PlaylistDisplay";
+import {Playlist} from "@/app/types/playlist";
 import {Toaster} from "@/app/components/ui/toaster";
 import {FavoriteProvider, FavoriteContext} from '@/app/context/FavoriteContext';
 import FavoritePlaylistsTable from '@/app/components/FavoritePlaylistsTable';
 import {useTheme} from 'next-themes';
-import {Tabs, TabsList, TabsTrigger, TabsContent} from "./components/ui/tabs";
+import {Tabs, TabsList, TabsTrigger, TabsContent} from "@/app/components/ui/tabs";
 
 /**
  * HomeContentコンポーネント

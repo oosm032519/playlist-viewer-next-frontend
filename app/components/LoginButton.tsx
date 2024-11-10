@@ -2,9 +2,9 @@
 
 "use client";
 
+import {Button} from "@/app/components/ui/button";
+import {useUser} from "@/app/context/UserContext";
 import React from 'react';
-import {Button} from "./ui/button";
-import {useUser} from "../context/UserContext";
 
 /**
  * ログインボタンコンポーネント
@@ -18,8 +18,6 @@ const LoginButton: React.FC = () => {
     // ユーザーのログイン状態とユーザーIDを管理するカスタムフックを使用
     const {isLoggedIn, setUserId, setIsLoggedIn} = useUser();
     
-    console.log('LoginButton コンポーネントがレンダリングされました', {isLoggedIn});
-    
     /**
      * ログイン処理を開始する関数
      *
@@ -27,10 +25,7 @@ const LoginButton: React.FC = () => {
      * SpotifyのOAuth2認証ページにリダイレクトします。
      */
     const handleLogin = () => {
-        console.log('ログイン処理を開始します');
-        const loginUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/oauth2/authorization/spotify`;
-        console.log('リダイレクト先:', {loginUrl});
-        window.location.href = loginUrl; // 認証ページにリダイレクト
+        window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL}/oauth2/authorization/spotify`; // 認証ページにリダイレクト
     };
     
     /**
@@ -41,7 +36,6 @@ const LoginButton: React.FC = () => {
      * 成功時にはページをリロードします。
      */
     const handleLogout = async () => {
-        console.log('ログアウトを実行しています');
         try {
             const response = await fetch(`/api/session/logout`, {
                 method: 'POST',
@@ -51,19 +45,15 @@ const LoginButton: React.FC = () => {
             if (response.ok) {
                 setIsLoggedIn(false); // ログイン状態を更新
                 setUserId(null); // ユーザーIDをクリア
-                console.log('ログアウトが成功しました');
                 window.location.reload(); // ログアウト成功時にページをリロード
             } else {
-                console.error('ログアウト中にエラーが発生しました:', response.statusText);
             }
         } catch (error) {
-            console.error('ログアウト中にエラーが発生しました:', error);
         }
     };
     
     return (
         <Button onClick={() => {
-            console.log('ボタンがクリックされました', {isLoggedIn});
             isLoggedIn ? handleLogout() : handleLogin();
         }}>
             {isLoggedIn ? 'ログアウト' : 'Spotifyでログイン'}

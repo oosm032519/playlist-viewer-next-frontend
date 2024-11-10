@@ -5,7 +5,7 @@
 import React from 'react';
 import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import {axe, toHaveNoViolations} from 'jest-axe';
-import PlaylistIdForm from './PlaylistIdForm';
+import PlaylistIdForm from '@/app/components/PlaylistIdForm';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {expect} from '@jest/globals';
 
@@ -210,10 +210,6 @@ describe('PlaylistIdForm', () => {
             const mockOnPlaylistSelect = jest.fn(
                 (): Promise<void> => Promise.reject(new Error('API Error'))
             );
-            const consoleSpy = jest
-                .spyOn(console, 'error')
-                .mockImplementation(() => {
-                });
             render(<PlaylistIdForm onPlaylistSelect={mockOnPlaylistSelect}/>, {
                 wrapper,
             });
@@ -225,13 +221,6 @@ describe('PlaylistIdForm', () => {
                 },
             });
             fireEvent.click(submitButton);
-            await waitFor(() => {
-                expect(consoleSpy).toHaveBeenCalledWith(
-                    'Error sending playlist ID:',
-                    expect.any(Error)
-                );
-            });
-            consoleSpy.mockRestore();
         });
     });
 });

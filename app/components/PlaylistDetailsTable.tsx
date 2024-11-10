@@ -11,7 +11,7 @@ import {
     SortingState,
     ColumnDef,
 } from "@tanstack/react-table";
-import {Track} from "../types/track";
+import {Track} from "@/app/types/track";
 import {
     Table,
     TableBody,
@@ -19,9 +19,9 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "./ui/table";
+} from "@/app/components/ui/table";
 import {ArrowUpDown} from "lucide-react";
-import {playlistDetailsTableColumns} from "../lib/PlaylistDetailsTableColumns";
+import {playlistDetailsTableColumns} from "@/app/lib/PlaylistDetailsTableColumns";
 import {AudioFeatures} from "@/app/types/audioFeaturesTypes";
 
 /**

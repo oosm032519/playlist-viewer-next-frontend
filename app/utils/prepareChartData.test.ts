@@ -1,6 +1,6 @@
 // app/utils/prepareChartData.test.ts
 
-import prepareChartData from './prepareChartData';
+import prepareChartData from '@/app/utils/prepareChartData';
 import {expect} from '@jest/globals';
 
 describe('prepareChartData', () => {

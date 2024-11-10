@@ -1,9 +1,8 @@
 // app/lib/tableUtils.ts
 
 import {Row} from '@tanstack/react-table';
-import {Track} from '../types/track';
+import {Track} from '@/app/types/track';
 
-// AudioFeatureはTrackのaudioFeaturesプロパティのキーの型を表す
 type AudioFeature = keyof NonNullable<Track['audioFeatures']>;
 
 /**

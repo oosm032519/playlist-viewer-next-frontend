@@ -52,10 +52,8 @@ export const useCreatePlaylistMutation = (tracks: any[], toast: any) => {
         },
         /**
          * プレイリスト作成失敗時のコールバック。
-         * @param error 発生したエラー。
          */
-        onError: (error) => {
-            console.error("プレイリストの作成中にエラーが発生しました。", error);
+        onError: () => {
             toast({
                 title: "エラー",
                 description: "プレイリストの作成中にエラーが発生しました。",

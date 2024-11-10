@@ -4,10 +4,10 @@
 
 import {useState} from "react";
 import {useMutation} from "@tanstack/react-query";
-import {Button} from "./ui/button";
-import {Input} from "./ui/input";
-import LoadingSpinner from "./LoadingSpinner";
-import {Alert, AlertDescription, AlertTitle} from "./ui/alert";
+import {Button} from "@/app/components/ui/button";
+import {Input} from "@/app/components/ui/input";
+import LoadingSpinner from "@/app/components/LoadingSpinner";
+import {Alert, AlertDescription, AlertTitle} from "@/app/components/ui/alert";
 
 interface PlaylistIdFormProps {
     /** プレイリストが選択されたときに呼び出されるコールバック関数 */
@@ -40,7 +40,6 @@ const PlaylistIdForm = ({onPlaylistSelect}: PlaylistIdFormProps): JSX.Element =>
     const mutation = useMutation({
         mutationFn: (extractedId: string) => onPlaylistSelect(extractedId),
         onError: (error) => {
-            console.error("Error sending playlist ID:", error);
             setErrorMessage("プレイリストの取得中にエラーが発生しました");
         },
     });
@@ -54,10 +53,8 @@ const PlaylistIdForm = ({onPlaylistSelect}: PlaylistIdFormProps): JSX.Element =>
         
         // URLからプレイリストIDを抽出
         const extractedId = extractPlaylistIdFromUrl(playlistId);
-        console.log("Extracted Playlist ID:", extractedId);
         
         if (!extractedId) {
-            console.error("Invalid Playlist URL:", playlistId);
             setErrorMessage("無効なプレイリストURLです");
             return;
         }

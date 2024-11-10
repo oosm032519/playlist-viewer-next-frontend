@@ -1,6 +1,6 @@
-// app/api/session/logout/logout.test.ts
+// app/api/session/logout/route.test.ts
 
-import {POST} from './route';
+import {POST} from '@/app/api/session/logout/route';
 import {NextRequest, NextResponse} from 'next/server';
 import {UnauthorizedError} from '@/app/lib/errors';
 import {expect} from '@jest/globals';

@@ -3,8 +3,8 @@
 import React from 'react';
 import {render, screen, within} from '@testing-library/react';
 import {toHaveNoViolations} from 'jest-axe';
-import {playlistDetailsTableColumns, keyToString, msToMinutesAndSeconds} from './PlaylistDetailsTableColumns';
-import {Track} from '../types/track';
+import {playlistDetailsTableColumns, keyToString, msToMinutesAndSeconds} from '@/app/lib/PlaylistDetailsTableColumns';
+import {Track} from '@/app/types/track';
 import {expect} from '@jest/globals';
 import {CellContext} from '@tanstack/react-table';
 

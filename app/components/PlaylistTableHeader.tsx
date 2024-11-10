@@ -1,6 +1,6 @@
 // app/components/PlaylistTableHeader.tsx
 
-import {TableHead, TableHeader, TableRow} from "./ui/table";
+import {TableHead, TableHeader, TableRow} from "@/app/components/ui/table";
 
 interface PlaylistTableHeaderProps {
     totalPlaylists: number;

@@ -1,7 +1,7 @@
 // app/api/session/check/route.test.ts
 
 import {NextRequest} from 'next/server';
-import {GET} from './route';
+import {GET} from '@/app/api/session/check/route';
 import * as apiUtils from '@/app/lib/api-utils';
 import {expect} from '@jest/globals'
 
@@ -25,15 +25,11 @@ jest.mock('@/app/lib/api-utils', () => ({
 
 describe('GET /api/session/check', () => {
     let mockFetch: jest.Mock;
-    let consoleLogSpy: jest.SpyInstance;
     
     beforeEach(() => {
         // fetchのモック
         mockFetch = jest.fn();
         global.fetch = mockFetch;
-        
-        // console.logのスパイ
-        consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
         
         // 環境変数の設定
         process.env.NEXT_PUBLIC_BACKEND_URL = 'http://test-backend.com';
@@ -41,7 +37,6 @@ describe('GET /api/session/check', () => {
     
     afterEach(() => {
         jest.resetAllMocks();
-        consoleLogSpy.mockRestore();
     });
     
     it('正常なレスポンスを処理できること', async () => {
@@ -72,7 +67,6 @@ describe('GET /api/session/check', () => {
         expect(await response.json()).toEqual({isLoggedIn: true});
         expect(response.status).toBe(200);
         expect(response.headers.get('Cache-Control')).toBe('no-store, no-cache, must-revalidate, proxy-revalidate');
-        expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('GET /api/session/check - リクエスト開始'));
     });
     
     it('エラーが発生した場合にhandleApiErrorが呼ばれること', async () => {
@@ -92,6 +86,5 @@ describe('GET /api/session/check', () => {
         
         // アサーション
         expect(apiUtils.handleApiError).toHaveBeenCalledWith(mockError);
-        expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('GET /api/session/check - リクエスト終了'));
     });
 });

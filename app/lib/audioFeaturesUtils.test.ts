@@ -1,7 +1,7 @@
 // app/lib/audioFeaturesUtils.test.ts
 
-import {prepareAudioFeaturesData} from './audioFeaturesUtils';
-import {Track} from '../types/track';
+import {prepareAudioFeaturesData} from '@/app/lib/audioFeaturesUtils';
+import {Track} from '@/app/types/track';
 import {expect, it} from '@jest/globals';
 
 describe('prepareAudioFeaturesData', () => {

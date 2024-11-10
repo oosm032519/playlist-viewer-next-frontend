@@ -1,6 +1,6 @@
 // components/ErrorAlert.tsx
 
-import {Alert, AlertDescription, AlertTitle} from "./ui/alert";
+import {Alert, AlertDescription, AlertTitle} from "@/app/components/ui/alert";
 import DOMPurify from 'dompurify';
 
 /**

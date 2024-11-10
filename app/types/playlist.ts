@@ -1,3 +1,5 @@
+// app/types/playlist.ts
+
 export interface PlaylistImage {
     url: string;
 }

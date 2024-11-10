@@ -1,10 +1,12 @@
+// app/components/FavoritePlaylistsTable.test.tsx
+
 import React from 'react';
 import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import {QueryClient, QueryClientProvider, useQuery} from '@tanstack/react-query';
 import {PlaylistContextProvider, usePlaylist} from '@/app/context/PlaylistContext';
 import {FavoriteContext} from '@/app/context/FavoriteContext';
 import {UserContextProvider, useUser} from '@/app/context/UserContext';
-import FavoritePlaylistsTable from './FavoritePlaylistsTable';
+import FavoritePlaylistsTable from '@/app/components/FavoritePlaylistsTable';
 import {axe, toHaveNoViolations} from 'jest-axe';
 import {expect} from '@jest/globals';
 import * as apiUtils from '@/app/lib/api-utils';

@@ -32,28 +32,21 @@ function createResponse(body: any, status: number = 200): Response {
  * @returns セッションの状態を含むNextResponseオブジェクト
  */
 export async function GET(request: NextRequest): Promise<Response> {
-    console.log(`[${new Date().toISOString()}] GET /api/session/check - リクエスト開始`);
     
     try {
         // Cookieを取得
         const cookies = getCookies(request);
-        console.log(`[${new Date().toISOString()}] 受け取ったCookie: ${cookies}`);
         
         // バックエンドのセッションチェックAPIを呼び出し
         const response = await sendRequest('/api/session/check', 'GET', undefined, cookies);
         
-        console.log(`[${new Date().toISOString()}] APIレスポンスステータス: ${response.status}`);
-        
         // レスポンスデータをJSONとして取得
         const data = await response.json();
-        console.log(`[${new Date().toISOString()}] APIレスポンスデータを取得: ${JSON.stringify(data)}`);
         
-        console.log(`[${new Date().toISOString()}] セッションの状態を含むレスポンスを返す`);
         return createResponse(data);
     } catch (error) {
         // エラー発生時の処理
         return handleApiError(error);
     } finally {
-        console.log(`[${new Date().toISOString()}] GET /api/session/check - リクエスト終了`);
     }
 }

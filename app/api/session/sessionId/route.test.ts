@@ -1,6 +1,6 @@
 // app/api/session/sessionId/route.test.ts
 
-import {POST} from './route';
+import {POST} from '@/app/api/session/sessionId/route';
 import {NextResponse} from 'next/server';
 import {BadRequestError} from '@/app/lib/errors';
 import * as apiUtils from '@/app/lib/api-utils';

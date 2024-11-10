@@ -10,18 +10,17 @@ import {
     SortingState,
     useReactTable
 } from "@tanstack/react-table";
-import {Button} from "./ui/button";
-import {TrackPlayer} from "./TrackPlayer";
-import {RecommendationsTableProps} from '../types/recommendationsTableProps';
+import {Button} from "@/app/components/ui/button";
+import {TrackPlayer} from "@/app/components/TrackPlayer";
+import {RecommendationsTableProps} from '@/app/types/recommendationsTableProps';
 import {useToast} from "@/app/components/ui/use-toast";
-import {useTrackActions} from "../hooks/useTrackActions";
-import {useCreatePlaylistMutation} from "../hooks/useCreatePlaylistMutation";
-import LoadingSpinner from './LoadingSpinner';
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "./ui/table";
+import {useTrackActions} from "@/app/hooks/useTrackActions";
+import {useCreatePlaylistMutation} from "@/app/hooks/useCreatePlaylistMutation";
+import LoadingSpinner from '@/app/components/LoadingSpinner';
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/app/components/ui/table";
 import {ArrowUpDown} from "lucide-react";
 import DOMPurify from 'dompurify';
 
-// DOMPurify の設定
 const purifyConfig = {
     ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a'],
     ALLOWED_ATTR: ['href', 'target']
@@ -38,12 +37,6 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({track
     const {toast} = useToast();
     const {createPlaylist, createdPlaylistId, isCreating} = useCreatePlaylistMutation(tracks, toast);
     const {addedTracks, handleAddTrack, handleRemoveTrack} = useTrackActions(playlistId, toast);
-    
-    // ownerIdとuserIdの変更を監視してログに出力
-    useEffect(() => {
-        console.log("ownerId:", ownerId);
-        console.log("userId:", userId);
-    }, [ownerId, userId]);
     
     // DOMPurify の結果をメモ化
     const sanitize = useMemo(() => (content: string) => DOMPurify.sanitize(content, purifyConfig), []);
@@ -104,7 +97,6 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({track
         return baseColumns;
     }, [ownerId, userId, addedTracks, handleAddTrack, handleRemoveTrack, sanitize]);
     
-    // React Table のインスタンスを作成
     const table = useReactTable({
         data: tracks,
         columns,

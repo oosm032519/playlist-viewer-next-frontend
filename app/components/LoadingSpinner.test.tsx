@@ -4,10 +4,9 @@ import React from 'react';
 import {render, screen} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import {axe, toHaveNoViolations} from 'jest-axe';
-import LoadingSpinner from './LoadingSpinner';
+import LoadingSpinner from '@/app/components/LoadingSpinner';
 import {expect} from '@jest/globals';
 
-// jest-axeの拡張機能を追加
 expect.extend(toHaveNoViolations);
 
 describe('LoadingSpinner', () => {

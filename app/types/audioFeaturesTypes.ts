@@ -1,4 +1,6 @@
-import {Track} from '../types/track';
+// app/types/audioFeaturesTypes.ts
+
+import {Track} from '@/app/types/track';
 
 export interface AudioFeaturesChartProps {
     track: Track;

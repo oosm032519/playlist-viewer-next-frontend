@@ -2,9 +2,9 @@
 
 import React from 'react';
 import {Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis} from 'recharts';
-import {AudioFeaturesChartProps} from '../types/audioFeaturesTypes';
-import {prepareAudioFeaturesData} from '../lib/audioFeaturesUtils';
-import {AudioFeatures} from '../types/audioFeaturesTypes';
+import {AudioFeaturesChartProps} from '@/app/types/audioFeaturesTypes';
+import {prepareAudioFeaturesData} from '@/app/lib/audioFeaturesUtils';
+import {AudioFeatures} from '@/app/types/audioFeaturesTypes';
 import {
     Card,
     CardContent,
@@ -12,7 +12,7 @@ import {
     CardFooter,
     CardHeader,
     CardTitle,
-} from "./ui/card";
+} from "@/app/components/ui/card";
 import {
     ChartConfig,
     ChartContainer,
@@ -20,7 +20,7 @@ import {
     ChartLegendContent,
     ChartTooltip,
     ChartTooltipContent,
-} from "./ui/chart";
+} from "@/app/components/ui/chart";
 
 interface CombinedAudioFeaturesChartProps {
     track?: AudioFeaturesChartProps['track'];

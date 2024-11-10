@@ -1,6 +1,6 @@
 // app/api/playlists/add-track/route.test.ts
 
-import {POST} from './route';
+import {POST} from '@/app/api/playlists/add-track/route';
 import {NextRequest} from 'next/server';
 import {NotFoundError, UnauthorizedError} from '@/app/lib/errors';
 import * as apiUtils from '@/app/lib/api-utils';

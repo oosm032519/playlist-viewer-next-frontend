@@ -2,10 +2,10 @@
 "use client";
 
 import {useQuery} from '@tanstack/react-query';
-import {Track} from "../types/track";
-import PlaylistDetails from "./PlaylistDetails";
-import LoadingSpinner from "./LoadingSpinner";
-import {AudioFeatures} from '../types/audioFeaturesTypes';
+import {Track} from "@/app/types/track";
+import PlaylistDetails from "@/app/components/PlaylistDetails";
+import LoadingSpinner from "@/app/components/LoadingSpinner";
+import {AudioFeatures} from '@/app/types/audioFeaturesTypes';
 
 interface PlaylistDetailsLoaderProps {
     playlistId: string;

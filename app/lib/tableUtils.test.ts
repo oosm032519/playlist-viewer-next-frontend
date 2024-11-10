@@ -1,8 +1,8 @@
 // app/lib/tableUtils.test.ts
 
 import {Row} from '@tanstack/react-table';
-import {Track} from '../types/track';
-import {audioFeatureSort} from './tableUtils';
+import {Track} from '@/app/types/track';
+import {audioFeatureSort} from '@/app/lib/tableUtils';
 import {expect} from '@jest/globals';
 
 describe('audioFeatureSort', () => {

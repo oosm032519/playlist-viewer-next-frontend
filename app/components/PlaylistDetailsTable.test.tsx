@@ -1,6 +1,8 @@
+// app/components/PlaylistDetailsTable.test.tsx
+
 import {render, screen, fireEvent} from "@testing-library/react";
-import {PlaylistDetailsTable} from "./PlaylistDetailsTable";
-import {Track} from "../types/track";
+import {PlaylistDetailsTable} from "@/app/components/PlaylistDetailsTable";
+import {Track} from "@/app/types/track";
 import {AudioFeatures} from "@/app/types/audioFeaturesTypes";
 import {expect} from "@jest/globals";
 
@@ -22,10 +24,8 @@ const mockAverageAudioFeatures: AudioFeatures = {
     valence: 0.5,
 };
 
-// PlaylistDetailsTableColumnsのモック。必要に応じて調整してください。
 jest.mock("../lib/PlaylistDetailsTableColumns", () => ({
     playlistDetailsTableColumns: [
-        // 必要に応じてカラム定義を追加
         {
             accessorKey: 'name',
             header: 'Name',

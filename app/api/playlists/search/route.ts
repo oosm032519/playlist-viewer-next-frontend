@@ -1,8 +1,8 @@
 // app/api/playlists/search/route.ts
 
-import {NextRequest} from 'next/server';
 import {handleApiError, sendRequest} from '@/app/lib/api-utils';
 import {BadRequestError} from '@/app/lib/errors';
+import {NextRequest} from 'next/server';
 
 /**
  * プレイリスト検索を行う関数
@@ -19,9 +19,7 @@ async function searchPlaylists(query: string, offset: number, limit: number): Pr
         const response = await sendRequest(`/api/playlists/search?query=${encodeURIComponent(query)}&offset=${offset}&limit=${limit}`, 'GET');
         
         // JSONデータを取得して返す
-        const data = await response.json();
-        console.log('プレイリスト検索APIからレスポンスを受信しました');
-        return data;
+        return await response.json();
     } catch (error) {
         // エラーをハンドリング
         return handleApiError(error);
@@ -35,7 +33,6 @@ async function searchPlaylists(query: string, offset: number, limit: number): Pr
  * @returns {Promise<Response>} レスポンスオブジェクト
  */
 export async function GET(request: NextRequest): Promise<Response> {
-    console.log('GET リクエストを受信しました');
     
     // リクエストURLからクエリパラメータを取得
     const {searchParams} = new URL(request.url);
@@ -45,7 +42,6 @@ export async function GET(request: NextRequest): Promise<Response> {
     
     // クエリが指定されていない場合は400エラーを返す
     if (!query) {
-        console.log('クエリパラメータが指定されていません。400エラーを返します');
         return handleApiError(new BadRequestError('クエリパラメータが必須です'));
     }
     

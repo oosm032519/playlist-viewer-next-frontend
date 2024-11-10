@@ -60,13 +60,9 @@ describe('PlaylistContextProvider', () => {
             return null;
         };
         
-        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {
-        });
-        
         expect(() => {
             render(<TestComponent/>);
         }).toThrow('usePlaylist must be used within a PlaylistContextProvider');
         
-        consoleErrorSpy.mockRestore();
     });
 });

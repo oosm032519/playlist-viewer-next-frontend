@@ -39,31 +39,24 @@ export const UserContextProvider: React.FC<React.PropsWithChildren<{}>> = ({chil
     const [error, setError] = useState<string | null>(null);
     
     useEffect(() => {
-        console.log("UserContextProvider useEffect 開始");
-        
         // セッションを初期化する非同期関数
         const initializeSession = async () => {
             try {
-                console.log("セッション初期化開始");
                 const response = await fetch("/api/session/check", {
                     method: 'GET',
                     credentials: 'include', // Cookieを含める
                 });
                 
                 if (!response.ok) {
-                    console.log(`セッションチェックエラー: ${response.status}`);
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
                 const data = await response.json();
-                console.log("セッションチェック成功:", data);
                 
                 if (data.status === 'success') {
-                    console.log("ログイン状態です。");
                     setIsLoggedIn(true);
                     setUserId(data.userId);
                 } else {
-                    console.log("未ログイン状態です。");
                     setIsLoggedIn(false);
                     setUserId(null);
                 }
@@ -74,20 +67,6 @@ export const UserContextProvider: React.FC<React.PropsWithChildren<{}>> = ({chil
         
         initializeSession();
     }, []);
-    
-    useEffect(() => {
-        console.log("ログイン状態更新:", isLoggedIn);
-    }, [isLoggedIn]);
-    
-    useEffect(() => {
-        console.log("ユーザーID更新:", userId);
-    }, [userId]);
-    
-    useEffect(() => {
-        if (error) {
-            console.log("エラー状態更新:", error);
-        }
-    }, [error]);
     
     // コンテキストに提供する値を定義
     const contextValue = {isLoggedIn, userId, error, setIsLoggedIn, setUserId};
@@ -108,7 +87,6 @@ export const UserContextProvider: React.FC<React.PropsWithChildren<{}>> = ({chil
 export const useUser = () => {
     const context = useContext(UserContext);
     if (!context) {
-        console.error("UserContextProviderの外でuseUserが使用されました");
         throw new Error("useUser must be used within a UserContextProvider");
     }
     return context;

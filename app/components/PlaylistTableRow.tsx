@@ -1,7 +1,7 @@
 // app/components/PlaylistTableRow.tsx
 
-import {Playlist} from "../types/playlist";
-import {TableCell, TableRow} from "./ui/table";
+import {Playlist} from "@/app/types/playlist";
+import {TableCell, TableRow} from "@/app/components/ui/table";
 import DOMPurify from 'dompurify';
 import {useEffect, useState} from 'react';
 import Image from "next/image";

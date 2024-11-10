@@ -1,9 +1,9 @@
 // app/components/FollowedPlaylists.test.tsx
 
 import {render, screen, waitFor} from '@testing-library/react';
-import FollowedPlaylists from './FollowedPlaylists';
+import FollowedPlaylists from '@/app/components/FollowedPlaylists';
 import {useQuery} from '@tanstack/react-query';
-import {Playlist} from '../types/playlist';
+import {Playlist} from '@/app/types/playlist';
 import {expect} from '@jest/globals';
 
 // useQueryのモック
@@ -22,7 +22,7 @@ describe('FollowedPlaylists', () => {
             id: '1',
             name: 'Playlist 1',
             description: '',
-            images: [{url: '/image1.jpg'}],  // 修正: 相対パスにスラッシュを追加
+            images: [{url: '/image1.jpg'}],
             tracks: {total: 5},
             externalUrls: {externalUrls: {spotify: 'https://open.spotify.com/playlist/1'}}
         },

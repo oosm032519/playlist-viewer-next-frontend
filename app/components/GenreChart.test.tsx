@@ -2,7 +2,7 @@
 
 import React from 'react';
 import {render, screen} from '@testing-library/react';
-import GenreChart from './GenreChart';
+import GenreChart from '@/app/components/GenreChart';
 import {expect} from '@jest/globals';
 
 

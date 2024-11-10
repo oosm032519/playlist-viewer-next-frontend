@@ -2,7 +2,7 @@
 
 import React from 'react';
 import {render, screen} from '@testing-library/react';
-import ErrorBoundary from './ErrorBoundary';
+import ErrorBoundary from '@/app/components/ErrorBoundary';
 import {axe, toHaveNoViolations} from 'jest-axe';
 import {expect} from '@jest/globals';
 

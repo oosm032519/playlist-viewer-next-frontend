@@ -1,9 +1,9 @@
 // app/components/PlaylistTable.tsx
 
-import {Playlist} from "../types/playlist";
-import {Table, TableBody} from "./ui/table";
-import PlaylistTableHeader from "./PlaylistTableHeader";
-import PlaylistTableRow from "./PlaylistTableRow";
+import {Playlist} from "@/app/types/playlist";
+import {Table, TableBody} from "@/app/components/ui/table";
+import PlaylistTableHeader from "@/app/components/PlaylistTableHeader";
+import PlaylistTableRow from "@/app/components/PlaylistTableRow";
 
 /**
  * プレイリストテーブルコンポーネントのプロパティを定義するインターフェース

@@ -6,8 +6,8 @@ import './globals.css';
 import Footer from '@/app/components/Footer'
 import {Inter} from 'next/font/google';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
-import {UserContextProvider} from "./context/UserContext";
-import ErrorBoundary from "./components/ErrorBoundary";
+import {UserContextProvider} from "@/app/context/UserContext";
+import ErrorBoundary from "@/app/components/ErrorBoundary";
 import {ThemeProvider} from 'next-themes';
 
 // Interフォントを設定

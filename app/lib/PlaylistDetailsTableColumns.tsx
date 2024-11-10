@@ -1,8 +1,8 @@
 // app/lib/PlaylistDetailsTableColumns.tsx
 
 import {createColumnHelper} from "@tanstack/react-table";
-import {Track} from "../types/track";
-import {audioFeatureSort} from "./tableUtils";
+import {Track} from "@/app/types/track";
+import {audioFeatureSort} from "@/app/lib/tableUtils";
 import Image from "next/image";
 import DOMPurify from 'dompurify';
 
@@ -19,7 +19,6 @@ type AudioFeature =
     | "valence"
     | "tempo";
 
-// Track型に基づいてカラムヘルパーを作成
 const columnHelper = createColumnHelper<Track>();
 
 /**

@@ -1,6 +1,6 @@
 // app/utils/prepareAudioFeaturesData.ts
 
-import {Track} from '../types/track';
+import {Track} from '@/app/types/track';
 
 /**
  * オーディオ特徴データを準備する関数

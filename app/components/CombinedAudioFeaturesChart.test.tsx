@@ -3,8 +3,8 @@
 import React from 'react';
 import {render, screen} from '@testing-library/react';
 import {axe, toHaveNoViolations} from 'jest-axe';
-import CombinedAudioFeaturesChart from './CombinedAudioFeaturesChart';
-import {AudioFeatures} from '../types/audioFeaturesTypes';
+import CombinedAudioFeaturesChart from '@/app/components/CombinedAudioFeaturesChart';
+import {AudioFeatures} from '@/app/types/audioFeaturesTypes';
 import {expect} from '@jest/globals';
 import {Track} from '@/app/types/track'
 

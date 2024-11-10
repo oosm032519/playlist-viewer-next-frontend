@@ -11,10 +11,8 @@ export async function GET(req: NextApiRequest, {params}: { params: { id: string 
         });
         
         if (!response.ok) {
-            // ここでエラーを処理
             const errorData = await response.json(); // エラーメッセージがあれば取得
-            console.error("Fetch error:", response.status, errorData); // エラーをコンソールに表示
-            return new NextResponse(JSON.stringify(errorData), { // エラーレスポンスを返す
+            return new NextResponse(JSON.stringify(errorData), {
                 status: response.status,
                 headers: {'Content-Type': 'application/json'}
             });

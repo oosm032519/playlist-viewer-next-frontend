@@ -4,23 +4,23 @@
 
 import {useForm} from "react-hook-form";
 import {yupResolver} from "@hookform/resolvers/yup";
-import {schema} from "../validationSchema";
-import {Button} from "./ui/button";
-import {Input} from "./ui/input";
+import {schema} from "@/app/validationSchema";
+import {Button} from "@/app/components/ui/button";
+import {Input} from "@/app/components/ui/input";
 import {
     Form,
     FormControl,
     FormField,
     FormItem,
     FormMessage,
-} from "./ui/form";
+} from "@/app/components/ui/form";
 
 interface SearchFormInputs {
     query: string;
 }
 
 interface PlaylistSearchFormProps {
-    onSearch(query: string): void; // 検索クエリを受け取るコールバック関数
+    onSearch(query: string): void;
 }
 
 /**

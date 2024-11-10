@@ -1,14 +1,14 @@
 import LoadingSpinner from "@/app/components/LoadingSpinner";
 import {Card, CardContent, CardHeader, CardTitle} from "@/app/components/ui/card";
 import React, {useState, useEffect} from "react";
-import PlaylistTable from "./PlaylistTable";
-import PlaylistDetailsLoader from "./PlaylistDetailsLoader";
-import FollowedPlaylists from "./FollowedPlaylists";
-import {Playlist} from "../types/playlist";
-import {useUser} from "../context/UserContext";
-import {usePlaylist} from "../context/PlaylistContext";
+import PlaylistTable from "@/app/components/PlaylistTable";
+import PlaylistDetailsLoader from "@/app/components/PlaylistDetailsLoader";
+import FollowedPlaylists from "@/app/components/FollowedPlaylists";
+import {Playlist} from "@/app/types/playlist";
+import {useUser} from "@/app/context/UserContext";
+import {usePlaylist} from "@/app/context/PlaylistContext";
 import {useQueryClient} from "@tanstack/react-query";
-import {useSearchPlaylists} from "../hooks/useSearchPlaylists";
+import {useSearchPlaylists} from "@/app/hooks/useSearchPlaylists";
 import {
     Pagination,
     PaginationContent,

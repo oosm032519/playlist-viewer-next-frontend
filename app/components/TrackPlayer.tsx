@@ -1,8 +1,8 @@
 // app/components/TrackPlayer.tsx
 
 import React, {useRef, useState} from "react";
-import {Button} from "./ui/button";
-import {Track} from "../types/track";
+import {Button} from "@/app/components/ui/button";
+import {Track} from "@/app/types/track";
 
 interface TrackPlayerProps {
     track: Track;

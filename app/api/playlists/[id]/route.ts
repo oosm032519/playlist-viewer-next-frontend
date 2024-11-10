@@ -5,8 +5,7 @@ import {handleApiError, sendRequest} from '@/app/lib/api-utils';
 
 // プレイリスト詳細データ取得
 const fetchPlaylistDetails = async (id: string): Promise<Response> => {
-    const fullUrl = `/api/playlists/${id}/details`; // detailsを追加
-    console.log(`フルURL: ${fullUrl}`);
+    const fullUrl = `/api/playlists/${id}/details`;
     
     try {
         const response = await sendRequest(fullUrl, 'GET');

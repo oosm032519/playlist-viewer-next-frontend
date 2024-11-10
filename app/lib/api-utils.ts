@@ -2,7 +2,7 @@
 
 import {NextRequest, NextResponse} from 'next/server';
 
-import {ApiError} from './errors';
+import {ApiError} from '@/app/lib/errors';
 
 /**
  * APIエラーを処理し、適切なHTTPレスポンスを返す

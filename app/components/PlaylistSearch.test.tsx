@@ -5,10 +5,9 @@ import {render, screen, waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {axe, toHaveNoViolations} from 'jest-axe';
 import {QueryClient, QueryClientProvider, useQuery} from '@tanstack/react-query';
-import PlaylistSearch from './PlaylistSearch';
+import PlaylistSearch from '@/app/components/PlaylistSearch';
 import {expect} from '@jest/globals';
 
-// jest-axeのカスタムマッチャーを追加
 expect.extend(toHaveNoViolations);
 
 // @tanstack/react-queryのモックを設定

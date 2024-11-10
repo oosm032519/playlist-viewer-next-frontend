@@ -3,9 +3,9 @@
 import React from 'react';
 import {render, screen, fireEvent} from '@testing-library/react';
 import '@testing-library/jest-dom';
-import {TrackPlayer} from './TrackPlayer';
+import {TrackPlayer} from '@/app/components/TrackPlayer';
 import {expect} from '@jest/globals';
-import {Track} from '../types/track'
+import {Track} from '@/app/types/track'
 
 // モック用のトラックデータを定義
 const mockTrack: Track = {

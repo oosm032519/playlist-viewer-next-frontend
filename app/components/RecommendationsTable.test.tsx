@@ -3,10 +3,10 @@
 import React from 'react';
 import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom';
-import {RecommendationsTable} from './RecommendationsTable';
-import {Track} from '../types/track';
+import {RecommendationsTable} from '@/app/components/RecommendationsTable';
+import {Track} from '@/app/types/track';
 import {axe, toHaveNoViolations} from 'jest-axe';
-import * as utils from '../lib/trackUtils';
+import * as utils from '@/app/lib/trackUtils';
 import {expect} from '@jest/globals';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 
@@ -67,13 +67,6 @@ const mockTracks: Track[] = [
 ];
 
 describe('RecommendationsTable', () => {
-    // 各テストの前にモックをクリアし、console.logをモック化
-    beforeEach(() => {
-        jest.clearAllMocks();
-        jest.spyOn(console, 'log').mockImplementation(() => {
-        });
-    });
-    
     /**
      * アクセシビリティ違反がないことを確認するテスト
      */
@@ -214,29 +207,6 @@ describe('RecommendationsTable', () => {
         await waitFor(() => {
             expect(screen.getByText('作成したプレイリストを表示')).toBeInTheDocument();
         });
-    });
-    
-    /**
-     * プレイリスト作成エラーが正しく処理されることを確認するテスト
-     */
-    it('handles create playlist error correctly', async () => {
-        const queryClient = new QueryClient();
-        global.fetch = jest.fn().mockResolvedValue({
-            ok: false,
-            json: () => Promise.resolve({details: 'Error creating playlist'}),
-        });
-        const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {
-        });
-        render(
-            <QueryClientProvider client={queryClient}>
-                <RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="owner1" playlistId="playlist1"/>
-            </QueryClientProvider>
-        );
-        fireEvent.click(screen.getByText('おすすめ楽曲をもとにプレイリストを作成する'));
-        await waitFor(() => {
-            expect(consoleSpy).toHaveBeenCalledWith("プレイリストの作成中にエラーが発生しました。", expect.any(Error));
-        });
-        consoleSpy.mockRestore();
     });
     
     /**

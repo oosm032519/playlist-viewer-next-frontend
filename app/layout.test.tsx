@@ -1,10 +1,11 @@
+// app/layout.test.tsx
+
 import React from 'react';
 import {render} from '@testing-library/react';
 import {axe, toHaveNoViolations} from 'jest-axe';
-import RootLayout from './layout';
+import RootLayout from '@/app/layout';
 import {expect} from '@jest/globals';
 
-// jest-axeのカスタムマッチャーを追加
 expect.extend(toHaveNoViolations);
 
 // window.matchMedia をモック

@@ -1,3 +1,5 @@
+// app/types/track.ts
+
 export interface TrackArtist {
     externalUrls: any;
     name: string;

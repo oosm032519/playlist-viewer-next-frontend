@@ -4,17 +4,17 @@
 
 import {Card, CardContent, CardHeader, CardTitle} from '@/app/components/ui/card'
 import React, {useContext, useState, useEffect, useCallback} from "react";
-import {Track} from "../types/track";
-import {PlaylistDetailsTable} from "./PlaylistDetailsTable";
-import GenreChart from "./GenreChart";
-import {RecommendationsTable} from "./RecommendationsTable";
-import {AudioFeatures} from "../types/audioFeaturesTypes";
-import {FavoriteContext} from "../context/FavoriteContext";
+import {Track} from "@/app/types/track";
+import {PlaylistDetailsTable} from "@/app/components/PlaylistDetailsTable";
+import GenreChart from "@/app/components/GenreChart";
+import {RecommendationsTable} from "@/app/components/RecommendationsTable";
+import {AudioFeatures} from "@/app/types/audioFeaturesTypes";
+import {FavoriteContext} from "@/app/context/FavoriteContext";
 import DOMPurify from 'dompurify';
 import {useUser} from '@/app/context/UserContext';
-import CombinedAudioFeaturesChart from "./CombinedAudioFeaturesChart";
-import {CSVLink} from "react-csv"; // CSVLinkをインポート
-import {Button} from "./ui/button"; // Buttonコンポーネントをインポート
+import CombinedAudioFeaturesChart from "@/app/components/CombinedAudioFeaturesChart";
+import {CSVLink} from "react-csv";
+import {Button} from "@/app/components/ui/button";
 
 /**
  * プレイリストの詳細情報を表示するためのコンポーネントのプロパティ
@@ -154,10 +154,8 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                 }
                 setIsFavorite(!isFavorite);
             } else {
-                console.error('お気に入り登録/解除に失敗しました。');
             }
         } catch (error) {
-            console.error('お気に入り登録/解除中にエラーが発生しました。', error);
         }
     };
     

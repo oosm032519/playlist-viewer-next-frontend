@@ -4,10 +4,9 @@ import React from 'react';
 import {render, screen, waitFor} from '@testing-library/react';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {toHaveNoViolations} from 'jest-axe';
-import PlaylistDetailsLoader from './PlaylistDetailsLoader';
+import PlaylistDetailsLoader from '@/app/components/PlaylistDetailsLoader';
 import {expect} from '@jest/globals';
 
-// jest-axeのマッチャーを追加
 expect.extend(toHaveNoViolations);
 
 // PlaylistDetailsコンポーネントのモック

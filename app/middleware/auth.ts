@@ -1,4 +1,4 @@
-// middleware/auth.ts
+// app/middleware/auth.ts
 
 import {NextRequest, NextResponse} from 'next/server';
 import {getCookies, handleApiError, sendRequest} from '@/app/lib/api-utils';
