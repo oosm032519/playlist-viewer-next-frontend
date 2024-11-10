@@ -13,7 +13,6 @@ import {UnauthorizedError} from '@/app/lib/errors';
  * @throws {Error} ログアウトに失敗した場合
  */
 export async function POST(request: NextRequest): Promise<Response> {
-    console.log(`[${new Date().toISOString()}] POST リクエスト開始: /api/session/logout`);
     try {
         // Cookieを取得
         const cookies = getCookies(request);
@@ -24,12 +23,8 @@ export async function POST(request: NextRequest): Promise<Response> {
             throw new UnauthorizedError('sessionIdが見つかりません');
         }
         
-        console.log(`[${new Date().toISOString()}] バックエンドAPIリクエスト開始: /api/session/logout`);
-        
         // バックエンドにログアウトリクエストを送信
         const response = await sendRequest('/api/session/logout', 'POST', undefined, cookies);
-        
-        console.log(`[${new Date().toISOString()}] バックエンドAPIレスポンス受信: ステータス=${response.status}`);
         
         // NextResponseを作成
         const nextResponse = NextResponse.json(null, {
@@ -44,13 +39,8 @@ export async function POST(request: NextRequest): Promise<Response> {
             maxAge: 0,
         });
         
-        console.log(`[${new Date().toISOString()}] sessionId Cookieを削除しました`);
-        
         return nextResponse;
     } catch (error) {
-        // エラーハンドリング
         return handleApiError(error);
-    } finally {
-        console.log(`[${new Date().toISOString()}] POST リクエスト終了: /api/session/logout`);
     }
 }
