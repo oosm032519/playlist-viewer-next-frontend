@@ -13,7 +13,7 @@ import {cn} from "@/app/lib/trackUtils";
 
 export default function Footer() {
     return (
-        <footer className="bg-muted p-4 mt-8">
+        <footer className="p-4 mt-8">
             <div className="container mx-auto flex justify-center items-center">
                 <div className="space-x-4">
                     <Dialog>

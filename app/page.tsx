@@ -147,7 +147,7 @@ function HomeContent(): JSX.Element {
     };
     
     return (
-        <div className="w-full h-full max-w-none mx-auto pt-20 p-4 bg-background shadow-md rounded-lg">
+        <div className="w-full h-full max-w-none mx-auto pt-20 p-4">
             <div
                 className={`fixed top-0 left-0 right-0 flex justify-between items-center bg-popover p-4 shadow-md z-10 transition-transform duration-300 ${showHeader ? 'transform-none' : '-translate-y-full'}`}>
                 <LoginButton/>
@@ -155,7 +155,7 @@ function HomeContent(): JSX.Element {
                 <ThemeToggleButton/>
             </div>
             <div className="space-y-6">
-                <Card className="mt-4">
+                <Card className="mt-4 border-border border-2">
                     <CardHeader>
                         <CardTitle className="text-2xl font-bold">プレイリスト検索</CardTitle>
                     </CardHeader>
