@@ -4,22 +4,31 @@ import {Playlist} from "../types/playlist";
 import '@testing-library/jest-dom';
 import {expect} from "@jest/globals";
 
+// Imageコンポーネントをモック
+jest.mock('next/image', () => ({
+    __esModule: true,
+    default: (props: any) => {
+        // eslint-disable-next-line @next/next/no-img-element
+        return <img {...props} src={props.src} alt={props.alt}/>
+    },
+}));
+
 // Mock Data
 const playlists: Playlist[] = [
     {
-        tracks: {total: 0}, // Added total property
+        tracks: {total: 0},
         id: '1',
         name: 'Playlist 1',
         description: 'Description 1',
-        images: [{url: 'image1.jpg'}],
+        images: [{url: '/images/image1.jpg'}], // パスを修正
         externalUrls: {externalUrls: {spotify: 'spotify1'}}
     },
     {
-        tracks: {total: 0}, // Added total property
+        tracks: {total: 0},
         id: '2',
         name: 'Playlist 2',
         description: 'Description 2',
-        images: [{url: 'image2.jpg'}],
+        images: [{url: '/images/image2.jpg'}], // パスを修正
         externalUrls: {externalUrls: {spotify: 'spotify2'}}
     },
 ];
@@ -27,44 +36,78 @@ const playlists: Playlist[] = [
 const onPlaylistClick = jest.fn();
 
 describe('PlaylistTable', () => {
+    beforeEach(() => {
+        // 各テスト前にモックをリセット
+        jest.clearAllMocks();
+    });
+    
     it('renders without crashing', () => {
-        render(<PlaylistTable playlists={[]} onPlaylistClick={onPlaylistClick} currentPage={1} totalPlaylists={0}/>);
+        render(
+            <PlaylistTable
+                playlists={[]}
+                onPlaylistClick={onPlaylistClick}
+                currentPage={1}
+                totalPlaylists={0}
+            />
+        );
     });
     
     it('renders playlist data correctly', () => {
-        render(<PlaylistTable playlists={playlists} onPlaylistClick={onPlaylistClick} currentPage={1}
-                              totalPlaylists={2}/>);
+        render(
+            <PlaylistTable
+                playlists={playlists}
+                onPlaylistClick={onPlaylistClick}
+                currentPage={1}
+                totalPlaylists={2}
+            />
+        );
         
-        // Check if playlist names are displayed
+        // プレイリスト名の表示確認
         expect(screen.getByText('Playlist 1')).toBeInTheDocument();
         expect(screen.getByText('Playlist 2')).toBeInTheDocument();
         
-        // Check if playlist images are displayed
-        expect(screen.getByRole('img', {name: 'Playlist 1'})).toHaveAttribute('src', 'image1.jpg');
-        expect(screen.getByRole('img', {name: 'Playlist 2'})).toHaveAttribute('src', 'image2.jpg');
+        // プレイリスト画像の表示確認
+        expect(screen.getByRole('img', {name: 'Playlist 1'})).toHaveAttribute('src', '/images/image1.jpg');
+        expect(screen.getByRole('img', {name: 'Playlist 2'})).toHaveAttribute('src', '/images/image2.jpg');
         
-        // Check if track counts are displayed
-        expect(screen.getAllByText('0')).toHaveLength(2); // Use getAllByText
+        // トラック数の表示確認
+        const trackCounts = screen.getAllByText('0');
+        expect(trackCounts).toHaveLength(2);
         
-        // Check if total playlist count is displayed in the header
+        // 総プレイリスト数の表示確認
         expect(screen.getByText('検索結果: 2件')).toBeInTheDocument();
     });
     
     it('calls onPlaylistClick when a row is clicked', () => {
-        render(<PlaylistTable playlists={playlists} onPlaylistClick={onPlaylistClick} currentPage={1}
-                              totalPlaylists={2}/>);
+        render(
+            <PlaylistTable
+                playlists={playlists}
+                onPlaylistClick={onPlaylistClick}
+                currentPage={1}
+                totalPlaylists={2}
+            />
+        );
         
-        // Click on a playlist name
         fireEvent.click(screen.getByText('Playlist 1'));
-        
-        // Check if onPlaylistClick is called with the correct argument
         expect(onPlaylistClick).toHaveBeenCalledWith('1');
     });
-
+    
     it('renders image placeholder when image url is not available', () => {
-        const playlistsWithoutImage = playlists.map(playlist => ({...playlist, images: []}));
-        render(<PlaylistTable playlists={playlistsWithoutImage} onPlaylistClick={onPlaylistClick} currentPage={1}
-                              totalPlaylists={2}/>);
-        expect(screen.getAllByTestId('image-placeholder')).toHaveLength(2); // Use getAllByTestId
+        const playlistsWithoutImage = playlists.map(playlist => ({
+            ...playlist,
+            images: []
+        }));
+        
+        render(
+            <PlaylistTable
+                playlists={playlistsWithoutImage}
+                onPlaylistClick={onPlaylistClick}
+                currentPage={1}
+                totalPlaylists={2}
+            />
+        );
+        
+        const placeholders = screen.getAllByTestId('image-placeholder');
+        expect(placeholders).toHaveLength(2);
     });
 });

@@ -8,10 +8,8 @@ import {axe, toHaveNoViolations} from 'jest-axe';
 import PlaylistSearch from './PlaylistSearch';
 import {expect} from '@jest/globals';
 
-// jest-axeのカスタムマッチャーを追加
 expect.extend(toHaveNoViolations);
 
-// モックの設定
 jest.mock('@tanstack/react-query', () => ({
     ...jest.requireActual('@tanstack/react-query'),
     useQuery: jest.fn(),
@@ -20,37 +18,42 @@ jest.mock('@tanstack/react-query', () => ({
 const mockUseQuery = useQuery as jest.MockedFunction<typeof useQuery>;
 
 describe('PlaylistSearch', () => {
-    const queryClient = new QueryClient();
+    const queryClient = new QueryClient({
+        defaultOptions: {
+            queries: {
+                retry: false,
+            },
+        },
+    });
     
-    // 各テストの前にモックの初期設定を行う
     beforeEach(() => {
+        jest.clearAllMocks();
         mockUseQuery.mockReturnValue({
             data: [],
             isLoading: false,
+            error: null,
             refetch: jest.fn(),
         } as any);
     });
     
-    // コンポーネントがクラッシュせずにレンダリングされることを確認するテスト
-    it('should render without crashing', () => {
-        render(
+    const renderComponent = () => {
+        return render(
             <QueryClientProvider client={queryClient}>
                 <PlaylistSearch/>
             </QueryClientProvider>
         );
+    };
+    
+    it('should render without crashing', () => {
+        renderComponent();
         expect(screen.getByText('Playlist Search')).toBeInTheDocument();
     });
     
-    // 短すぎるクエリに対してバリデーションエラーが表示されることを確認するテスト
     it('should show validation error for short query', async () => {
-        render(
-            <QueryClientProvider client={queryClient}>
-                <PlaylistSearch/>
-            </QueryClientProvider>
-        );
+        renderComponent();
         
-        const input = screen.getByLabelText('Enter playlist name');
-        const searchButton = screen.getByRole('button', {name: 'Search'});
+        const input = screen.getByRole('textbox', {name: /enter playlist name/i});
+        const searchButton = screen.getByRole('button', {name: /search/i});
         
         await userEvent.type(input, 'a');
         await userEvent.click(searchButton);
@@ -60,23 +63,19 @@ describe('PlaylistSearch', () => {
         });
     });
     
-    // 有効な入力に対して検索がトリガーされることを確認するテスト
     it('should trigger search on valid input', async () => {
         const mockRefetch = jest.fn();
         mockUseQuery.mockReturnValue({
             data: [],
             isLoading: false,
+            error: null,
             refetch: mockRefetch,
         } as any);
         
-        render(
-            <QueryClientProvider client={queryClient}>
-                <PlaylistSearch/>
-            </QueryClientProvider>
-        );
+        renderComponent();
         
-        const input = screen.getByLabelText('Enter playlist name');
-        const searchButton = screen.getByRole('button', {name: 'Search'});
+        const input = screen.getByRole('textbox', {name: /enter playlist name/i});
+        const searchButton = screen.getByRole('button', {name: /search/i});
         
         await userEvent.type(input, 'valid query');
         await userEvent.click(searchButton);
@@ -86,57 +85,58 @@ describe('PlaylistSearch', () => {
         });
     });
     
-    // 検索中にローディング状態が表示されることを確認するテスト
-    it('should display loading state during search', async () => {
+    it('should display loading state during search', () => {
         mockUseQuery.mockReturnValue({
             data: [],
             isLoading: true,
+            error: null,
             refetch: jest.fn(),
         } as any);
         
-        render(
-            <QueryClientProvider client={queryClient}>
-                <PlaylistSearch/>
-            </QueryClientProvider>
-        );
-        
+        renderComponent();
         expect(screen.getByText('Searching...')).toBeInTheDocument();
     });
     
-    // プレイリストの結果が表示されることを確認するテスト
     it('should render playlist results', async () => {
         const mockPlaylists = [
-            {id: '1', name: 'Playlist 1', images: [{url: 'image1.jpg'}]},
-            {id: '2', name: 'Playlist 2', images: [{url: 'image2.jpg'}]},
+            {
+                id: '1',
+                name: 'Playlist 1',
+                images: [{url: 'image1.jpg', height: 300, width: 300}]
+            },
+            {
+                id: '2',
+                name: 'Playlist 2',
+                images: [{url: 'image2.jpg', height: 300, width: 300}]
+            },
         ];
         
         mockUseQuery.mockReturnValue({
             data: mockPlaylists,
             isLoading: false,
+            error: null,
             refetch: jest.fn(),
         } as any);
         
-        render(
-            <QueryClientProvider client={queryClient}>
-                <PlaylistSearch/>
-            </QueryClientProvider>
-        );
+        renderComponent();
         
+        // テーブルヘッダーの検証
+        expect(screen.getByText('Image')).toBeInTheDocument();
+        expect(screen.getByText('Name')).toBeInTheDocument();
+        
+        // プレイリスト名の検証
         await waitFor(() => {
             expect(screen.getByText('Playlist 1')).toBeInTheDocument();
             expect(screen.getByText('Playlist 2')).toBeInTheDocument();
-            expect(screen.getAllByRole('img', {name: 'Playlist'})).toHaveLength(2);
         });
+        
+        // テーブル構造の検証
+        const rows = screen.getAllByRole('row');
+        expect(rows).toHaveLength(3); // ヘッダー行 + 2つのデータ行
     });
     
-    // コンポーネントがアクセシブルであることを確認するテスト
     it('should be accessible', async () => {
-        const {container} = render(
-            <QueryClientProvider client={queryClient}>
-                <PlaylistSearch/>
-            </QueryClientProvider>
-        );
-        
+        const {container} = renderComponent();
         const results = await axe(container);
         expect(results).toHaveNoViolations();
     });

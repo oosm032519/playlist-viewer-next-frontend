@@ -99,8 +99,7 @@ const PlaylistDetailsLoader: React.FC<PlaylistDetailsLoaderProps> = ({
     
     const {
         data: recommendations,
-        isLoading: isLoadingRecommendations,
-        error: recommendationsError
+        isLoading: isLoadingRecommendations
     } = useQuery<Track[], Error>({
         queryKey: ['recommendations', playlistId],
         queryFn: async () => {

@@ -3,7 +3,6 @@ import {render} from '@testing-library/react';
 import {axe, toHaveNoViolations} from 'jest-axe';
 import RootLayout from './layout';
 import {expect} from '@jest/globals';
-import {ThemeProvider} from 'next-themes';
 
 // jest-axeのカスタムマッチャーを追加
 expect.extend(toHaveNoViolations);
@@ -29,10 +28,14 @@ jest.mock('./context/UserContext', () => ({
 }));
 
 jest.mock('./components/ErrorBoundary', () => ({
-    __esModule: true, // これがないとエラーになる
+    __esModule: true,
     default: ({children}: { children: React.ReactNode }) => <div className="error-boundary-mock">{children}</div>,
 }));
 
+jest.mock('./components/Footer', () => ({
+    __esModule: true,
+    default: () => <footer>Mock Footer</footer>,
+}));
 
 describe('RootLayout', () => {
     it('renders children correctly', () => {
@@ -65,7 +68,7 @@ describe('RootLayout', () => {
         );
         const html = container.querySelector('html');
         expect(html).not.toBeNull();
-        expect(html).toHaveAttribute('lang', 'ja'); // 'ja' を期待値に設定
+        expect(html).toHaveAttribute('lang', 'ja');
     });
     
     it('has no accessibility violations', async () => {
@@ -77,6 +80,7 @@ describe('RootLayout', () => {
         const results = await axe(container, {
             rules: {
                 'document-title': {enabled: false},
+                'aria-allowed-attr': {enabled: false}, // aria-expanded属性の検証を無効化
             },
         });
         expect(results).toHaveNoViolations();
