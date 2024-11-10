@@ -45,8 +45,6 @@ export async function GET(request: NextRequest): Promise<Response> {
         
         return createResponse(data);
     } catch (error) {
-        // エラー発生時の処理
         return handleApiError(error);
-    } finally {
     }
 }
