@@ -1,6 +1,7 @@
 // api/playlists/[id]/details/route.ts
 import {NextResponse} from 'next/server';
 import type {NextRequest} from 'next/server';
+import {handleApiError} from '@/app/lib/api-utils';
 
 export async function GET(req: NextRequest, {params}: { params: { id: string } }) {
     const {id} = params;
@@ -24,10 +25,6 @@ export async function GET(req: NextRequest, {params}: { params: { id: string } }
             headers: {'Content-Type': 'application/json'}
         });
     } catch (error: any) {
-        console.error("Fetch error:", error);
-        return new NextResponse(JSON.stringify({error: 'Failed to fetch playlist details', details: error.message}), {
-            status: 500,
-            headers: {'Content-Type': 'application/json'}
-        });
+        return handleApiError(error, 'Failed to fetch playlist details');
     }
 }

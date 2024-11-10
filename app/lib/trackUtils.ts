@@ -1,23 +1,5 @@
 // app/lib/trackUtils.ts
 
-import {type ClassValue, clsx} from "clsx";
-import {twMerge} from "tailwind-merge";
-
-/**
- * クラス名を結合し、Tailwind CSSのクラス名をマージする関数
- *
- * @param {...ClassValue[]} inputs - 結合するクラス名のリスト
- * @returns {string} - マージされたクラス名の文字列
- *
- * @example
- * const className = cn('bg-red-500', 'text-white');
- * // classNameは 'bg-red-500 text-white' となる
- */
-export function cn(...inputs: ClassValue[]): string {
-    // clsxでクラス名を結合し、twMergeでTailwind CSSのクラス名をマージ
-    return twMerge(clsx(inputs));
-}
-
 /**
  * プレイリストに曲を追加する非同期関数
  *

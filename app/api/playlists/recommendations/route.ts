@@ -1,6 +1,7 @@
 // app/api/playlists/recommendations/route.ts
 
 import {NextResponse, NextRequest} from 'next/server';
+import {handleApiError} from '@/app/lib/api-utils';
 
 // リクエストボディの型定義
 interface RecommendationRequest {
@@ -37,10 +38,6 @@ export async function POST(request: NextRequest) {
         });
         
     } catch (error: any) {
-        console.error("Fetch error:", error);
-        return new NextResponse(JSON.stringify({error: 'Failed to fetch recommendations', details: error.message}), {
-            status: 500,
-            headers: {'Content-Type': 'application/json'}
-        });
+        return handleApiError(error, 'Failed to fetch recommendations');
     }
 }

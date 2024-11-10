@@ -9,7 +9,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/app/components/ui/dialog"
-import {cn} from "@/app/lib/trackUtils";
+import {cn} from "@/app/lib/utils"
 
 export default function Footer() {
     return (
