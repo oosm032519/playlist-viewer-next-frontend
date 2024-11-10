@@ -1,6 +1,6 @@
 // app/api/session/sessionId/route.ts
 
-import {NextResponse} from 'next/server';
+import {NextResponse, NextRequest} from 'next/server';
 import {handleApiError, sendRequest} from '@/app/lib/api-utils';
 import {BadRequestError} from '@/app/lib/errors';
 
@@ -13,7 +13,7 @@ import {BadRequestError} from '@/app/lib/errors';
  * @throws BadRequestError - 一時トークンが提供されていない場合
  * @throws Error - セッションIDの取得に失敗した場合
  */
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
     // リクエストボディからtemporaryTokenを取得
     const {temporaryToken} = await request.json();
     

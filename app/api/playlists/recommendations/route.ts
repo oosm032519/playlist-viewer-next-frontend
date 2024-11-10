@@ -1,5 +1,6 @@
-// api/playlists/recommendations/route.ts
-import {NextResponse} from 'next/server';
+// app/api/playlists/recommendations/route.ts
+
+import {NextResponse, NextRequest} from 'next/server';
 
 // リクエストボディの型定義
 interface RecommendationRequest {
@@ -8,9 +9,9 @@ interface RecommendationRequest {
     minAudioFeatures: { [key: string]: number };
 }
 
-export async function POST(request: Request) { // NextApiRequest を Request に変更
+export async function POST(request: NextRequest) {
     try {
-        const requestBody: RecommendationRequest = await request.json(); // request.json() を使用
+        const requestBody: RecommendationRequest = await request.json();
         
         const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
         const response = await fetch(`${backendUrl}/api/playlists/recommendations`, {
@@ -35,7 +36,7 @@ export async function POST(request: Request) { // NextApiRequest を Request に
             headers: {'Content-Type': 'application/json'}
         });
         
-    } catch (error: any) { // fetch 自体が失敗した場合
+    } catch (error: any) {
         console.error("Fetch error:", error);
         return new NextResponse(JSON.stringify({error: 'Failed to fetch recommendations', details: error.message}), {
             status: 500,
