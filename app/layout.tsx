@@ -2,7 +2,7 @@
 
 "use client";
 
-import './globals.css';
+import '@/app/globals.css';
 import Footer from '@/app/components/Footer'
 import {Inter} from 'next/font/google';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';

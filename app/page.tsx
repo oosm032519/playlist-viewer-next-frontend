@@ -90,7 +90,6 @@ function HomeContent(): JSX.Element {
                                 credentials: 'include',
                             });
                             const sessionData = await response.json();
-                            console.log("セッションチェック結果:", sessionData);
                             if (sessionData.status === 'success') {
                                 setIsLoggedIn(true); // セッションチェック成功後に状態を更新
                                 setUserId(sessionData.userId);
@@ -110,7 +109,6 @@ function HomeContent(): JSX.Element {
      * @param {string} query - 検索クエリ
      */
     const handleSearch = (query: string) => {
-        console.log("handleSearch: 検索クエリ", query);
         setSearchQuery(query); // 検索クエリをステートに保存
         setSelectedPlaylistId(null);
     };
@@ -122,7 +120,6 @@ function HomeContent(): JSX.Element {
      * @returns {Promise<void>}
      */
     const handlePlaylistClick = async (playlistId: string): Promise<void> => {
-        console.log("handlePlaylistClick: 選択されたプレイリストID", playlistId);
         setSelectedPlaylistId(playlistId);
     };
     
