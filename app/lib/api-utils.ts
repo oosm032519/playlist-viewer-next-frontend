@@ -11,7 +11,7 @@ import {ApiError} from '@/app/lib/errors';
  * @param context - エラーが発生したコンテキスト情報（オプション）
  * @returns エラーメッセージとステータスコードを含むレスポンスオブジェクト
  */
-export async function handleApiError(error: unknown, context?: string): Promise<NextResponse | Response> {
+export async function handleApiError(error: unknown, context?: string): Promise<NextResponse> {
     console.error('API Error:', error, context);
     
     let status = 500;
@@ -22,14 +22,11 @@ export async function handleApiError(error: unknown, context?: string): Promise<
         status = error.status;
         message = error.message;
         details = error.details || '';
-    } else if (error instanceof Response) {
-        status = error.status;
-        const errorData = await error.json();
-        message = errorData.error || 'API Request Failed';
-        details = errorData.details || error.statusText;
     } else if (error instanceof Error) {
         message = error.message;
         details = error.stack || '';
+    } else if (typeof error === 'string') {
+        message = error;
     }
     
     // エラーの種類に応じて詳細なメッセージを追加
@@ -60,22 +57,9 @@ export async function handleApiError(error: unknown, context?: string): Promise<
         details = `${context} でエラーが発生しました: ${details}`;
     }
     
-    const responseBody = JSON.stringify({error: message, details: details});
-    
-    if (typeof Response !== 'undefined') {
-        // ブラウザ環境
-        return new Response(responseBody, {
-            status: status,
-            headers: {'Content-Type': 'application/json'}
-        });
-    } else {
-        // Next.js環境
-        return NextResponse.json(
-            {error: message, details: details},
-            {status: status}
-        );
-    }
+    return NextResponse.json({error: message, details: details}, {status});
 }
+
 
 /**
  * APIリクエストを送信する共通関数
@@ -100,7 +84,7 @@ export async function sendRequest(url: string, method: string, body?: any, cooki
     });
     
     if (!response.ok) {
-        throw response; // レスポンスオブジェクトをエラーとしてスロー
+        throw response;
     }
     
     return response;
