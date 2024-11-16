@@ -95,6 +95,7 @@ const PlaylistDetailsLoader: React.FC<PlaylistDetailsLoaderProps> = ({
     } = useQuery<PlaylistDetailsData, Error>({
         queryKey: ['playlistDetails', playlistId],
         queryFn: () => fetchPlaylistDetails(playlistId),
+        refetchOnWindowFocus: false,
     });
     
     const {
@@ -126,8 +127,8 @@ const PlaylistDetailsLoader: React.FC<PlaylistDetailsLoaderProps> = ({
         },
         enabled: !!playlistDetails,
         retry: 3,
+        refetchOnWindowFocus: false,
     });
-    
     
     if (isLoadingDetails) {
         return <LoadingSpinner loading={isLoadingDetails}/>;
