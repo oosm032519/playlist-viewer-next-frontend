@@ -33,7 +33,7 @@ interface RecommendationRequest {
 
 const fetchPlaylistDetails = async (playlistId: string): Promise<PlaylistDetailsData> => {
     const response = await fetch(`/api/playlists/${playlistId}/details`, {
-        credentials: 'include', // 重要: Cookieを含める
+        credentials: 'include',
     });
     if (!response.ok) {
         throw new Error('Network response was not ok');

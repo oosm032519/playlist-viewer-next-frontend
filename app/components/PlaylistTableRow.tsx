@@ -3,7 +3,7 @@
 import {Playlist} from "@/app/types/playlist";
 import {TableCell, TableRow} from "@/app/components/ui/table";
 import DOMPurify from 'dompurify';
-import {useEffect, useState} from 'react';
+import {useMemo} from 'react';
 import Image from "next/image";
 
 interface PlaylistTableRowProps {
@@ -17,15 +17,13 @@ interface PlaylistTableRowProps {
  * @returns {JSX.Element} - テーブル行のJSX要素
  */
 export default function PlaylistTableRow({playlist, onClick}: PlaylistTableRowProps) {
-    const [sanitizedImageUrl, setSanitizedImageUrl] = useState<string>('');
-    const [sanitizedName, setSanitizedName] = useState<string>('');
+    const sanitizedImageUrl = useMemo(() => {
+        return playlist.images[0]?.url ? DOMPurify.sanitize(playlist.images[0].url) : '';
+    }, [playlist.images]);
     
-    useEffect(() => {
-        if (playlist.images[0]?.url) {
-            setSanitizedImageUrl(DOMPurify.sanitize(playlist.images[0].url));
-        }
-        setSanitizedName(DOMPurify.sanitize(playlist.name));
-    }, [playlist]);
+    const sanitizedName = useMemo(() => {
+        return DOMPurify.sanitize(playlist.name);
+    }, [playlist.name]);
     
     return (
         <TableRow>

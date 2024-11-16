@@ -4,6 +4,7 @@ import {Playlist} from "@/app/types/playlist";
 import {Table, TableBody} from "@/app/components/ui/table";
 import PlaylistTableHeader from "@/app/components/PlaylistTableHeader";
 import PlaylistTableRow from "@/app/components/PlaylistTableRow";
+import {useMemo} from 'react'
 
 /**
  * プレイリストテーブルコンポーネントのプロパティを定義するインターフェース
@@ -33,22 +34,18 @@ interface PlaylistTableProps {
  *   totalPlaylists={100}
  * />
  */
-export default function PlaylistTable({
-                                          playlists,
-                                          onPlaylistClick,
-                                          totalPlaylists,
-                                      }: PlaylistTableProps): JSX.Element {
+export default function PlaylistTable({playlists, onPlaylistClick, totalPlaylists}: PlaylistTableProps): JSX.Element {
+    const memoizedPlaylists = useMemo(() => playlists, [playlists]);
+    
     return (
         <Table>
-            {/* テーブルのヘッダー部分 */}
-            <PlaylistTableHeader totalPlaylists={totalPlaylists}/> {/* totalPlaylists を渡す */}
+            <PlaylistTableHeader totalPlaylists={totalPlaylists}/>
             <TableBody>
-                {/* プレイリストごとに行を生成 */}
-                {playlists.map((playlist) => (
+                {memoizedPlaylists.map((playlist) => (
                     <PlaylistTableRow
-                        key={playlist.id} // 各行に一意のキーを設定
-                        playlist={playlist} // プレイリストのデータを渡す
-                        onClick={() => onPlaylistClick(playlist.id)} // クリック時にコールバック関数を呼び出す
+                        key={playlist.id}
+                        playlist={playlist}
+                        onClick={() => onPlaylistClick(playlist.id)}
                     />
                 ))}
             </TableBody>

@@ -5,6 +5,7 @@ import {Track} from "@/app/types/track";
 import {audioFeatureSort} from "@/app/lib/tableUtils";
 import Image from "next/image";
 import DOMPurify from 'dompurify';
+import {useMemo} from "react";
 
 // AudioFeature型を定義し、使用可能なオーディオフィーチャーを列挙
 type AudioFeature =
@@ -52,22 +53,29 @@ export const playlistDetailsTableColumns = [
     // アルバムカラムの定義
     columnHelper.accessor("album", {
         header: "Album",
-        cell: (info) => (
-            <a href={info.getValue().externalUrls.externalUrls.spotify} target="_blank" rel="noopener noreferrer">
-                <div className="w-12 h-12 relative">
-                    <Image
-                        src={info.getValue().images[0].url}
-                        alt={info.getValue().name}
-                        className="object-contain w-full h-full"
-                        width={60}
-                        height={60}
-                    />
-                </div>
-            </a>
-),
-enableSorting: false, // ソートを無効化
-}),
-// タイトルカラムの定義
+        cell: (info) => {
+            // URLのメモ化
+            const albumImageUrl = useMemo(() => info.getValue().images[0].url, [info.getValue().images]);
+            
+            return (
+                <a href={info.getValue().externalUrls.externalUrls.spotify} target="_blank" rel="noopener noreferrer">
+                    <div className="w-12 h-12 relative">
+                        <Image
+                            src={albumImageUrl}
+                            alt={info.getValue().name}
+                            className="object-contain w-full h-full"
+                            width={60}
+                            height={60}
+                            loading="lazy"
+                        />
+                    </div>
+                </a>
+            );
+        },
+        enableSorting: false, // ソートを無効化
+    }),
+    
+    // タイトルカラムの定義
     columnHelper.accessor("name", {
         header: "Title",
         cell: (info) => (
@@ -76,6 +84,7 @@ enableSorting: false, // ソートを無効化
             </a>
         ),
     }),
+    
     // アーティストカラムの定義
     columnHelper.accessor("artists", {
         header: "Artist",
@@ -85,6 +94,7 @@ enableSorting: false, // ソートを無効化
             </a>
         ),
     }),
+    
     // 各オーディオフィーチャーのカラムを動的に生成
     ...(["danceability", "energy", "key", "loudness", "speechiness", "acousticness", "instrumentalness", "liveness", "valence", "tempo"] as AudioFeature[]).map((feature) =>
         columnHelper.accessor((row) => row.audioFeatures?.[feature], {
@@ -100,6 +110,7 @@ enableSorting: false, // ソートを無効化
             },
         })
     ),
+    
     // モードカラムの定義
     columnHelper.accessor((row) => row.audioFeatures?.mode, {
         id: "mode",
@@ -111,12 +122,14 @@ enableSorting: false, // ソートを無効化
         },
         cell: (info) => info.getValue() ?? "-", // 値がない場合はハイフンを表示
     }),
+    
     // 再生時間カラムの定義
     columnHelper.accessor("durationMs", {
         header: "Duration",
         sortingFn: (a, b) => (a.original.durationMs || 0) - (b.original.durationMs || 0), // 数値としてソート
         cell: (info) => msToMinutesAndSeconds(info.getValue()), // "分:秒"形式に変換して表示
     }),
+    
     // タイムシグネチャーカラムの定義
     columnHelper.accessor((row) => row.audioFeatures?.timeSignature, {
         id: "timeSignature",
