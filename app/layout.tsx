@@ -4,6 +4,7 @@
 
 import '@/app/globals.css';
 import Footer from '@/app/components/Footer'
+import {TooltipProvider} from '@/app/components/ui/tooltip'
 import {Inter} from 'next/font/google';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {UserContextProvider} from "@/app/context/UserContext";
@@ -25,16 +26,17 @@ const queryClient = new QueryClient();
 export default function RootLayout({children}: { children: React.ReactNode }): JSX.Element {
     return (
         <html lang="ja" suppressHydrationWarning>
-        <body
-            className={`${inter.className}`}>
+        <body className={`${inter.className}`}>
         <ErrorBoundary>
             <QueryClientProvider client={queryClient}>
                 <UserContextProvider>
                     <ThemeProvider enableSystem={true} attribute="class" defaultTheme="system">
-                        <main className="flex-grow">
-                            {children}
-                        </main>
-                        <Footer/>
+                        <TooltipProvider>
+                            <main className="flex-grow">
+                                {children}
+                            </main>
+                            <Footer/>
+                        </TooltipProvider>
                     </ThemeProvider>
                 </UserContextProvider>
             </QueryClientProvider>

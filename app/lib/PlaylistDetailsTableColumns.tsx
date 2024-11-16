@@ -1,5 +1,6 @@
 // app/lib/PlaylistDetailsTableColumns.tsx
 
+import {Tooltip, TooltipContent, TooltipTrigger} from '@/app/components/ui/tooltip'
 import {createColumnHelper} from "@tanstack/react-table";
 import {Track} from "@/app/types/track";
 import {audioFeatureSort} from "@/app/lib/tableUtils";
@@ -47,32 +48,40 @@ export const msToMinutesAndSeconds = (ms: number | undefined): string => {
 
 /**
  * プレイリストの詳細テーブルのカラム定義
- * 各カラムはトラックの異なる属性を表示する
  */
 export const playlistDetailsTableColumns = [
     // アルバムカラムの定義
     columnHelper.accessor("album", {
         header: "Album",
         cell: (info) => {
-            // URLのメモ化
+            // URLとアルバム名のメモ化
             const albumImageUrl = useMemo(() => info.getValue().images[0].url, [info.getValue().images]);
+            const albumName = useMemo(() => info.getValue().name, [info.getValue().name]);
             
             return (
-                <a href={info.getValue().externalUrls.externalUrls.spotify} target="_blank" rel="noopener noreferrer">
-                    <div className="w-12 h-12 relative">
-                        <Image
-                            src={albumImageUrl}
-                            alt={info.getValue().name}
-                            className="object-contain w-full h-full"
-                            width={60}
-                            height={60}
-                            loading="lazy"
-                        />
-                    </div>
-                </a>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <a href={info.getValue().externalUrls.externalUrls.spotify} target="_blank"
+                           rel="noopener noreferrer">
+                            <div className="w-12 h-12 relative">
+                                <Image
+                                    src={albumImageUrl}
+                                    alt={albumName} // alt属性にアルバム名を設定
+                                    className="object-contain w-full h-full"
+                                    width={60}
+                                    height={60}
+                                    loading="lazy"
+                                />
+                            </div>
+                        </a>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="pointer-events-none">
+                        <p>{albumName}</p>
+                    </TooltipContent>
+                </Tooltip>
             );
         },
-        enableSorting: false, // ソートを無効化
+        enableSorting: false,
     }),
     
     // タイトルカラムの定義

@@ -1,6 +1,6 @@
 // app/components/RecommendationsTable.tsx
 
-import React, {useEffect, useMemo, useState} from "react";
+import React, {useMemo, useState} from "react";
 import Image from "next/image";
 import {
     ColumnDef,
@@ -20,6 +20,7 @@ import LoadingSpinner from '@/app/components/LoadingSpinner';
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/app/components/ui/table";
 import {ArrowUpDown} from "lucide-react";
 import DOMPurify from 'dompurify';
+import {Tooltip, TooltipTrigger, TooltipContent} from "@/app/components/ui/tooltip";
 
 const purifyConfig = {
     ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a'],
@@ -46,26 +47,52 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({track
         const baseColumns: ColumnDef<typeof tracks[0]>[] = [
             {
                 header: 'Album',
-                cell: info => (
-                    <div className="w-12 h-12 relative">
-                        <Image
-                            src={sanitize(info.row.original.album.images[0].url)}
-                            alt={sanitize(info.row.original.album.name)}
-                            className="object-contain w-full h-full"
-                            width={60}
-                            height={60}
-                        />
-                    </div>
-                ),
+                cell: info => {
+                    const album = info.row.original.album;
+                    const albumName = album.name;
+                    const albumImageUrl = album.images[0].url;
+                    const albumUrl = album.externalUrls.externalUrls.spotify;
+                    
+                    return (
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <a href={albumUrl} target="_blank" rel="noopener noreferrer">
+                                    <div className="w-12 h-12 relative">
+                                        <Image
+                                            src={sanitize(albumImageUrl)}
+                                            alt={sanitize(albumName)}
+                                            className="object-contain w-full h-full"
+                                            width={60}
+                                            height={60}
+                                        />
+                                    </div>
+                                </a>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="pointer-events-none">
+                                <p>{sanitize(albumName)}</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    );
+                },
             },
             {
                 header: 'Title',
                 accessorKey: 'name',
-                cell: info => <span dangerouslySetInnerHTML={{__html: sanitize(info.getValue() as string)}}/>,
+                cell: info => {
+                    const trackUrl = info.row.original.externalUrls.externalUrls.spotify;
+                    return <a href={trackUrl} target="_blank" rel="noopener noreferrer">
+                        <span dangerouslySetInnerHTML={{__html: sanitize(info.getValue() as string)}}/>
+                    </a>
+                },
             },
             {
                 header: 'Artist',
-                cell: info => <span dangerouslySetInnerHTML={{__html: sanitize(info.row.original.artists[0].name)}}/>,
+                cell: info => {
+                    const artistUrl = info.row.original.artists[0].externalUrls.externalUrls.spotify;
+                    return <a href={artistUrl} target="_blank" rel="noopener noreferrer">
+                        <span dangerouslySetInnerHTML={{__html: sanitize(info.row.original.artists[0].name)}}/>
+                    </a>
+                }
             },
             {
                 header: 'Preview',

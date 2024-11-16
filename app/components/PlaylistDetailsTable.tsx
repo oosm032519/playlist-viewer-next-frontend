@@ -24,6 +24,7 @@ import {ArrowUpDown} from "lucide-react";
 import {playlistDetailsTableColumns} from "@/app/lib/PlaylistDetailsTableColumns";
 import {AudioFeatures} from "@/app/types/audioFeaturesTypes";
 
+
 /**
  * プレイリストの詳細テーブルを表示するためのプロパティ
  */
