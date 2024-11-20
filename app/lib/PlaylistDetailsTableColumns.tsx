@@ -1,12 +1,11 @@
 // app/lib/PlaylistDetailsTableColumns.tsx
-
 import {Tooltip, TooltipContent, TooltipTrigger} from '@/app/components/ui/tooltip'
 import {createColumnHelper} from "@tanstack/react-table";
 import {Track} from "@/app/types/track";
 import {audioFeatureSort} from "@/app/lib/tableUtils";
 import Image from "next/image";
 import DOMPurify from 'dompurify';
-import {useMemo} from "react";
+
 
 // AudioFeature型を定義し、使用可能なオーディオフィーチャーを列挙
 type AudioFeature =
@@ -54,19 +53,24 @@ export const playlistDetailsTableColumns = [
     columnHelper.accessor("album", {
         header: "Album",
         cell: (info) => {
-            // URLとアルバム名のメモ化
-            const albumImageUrl = useMemo(() => info.getValue().images[0].url, [info.getValue().images]);
-            const albumName = useMemo(() => info.getValue().name, [info.getValue().name]);
+            const album = info.getValue();
+            
+            // album, album.images, album.images[0] が存在することを確認
+            if (!album || !album.images || !album.images[0]) {
+                return "-";
+            }
+            
+            const albumImageUrl = album.images[0].url;
+            const albumName = album.name;
             
             return (
                 <Tooltip>
                     <TooltipTrigger asChild>
-                        <a href={info.getValue().externalUrls.externalUrls.spotify} target="_blank"
-                           rel="noopener noreferrer">
+                        <a href={album.externalUrls.externalUrls.spotify} target="_blank" rel="noopener noreferrer">
                             <div className="w-12 h-12 relative">
                                 <Image
                                     src={albumImageUrl}
-                                    alt={albumName} // alt属性にアルバム名を設定
+                                    alt={albumName}
                                     className="object-contain w-full h-full"
                                     width={60}
                                     height={60}
@@ -83,7 +87,6 @@ export const playlistDetailsTableColumns = [
         },
         enableSorting: false,
     }),
-    
     // タイトルカラムの定義
     columnHelper.accessor("name", {
         header: "Title",
@@ -93,7 +96,6 @@ export const playlistDetailsTableColumns = [
             </a>
         ),
     }),
-    
     // アーティストカラムの定義
     columnHelper.accessor("artists", {
         header: "Artist",
@@ -103,7 +105,6 @@ export const playlistDetailsTableColumns = [
             </a>
         ),
     }),
-    
     // 各オーディオフィーチャーのカラムを動的に生成
     ...(["danceability", "energy", "key", "loudness", "speechiness", "acousticness", "instrumentalness", "liveness", "valence", "tempo"] as AudioFeature[]).map((feature) =>
         columnHelper.accessor((row) => row.audioFeatures?.[feature], {

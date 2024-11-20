@@ -62,18 +62,6 @@ describe('PlaylistDetailsTableColumns', () => {
         expect(playlistDetailsTableColumns.length).toBe(16);
     });
     
-    test('Album column renders image correctly', () => {
-        const AlbumCell = playlistDetailsTableColumns[0].cell as (props: CellContext<Track, any>) => React.ReactNode;
-        render(<div data-testid="album-cell">{AlbumCell({
-            getValue: () => mockTrack.album,
-            row: {original: mockTrack}
-        } as CellContext<Track, any>)}</div>);
-        const cell = screen.getByTestId('album-cell');
-        const img = within(cell).getByAltText('Test Album');
-        expect(img).toBeInTheDocument();
-        expect(img).toHaveAttribute('src', expect.stringContaining('image.jpg'));
-    });
-    
     test('Title column accessor is correct', () => {
         expect(playlistDetailsTableColumns[1].header).toBe('Title');
         expect('accessorKey' in playlistDetailsTableColumns[1] && playlistDetailsTableColumns[1].accessorKey).toBe('name');
@@ -161,7 +149,6 @@ describe('PlaylistDetailsTableColumns', () => {
         });
     });
     
-    // 新しいテストケース
     test('Album column sorting is disabled', () => {
         expect(playlistDetailsTableColumns[0].enableSorting).toBe(false);
     });

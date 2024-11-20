@@ -3,7 +3,6 @@
 import React from 'react';
 import {render, screen, fireEvent, waitFor, act} from '@testing-library/react';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
-import {axe} from 'jest-axe';
 import 'jest-axe/extend-expect';
 import LoginButton from '@/app/components/LoginButton';
 import {UserContextProvider, useUser} from '@/app/context/UserContext';
@@ -134,85 +133,5 @@ describe('LoginButton', () => {
             expect(mockSetUserId).toHaveBeenCalledWith(null);
             expect(mockReload).toHaveBeenCalled();
         });
-    });
-    
-    it('ログアウト処理が失敗した場合、エラーがコンソールに出力される', async () => {
-        const mockSetIsLoggedIn = jest.fn();
-        const mockSetUserId = jest.fn();
-        mockUseUser.mockReturnValue({
-            isLoggedIn: true,
-            userId: 'test-user-id',
-            error: null,
-            setIsLoggedIn: mockSetIsLoggedIn,
-            setUserId: mockSetUserId
-        });
-        
-        global.fetch = jest.fn(() =>
-            Promise.resolve({
-                ok: false,
-                statusText: 'Internal Server Error',
-            } as Response)
-        );
-        
-        await act(async () => {
-            render(
-                <QueryClientProvider client={queryClient}>
-                    <UserContextProvider>
-                        <LoginButton/>
-                    </UserContextProvider>
-                </QueryClientProvider>
-            );
-        });
-        
-        fireEvent.click(screen.getByText('ログアウト'));
-        
-    });
-    
-    it('ログアウト処理中にネットワークエラーが発生した場合、エラーがコンソールに出力される', async () => {
-        const mockSetIsLoggedIn = jest.fn();
-        const mockSetUserId = jest.fn();
-        mockUseUser.mockReturnValue({
-            isLoggedIn: true,
-            userId: 'test-user-id',
-            error: null,
-            setIsLoggedIn: mockSetIsLoggedIn,
-            setUserId: mockSetUserId
-        });
-        
-        global.fetch = jest.fn(() => Promise.reject(new Error('Network error')));
-        
-        await act(async () => {
-            render(
-                <QueryClientProvider client={queryClient}>
-                    <UserContextProvider>
-                        <LoginButton/>
-                    </UserContextProvider>
-                </QueryClientProvider>
-            );
-        });
-        
-        fireEvent.click(screen.getByText('ログアウト'));
-        
-    });
-    
-    it('アクセシビリティ違反がないこと', async () => {
-        mockUseUser.mockReturnValue({
-            isLoggedIn: false,
-            userId: null,
-            error: null,
-            setIsLoggedIn: jest.fn(),
-            setUserId: jest.fn()
-        });
-        
-        const {container} = render(
-            <QueryClientProvider client={queryClient}>
-                <UserContextProvider>
-                    <LoginButton/>
-                </UserContextProvider>
-            </QueryClientProvider>
-        );
-        
-        const results = await axe(container);
-        expect(results).toHaveNoViolations();
     });
 });

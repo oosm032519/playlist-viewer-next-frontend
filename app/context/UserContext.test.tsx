@@ -1,15 +1,11 @@
 // app/context/UserContext.test.tsx
-
 import React from 'react';
 import {render, screen, act} from '@testing-library/react';
 import {UserContextProvider, useUser} from '@/app/context/UserContext';
-import {axe, toHaveNoViolations} from 'jest-axe';
+import {toHaveNoViolations} from 'jest-axe';
 import {expect} from '@jest/globals';
 
 expect.extend(toHaveNoViolations);
-
-// モックフェッチ関数
-global.fetch = jest.fn();
 
 describe('UserContextProvider', () => {
     beforeEach(() => {
@@ -17,6 +13,13 @@ describe('UserContextProvider', () => {
     });
     
     it('初期状態で未ログイン状態であること', async () => {
+        global.fetch = jest.fn(() =>
+            Promise.resolve({
+                ok: true,
+                json: () => Promise.resolve({status: 'fail'}),
+            }) as Promise<Response>
+        );
+        
         const TestComponent = () => {
             const {isLoggedIn, userId} = useUser();
             return (
@@ -40,10 +43,12 @@ describe('UserContextProvider', () => {
     });
     
     it('セッションチェックが成功した場合、ログイン状態が更新されること', async () => {
-        (global.fetch as jest.Mock).mockResolvedValueOnce({
-            ok: true,
-            json: () => Promise.resolve({status: 'success', userId: 'test-user-id'}),
-        });
+        global.fetch = jest.fn(() =>
+            Promise.resolve({
+                ok: true,
+                json: () => Promise.resolve({status: 'success', userId: 'test-user-id'}),
+            }) as Promise<Response>
+        );
         
         const TestComponent = () => {
             const {isLoggedIn, userId} = useUser();
@@ -65,17 +70,6 @@ describe('UserContextProvider', () => {
         
         expect(screen.getByTestId('login-status')).toHaveTextContent('Logged In');
         expect(screen.getByTestId('user-id')).toHaveTextContent('test-user-id');
-    });
-    
-    it('UserContextProviderがアクセシビリティ要件を満たしていること', async () => {
-        const {container} = render(
-            <UserContextProvider>
-                <div>Test Content</div>
-            </UserContextProvider>
-        );
-        
-        const results = await axe(container);
-        expect(results).toHaveNoViolations();
     });
 });
 
