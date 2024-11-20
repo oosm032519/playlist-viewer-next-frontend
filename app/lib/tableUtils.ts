@@ -13,8 +13,6 @@ type AudioFeature = keyof NonNullable<Track['audioFeatures']>;
  * @param {AudioFeature} accessorKey - ソートに使用する音声特徴量のキー
  * @returns {number} ソート順を示す数値。負の値はaがbより小さいことを示し、正の値はaがbより大きいことを示す。
  *
- * @example
- * const sortedRows = rows.sort((a, b) => audioFeatureSort(a, b, 'danceability'));
  */
 export const audioFeatureSort = (
     a: Row<Track>,

@@ -1,4 +1,4 @@
-// CombinedAudioFeaturesChart.tsx
+// app/components/CombinedAudioFeaturesChart.tsx
 
 import React from 'react';
 import {Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis} from 'recharts';
@@ -22,14 +22,32 @@ import {
     ChartTooltipContent,
 } from "@/app/components/ui/chart";
 
+/**
+ * CombinedAudioFeaturesChartPropsインターフェース
+ * @property {AudioFeaturesChartProps['track']} [track] - 選択されたトラックのAudioFeatures（任意）
+ * @property {AudioFeatures} averageAudioFeatures - プレイリストの平均AudioFeatures
+ * @property {string | null} playlistName - プレイリストの名前（nullの場合もあり）
+ */
 interface CombinedAudioFeaturesChartProps {
     track?: AudioFeaturesChartProps['track'];
     averageAudioFeatures: AudioFeatures;
     playlistName: string | null;
 }
 
-const CombinedAudioFeaturesChart: React.FC<CombinedAudioFeaturesChartProps> = ({track, averageAudioFeatures,
-                                                                                   playlistName}) => {
+/**
+ * CombinedAudioFeaturesChartコンポーネント
+ * 選択されたトラックとプレイリストの平均AudioFeaturesを比較するレーダーチャートを表示する。
+ *
+ * @param {CombinedAudioFeaturesChartProps} props - コンポーネントのプロパティ
+ * @returns {JSX.Element} - レーダーチャートを含むカード
+ */
+const CombinedAudioFeaturesChart: React.FC<CombinedAudioFeaturesChartProps> = ({
+                                                                                   track,
+                                                                                   averageAudioFeatures,
+                                                                                   playlistName
+                                                                               }) => {
+    
+    // プレイリスト平均のオーディオフィーチャーをデータとして準備
     const averageData = [
         {feature: 'Acousticness', value: averageAudioFeatures.acousticness},
         {feature: 'Danceability', value: averageAudioFeatures.danceability},
@@ -39,21 +57,24 @@ const CombinedAudioFeaturesChart: React.FC<CombinedAudioFeaturesChartProps> = ({
         {feature: 'Valence', value: averageAudioFeatures.valence},
     ];
     
+    // 選択されたトラックのオーディオフィーチャーデータを準備
     const trackData = track ? prepareAudioFeaturesData(track.audioFeatures) : [];
     
+    // 平均データとトラックデータを結合して新しいデータセットを作成
     const combinedData = averageData.map((item, index) => ({
         ...item,
-        trackValue: trackData[index]?.value,
+        trackValue: trackData[index]?.value,  // トラックに対応するフィーチャーがあれば追加
     }));
     
+    // チャート用の設定
     const chartConfig = {
         trackValue: {
             label: track ? track.name : "トラック",
-            color: "hsl(var(--chart-1))",
+            color: "hsl(var(--chart-1))",  // トラックのチャートの色
         },
         value: {
             label: playlistName,
-            color: "hsl(var(--chart-2))",
+            color: "hsl(var(--chart-2))",  // 平均値のチャートの色
         },
     } satisfies ChartConfig;
     
@@ -71,6 +92,8 @@ const CombinedAudioFeaturesChart: React.FC<CombinedAudioFeaturesChartProps> = ({
                         <PolarGrid/>
                         <PolarAngleAxis dataKey="feature"/>
                         <PolarRadiusAxis angle={30} domain={[0, 1]}/>
+                        
+                        {/* トラックが選択されていれば、そのデータをレーダーに表示 */}
                         {track && (
                             <Radar
                                 name={`${track.name}`}
@@ -79,12 +102,15 @@ const CombinedAudioFeaturesChart: React.FC<CombinedAudioFeaturesChartProps> = ({
                                 fillOpacity={0.6}
                             />
                         )}
+                        
+                        {/* プレイリスト平均のデータをレーダーに表示 */}
                         <Radar
                             name={`${playlistName}`}
                             dataKey="value"
                             fill="var(--color-value)"
                             fillOpacity={0.6}
                         />
+                        
                         <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line"/>}/>
                         <ChartLegend className="mt-8" content={<ChartLegendContent/>}/>
                     </RadarChart>

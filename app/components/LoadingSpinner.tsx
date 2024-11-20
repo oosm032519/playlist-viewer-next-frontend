@@ -19,8 +19,6 @@ interface LoadingSpinnerProps {
  * @param {boolean} props.loading - ローディング状態を示すフラグ
  * @returns {JSX.Element} ローディングスピナーのJSX要素
  *
- * @example
- * <LoadingSpinner loading={true} />
  */
 const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({loading}) => {
     return (

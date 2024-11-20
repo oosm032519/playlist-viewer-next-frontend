@@ -20,9 +20,6 @@ interface ErrorAlertProps {
  *
  * @param {ErrorAlertProps} props - コンポーネントのプロパティ
  * @returns {JSX.Element} エラーメッセージを含むアラートコンポーネント
- *
- * @example
- * <ErrorAlert error="An unexpected error occurred." type="ネットワークエラー" context="プレイリストの取得" />
  */
 const ErrorAlert: React.FC<ErrorAlertProps> = ({error, type, context}: ErrorAlertProps): JSX.Element => {
     // サニタイズされたエラーメッセージを作成

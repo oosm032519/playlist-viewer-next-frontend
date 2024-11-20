@@ -15,7 +15,7 @@ interface ErrorBoundaryState {
 
 /**
  * エラー境界コンポーネント
- * 子コンポーネントで発生したエラーをキャッチし、エラーメッセージを表示します。
+ * 子コンポーネントで発生したエラーをキャッチし、エラーメッセージを表示する。
  */
 class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     constructor(props: ErrorBoundaryProps) {

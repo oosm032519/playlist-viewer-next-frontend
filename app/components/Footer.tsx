@@ -11,13 +11,23 @@ import {
 } from "@/app/components/ui/dialog"
 import {cn} from "@/app/lib/utils"
 
-export default function Footer() {
+/**
+ * フッターコンポーネント
+ *
+ * 「利用規約」と「プライバシーポリシー」へのリンクがあり、それぞれクリックすると
+ * モーダルウィンドウが開き、詳細な説明が表示される。
+ *
+ * @returns {JSX.Element} フッター要素
+ */
+export default function Footer(): JSX.Element {
     return (
         <footer className="p-4 mt-8">
             <div className="container mx-auto flex justify-center items-center">
                 <div className="space-x-4">
+                    {/* 利用規約モーダル */}
                     <Dialog>
                         <DialogTrigger asChild>
+                            {/* 利用規約リンク */}
                             <a className="text-foreground hover:underline cursor-pointer">利用規約</a>
                         </DialogTrigger>
                         <DialogContent className={cn("bg-background")}>
@@ -35,7 +45,9 @@ export default function Footer() {
                                 <h3>2. 利用制限</h3>
                                 <ul>
                                     <li>- 本サービスを不正な目的で使用することは禁止します。</li>
-                                    <li>- 本サービスを利用して、著作権法、商標法、その他の法律に違反する行為をしないものとします。</li>
+                                    <li>-
+                                        本サービスを利用して、著作権法、商標法、その他の法律に違反する行為をしないものとします。
+                                    </li>
                                     <li>- Spotify APIの利用制限を超えるアクセスを行うことは禁止します。</li>
                                 </ul>
                                 <br/>
@@ -46,10 +58,15 @@ export default function Footer() {
                                 
                                 <h3>4. 免責事項</h3>
                                 <ul>
-                                    <li>- 運営者は、本サービスの利用によって生じた損害について、一切の責任を負いません。</li>
+                                    <li>- 運営者は、本サービスの利用によって生じた損害について、一切の責任を負いません。
+                                    </li>
                                     <li>- 運営者は、本サービスの提供を予告なく中断または停止することがあります。</li>
-                                    <li>- 本サービスは、Spotifyとは一切関係ありません。Spotify APIの利用規約はSpotifyが定めており、運営者はSpotify APIの変更または停止による影響について責任を負いません。</li>
-                                    <li>- 本サービスで表示される情報は、Spotify APIから取得したデータに基づいており、その正確性や完全性を保証するものではありません。</li>
+                                    <li>- 本サービスは、Spotifyとは一切関係ありません。Spotify
+                                        APIの利用規約はSpotifyが定めており、運営者はSpotify APIの変更または停止による影響について責任を負いません。
+                                    </li>
+                                    <li>- 本サービスで表示される情報は、Spotify
+                                        APIから取得したデータに基づいており、その正確性や完全性を保証するものではありません。
+                                    </li>
                                 </ul>
                                 <br/>
                                 
@@ -67,8 +84,11 @@ export default function Footer() {
                             </DialogDescription>
                         </DialogContent>
                     </Dialog>
+                    
+                    {/* プライバシーポリシーモーダル */}
                     <Dialog>
                         <DialogTrigger asChild>
+                            {/* プライバシーポリシーリンク */}
                             <a className="text-foreground hover:underline cursor-pointer">プライバシーポリシー</a>
                         </DialogTrigger>
                         <DialogContent className={cn("bg-background")}>

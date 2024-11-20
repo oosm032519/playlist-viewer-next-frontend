@@ -26,13 +26,6 @@ interface PlaylistTableProps {
  * @param {PlaylistTableProps} props - プレイリストテーブルのプロパティ
  * @returns {JSX.Element} プレイリストテーブルのJSX要素
  *
- * @example
- * <PlaylistTable
- *   playlists={playlists}
- *   onPlaylistClick={handlePlaylistClick}
- *   currentPage={1}
- *   totalPlaylists={100}
- * />
  */
 export default function PlaylistTable({playlists, onPlaylistClick, totalPlaylists}: PlaylistTableProps): JSX.Element {
     const memoizedPlaylists = useMemo(() => playlists, [playlists]);

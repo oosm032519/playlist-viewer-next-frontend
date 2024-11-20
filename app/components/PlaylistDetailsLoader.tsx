@@ -7,30 +7,48 @@ import PlaylistDetails from "@/app/components/PlaylistDetails";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
 import {AudioFeatures} from '@/app/types/audioFeaturesTypes';
 
+/**
+ * `PlaylistDetailsLoader`コンポーネントに渡されるpropsのインターフェース。
+ */
 interface PlaylistDetailsLoaderProps {
+    /** プレイリストのID */
     playlistId: string;
+    /** ユーザーのID（オプション） */
     userId?: string;
 }
 
+/**
+ * プレイリストの詳細データのインターフェース。
+ */
 interface PlaylistDetailsData {
-    seedArtists: string[];
-    tracks: Track[];
-    genreCounts: { [genre: string]: number };
-    playlistName: string | null;
-    ownerId: string;
-    totalDuration: number;
-    averageAudioFeatures: AudioFeatures;
-    ownerName: string;
-    maxAudioFeatures: { [key: string]: number };
-    minAudioFeatures: { [key: string]: number };
+    seedArtists: string[];  // プレイリストの種となるアーティスト
+    tracks: Track[];  // プレイリスト内のトラックのリスト
+    genreCounts: { [genre: string]: number };  // ジャンルごとのトラック数
+    playlistName: string | null;  // プレイリスト名
+    ownerId: string;  // プレイリストの所有者ID
+    totalDuration: number;  // プレイリストの合計持続時間（ミリ秒）
+    averageAudioFeatures: AudioFeatures;  // 平均的なオーディオ特性
+    ownerName: string;  // プレイリスト所有者の名前
+    maxAudioFeatures: { [key: string]: number };  // 最大オーディオ特性
+    minAudioFeatures: { [key: string]: number };  // 最小オーディオ特性
 }
 
+/**
+ * プレイリストのレコメンデーションリクエストデータのインターフェース。
+ */
 interface RecommendationRequest {
-    seedArtists: string[];
-    maxAudioFeatures: { [key: string]: number };
-    minAudioFeatures: { [key: string]: number };
+    seedArtists: string[];  // レコメンデーションの種となるアーティスト
+    maxAudioFeatures: { [key: string]: number };  // 最大オーディオ特性
+    minAudioFeatures: { [key: string]: number };  // 最小オーディオ特性
 }
 
+/**
+ * 指定されたプレイリストIDに基づいてプレイリストの詳細を取得する非同期関数。
+ *
+ * @param playlistId - プレイリストのID
+ * @returns プレイリストの詳細データ
+ * @throws ネットワークエラーや無効なデータに対する例外
+ */
 const fetchPlaylistDetails = async (playlistId: string): Promise<PlaylistDetailsData> => {
     const response = await fetch(`/api/playlists/${playlistId}/details`, {
         credentials: 'include',
@@ -40,6 +58,7 @@ const fetchPlaylistDetails = async (playlistId: string): Promise<PlaylistDetails
     }
     const data = await response.json();
     if (data) {
+        // トラック情報を整形して返す
         const tracks = data.tracks?.items?.map((item: any) => ({
             ...item.track,
             audioFeatures: item.audioFeatures,
@@ -61,10 +80,10 @@ const fetchPlaylistDetails = async (playlistId: string): Promise<PlaylistDetails
 };
 
 /**
- * ミリ秒単位の時間をフォーマットされた文字列に変換します。
+ * ミリ秒単位の時間をフォーマットされた文字列に変換する。
  *
- * @param millis - ミリ秒
- * @returns フォーマットされた時間文字列
+ * @param millis - ミリ秒単位の時間
+ * @returns フォーマットされた時間文字列（例: "1時間30分45秒"）
  */
 const formatDuration = (millis: number): string => {
     const hours = Math.floor(millis / (1000 * 60 * 60));
@@ -79,15 +98,17 @@ const formatDuration = (millis: number): string => {
 };
 
 /**
- * プレイリストの詳細をロードし表示するコンポーネント。
+ * プレイリストの詳細を取得し、表示するためのコンポーネント。
+ * プレイリストIDに基づいてデータを取得し、ローディングスピナーやエラーハンドリングを行う。
  *
- * @param props - コンポーネントのプロパティ
- * @returns プレイリストの詳細コンポーネント
+ * @param props - `PlaylistDetailsLoaderProps`型のプロパティ
+ * @returns プレイリストの詳細コンポーネントをレンダリング
  */
 const PlaylistDetailsLoader: React.FC<PlaylistDetailsLoaderProps> = ({
                                                                          playlistId,
-                                                                         userId,
+                                                                         userId
                                                                      }) => {
+    // プレイリストの詳細データを取得
     const {
         data: playlistDetails,
         isLoading: isLoadingDetails,
@@ -98,6 +119,7 @@ const PlaylistDetailsLoader: React.FC<PlaylistDetailsLoaderProps> = ({
         refetchOnWindowFocus: false,
     });
     
+    // プレイリストに基づくレコメンデーションデータを取得
     const {
         data: recommendations,
         isLoading: isLoadingRecommendations
@@ -125,21 +147,25 @@ const PlaylistDetailsLoader: React.FC<PlaylistDetailsLoaderProps> = ({
             }
             return response.json();
         },
-        enabled: !!playlistDetails,
-        retry: 3,
+        enabled: !!playlistDetails,  // プレイリストの詳細が取得されている場合のみ実行
+        retry: 3,  // レコメンデーション取得失敗時のリトライ回数
         refetchOnWindowFocus: false,
     });
     
+    // プレイリストの詳細がロード中の場合、スピナーを表示
     if (isLoadingDetails) {
         return <LoadingSpinner loading={isLoadingDetails}/>;
     }
     
+    // エラーが発生した場合、エラーメッセージを表示
     if (detailsError || !playlistDetails) {
         return <div>プレイリスト取得中にエラーが発生しました: {detailsError?.message}</div>;
     }
     
+    // プレイリストの総持続時間をフォーマット
     const formattedDuration = formatDuration(playlistDetails.totalDuration);
     
+    // プレイリストの詳細コンポーネントを表示
     return (
         <PlaylistDetails
             tracks={playlistDetails.tracks}
