@@ -2,7 +2,7 @@
 
 import {NextRequest, NextResponse} from 'next/server';
 import {handleApiError, sendRequest, getCookies} from './api-utils';
-import {ApiError} from '@/app/lib/errors';
+import {expect} from '@jest/globals';
 
 // モック関数を使用して外部依存関係を処理
 jest.mock('next/server', () => ({
