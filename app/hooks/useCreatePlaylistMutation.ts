@@ -1,29 +1,20 @@
 // app/hooks/useCreatePlaylistMutation.ts
 import {useMutation} from '@tanstack/react-query';
-import {useState} from 'react';
 
 /**
  * プレイリスト作成のためのカスタムフック。
- * @param tracks プレイリストに含めるトラックの配列。
  * @param toast 通知を表示するための関数。
- * @returns プレイリスト作成関数、作成されたプレイリストのID、作成中の状態を返す。
+ * @returns プレイリスト作成関数と作成中の状態を返す。
  */
-export const useCreatePlaylistMutation = (tracks: any[], toast: any) => {
-    const [createdPlaylistId, setCreatedPlaylistId] = useState<string | null>(null);
+export const useCreatePlaylistMutation = (toast: any) => {
     const createPlaylistMutation = useMutation({
-        mutationFn: async (trackIds: string[]) => {
-            // CreatePlaylistRequest オブジェクトを作成
-            const requestBody = {
-                trackIds: trackIds,
-                // RecommendationsTable では playlistName は不要なので undefined
-            };
-            
+        mutationFn: async ({trackIds, playlistName}: { trackIds: string[], playlistName?: string }) => {
             const response = await fetch('/api/playlists/create', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(requestBody), // オブジェクトを送信
+                body: JSON.stringify({trackIds, playlistName}),
                 credentials: 'include',
             });
             
@@ -36,7 +27,6 @@ export const useCreatePlaylistMutation = (tracks: any[], toast: any) => {
             return data.playlistId;
         },
         onSuccess: (data: string) => {
-            setCreatedPlaylistId(data);
             toast({
                 title: "プレイリスト作成成功",
                 description: "新しいプレイリストが正常に作成されました。",
@@ -52,14 +42,17 @@ export const useCreatePlaylistMutation = (tracks: any[], toast: any) => {
         },
     });
     
-    const createPlaylist = () => {
-        const trackIds = tracks.map(track => track.id as string);
-        createPlaylistMutation.mutate(trackIds);
+    /**
+     * プレイリストを作成する関数。
+     * @param trackIds プレイリストに含めるトラックIDの配列。
+     * @param playlistName プレイリストの名前（オプション）。
+     */
+    const createPlaylist = async (trackIds: string[], playlistName?: string) => {
+        createPlaylistMutation.mutate({trackIds, playlistName});
     };
     
     return {
         createPlaylist,
-        createdPlaylistId,
         isCreating: createPlaylistMutation.isPending
     };
 };

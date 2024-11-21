@@ -24,7 +24,9 @@ import {ArrowUpDown} from "lucide-react";
 import {playlistDetailsTableColumns} from "@/app/lib/PlaylistDetailsTableColumns";
 import {AudioFeatures} from "@/app/types/audioFeatures";
 import {Button} from "@/app/components/ui/button";
-import {usePlaylistCreation} from "@/app/hooks/usePlaylistCreation";
+import {useCreatePlaylistMutation} from "@/app/hooks/useCreatePlaylistMutation";
+import LoadingSpinner from '@/app/components/LoadingSpinner';
+import {useToast} from "@/app/components/ui/use-toast";
 
 
 /**
@@ -55,10 +57,11 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
                                                                               onTrackSelect,
                                                                               playlistName, // プレイリスト名を受け取る
                                                                           }) => {
+    const {toast} = useToast();
     // テーブルのソート状態を管理するための状態
     const [sorting, setSorting] = useState<SortingState>([]);
     
-    const {createSortedPlaylist} = usePlaylistCreation();
+    const {createPlaylist, isCreating} = useCreatePlaylistMutation(toast);
     
     // React Tableの設定
     const table = useReactTable({
@@ -75,7 +78,7 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
     const handleCreateSortedPlaylist = async () => {
         const sortedTrackIds = table.getRowModel().rows.map(row => row.original.id);
         const newPlaylistName = playlistName ? `${playlistName}.sorted` : undefined; // プレイリスト名を生成
-        await createSortedPlaylist(sortedTrackIds, newPlaylistName); // プレイリスト名を渡す
+        createPlaylist(sortedTrackIds, newPlaylistName);
     };
     
     /**
@@ -95,10 +98,12 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
     
     return (
         <div className="flex flex-col">
-            {/* 新しいプレイリスト作成ボタン */}
-            <Button onClick={handleCreateSortedPlaylist} className="mb-4">
+            <LoadingSpinner loading={isCreating}/>
+            
+            <Button onClick={handleCreateSortedPlaylist} disabled={isCreating}>
                 ソート順で新しいプレイリストを作成
             </Button>
+            
             <div className="w-full overflow-x-auto">
                 <Table>
                     <TableHeader>

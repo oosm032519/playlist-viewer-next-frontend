@@ -35,7 +35,7 @@ const purifyConfig = {
 export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({tracks, ownerId, userId, playlistId}) => {
     const [sorting, setSorting] = useState<SortingState>([]);
     const {toast} = useToast();
-    const {createPlaylist, isCreating} = useCreatePlaylistMutation(tracks, toast); // プレイリスト作成用のフックを利用
+    const {createPlaylist, isCreating} = useCreatePlaylistMutation(toast);
     const {addedTracks, handleAddTrack, handleRemoveTrack} = useTrackActions(playlistId, toast);
     
     const sanitize = useMemo(() => (content: string) => DOMPurify.sanitize(content, purifyConfig), []);
@@ -131,10 +131,16 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({track
         getSortedRowModel: getSortedRowModel(),
     });
     
+    const createPlaylistHandler = () => {
+        const trackIds = tracks.map(track => track.id as string);
+        createPlaylist(trackIds);
+    };
+    
+    
     return (
         <div className="flex flex-col">
+            <LoadingSpinner loading={isCreating}/> {/* isCreating を直接使う */}
             <div className="w-full overflow-x-auto">
-                <LoadingSpinner loading={isCreating}/>
                 <Table>
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
@@ -163,8 +169,9 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({track
             </div>
             {userId && (
                 <div className="mt-4">
-                    <Button
-                        onClick={createPlaylist}>おすすめ楽曲をもとにプレイリストを作成する</Button>
+                    <Button onClick={createPlaylistHandler} disabled={isCreating}>
+                        おすすめ楽曲をもとにプレイリストを作成する
+                    </Button>
                 </div>
             )}
         </div>
