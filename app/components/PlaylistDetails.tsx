@@ -8,7 +8,7 @@ import {Track} from "@/app/types/track";
 import {PlaylistDetailsTable} from "@/app/components/PlaylistDetailsTable";
 import GenreChart from "@/app/components/GenreChart";
 import {RecommendationsTable} from "@/app/components/RecommendationsTable";
-import {AudioFeatures} from "@/app/types/audioFeaturesTypes";
+import {AudioFeatures} from "@/app/types/audioFeatures";
 import {FavoriteContext} from "@/app/context/FavoriteContext";
 import DOMPurify from 'dompurify';
 import {useUser} from '@/app/context/UserContext';

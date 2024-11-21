@@ -7,7 +7,9 @@ import {TrackAudioFeatures} from '@/app/types/audioFeatures';
  * 外部URL情報。
  */
 export interface ExternalUrls {
-    spotify: string;
+    externalUrls: {
+        spotify: string;
+    }
 }
 
 /**

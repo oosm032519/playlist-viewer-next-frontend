@@ -3,7 +3,7 @@
 import {render, screen, fireEvent} from "@testing-library/react";
 import {PlaylistDetailsTable} from "@/app/components/PlaylistDetailsTable";
 import {Track} from "@/app/types/track";
-import {AudioFeatures} from "@/app/types/audioFeaturesTypes";
+import {AudioFeatures} from "@/app/types/audioFeatures";
 import {expect} from "@jest/globals";
 
 // モックデータ

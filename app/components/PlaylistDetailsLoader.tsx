@@ -5,7 +5,7 @@ import {useQuery} from '@tanstack/react-query';
 import {Track} from "@/app/types/track";
 import PlaylistDetails from "@/app/components/PlaylistDetails";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
-import {AudioFeatures} from '@/app/types/audioFeaturesTypes';
+import {AudioFeatures} from '@/app/types/audioFeatures';
 
 /**
  * `PlaylistDetailsLoader`コンポーネントに渡されるpropsのインターフェース。
