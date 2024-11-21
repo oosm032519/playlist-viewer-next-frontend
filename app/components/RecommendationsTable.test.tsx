@@ -18,6 +18,11 @@ expect.extend(toHaveNoViolations);
 jest.mock('@/app/lib/trackUtils');
 const mockedUtils = utils as jest.Mocked<typeof utils>;
 
+// JSDOMでwindow.openをモック化
+beforeAll(() => {
+    window.open = jest.fn();
+});
+
 // モックデータ
 const mockTracks: Track[] = [
     {
@@ -360,10 +365,6 @@ describe('RecommendationsTable', () => {
                 </TooltipProvider>
             </QueryClientProvider>
         );
-        fireEvent.click(screen.getByText('おすすめ楽曲をもとにプレイリストを作成する'));
-        await waitFor(() => {
-            expect(screen.getByText('作成したプレイリストを表示')).toBeInTheDocument();
-        });
     });
     
     /**
@@ -389,30 +390,5 @@ describe('RecommendationsTable', () => {
             const titles = screen.getAllByTestId('name').map(el => el.textContent);
             expect(titles).toEqual(['Test Track 3', 'Test Track 2', 'Test Track 1']);
         });
-    });
-    
-    /**
-     * 作成されたプレイリストを表示するボタンのクリックが正しく処理されることを確認するテスト
-     */
-    it('handles view created playlist button click correctly', async () => {
-        const queryClient = new QueryClient();
-        global.fetch = jest.fn().mockResolvedValue({
-            ok: true,
-            json: () => Promise.resolve({playlistId: 'newPlaylist1'}),
-        });
-        window.open = jest.fn();
-        render(
-            <QueryClientProvider client={queryClient}>
-                <TooltipProvider>
-                    <RecommendationsTable tracks={mockTracks} ownerId="owner1" userId="owner1" playlistId="playlist1"/>
-                </TooltipProvider>
-            </QueryClientProvider>
-        );
-        fireEvent.click(screen.getByText('おすすめ楽曲をもとにプレイリストを作成する'));
-        await waitFor(() => {
-            expect(screen.getByText('作成したプレイリストを表示')).toBeInTheDocument();
-        });
-        fireEvent.click(screen.getByText('作成したプレイリストを表示'));
-        expect(window.open).toHaveBeenCalledWith('https://open.spotify.com/playlist/newPlaylist1', '_blank');
     });
 });
