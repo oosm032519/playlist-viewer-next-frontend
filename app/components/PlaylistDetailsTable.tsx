@@ -22,7 +22,9 @@ import {
 } from "@/app/components/ui/table";
 import {ArrowUpDown} from "lucide-react";
 import {playlistDetailsTableColumns} from "@/app/lib/PlaylistDetailsTableColumns";
-import {AudioFeatures} from "@/app/types/audioFeaturesTypes";
+import {AudioFeatures} from "@/app/types/audioFeatures";
+import {Button} from "@/app/components/ui/button";
+import {usePlaylistCreation} from "@/app/hooks/usePlaylistCreation";
 
 
 /**
@@ -37,6 +39,8 @@ interface PlaylistDetailsTableProps {
     selectedTrack: Track | null;
     /** トラックを選択したときのコールバック関数 */
     onTrackSelect: (track: Track | null) => void;
+    /** プレイリスト名 */
+    playlistName: string | null;
 }
 
 /**
@@ -49,9 +53,12 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
                                                                               averageAudioFeatures,
                                                                               selectedTrack,
                                                                               onTrackSelect,
+                                                                              playlistName, // プレイリスト名を受け取る
                                                                           }) => {
     // テーブルのソート状態を管理するための状態
     const [sorting, setSorting] = useState<SortingState>([]);
+    
+    const {createSortedPlaylist} = usePlaylistCreation();
     
     // React Tableの設定
     const table = useReactTable({
@@ -64,6 +71,12 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
     });
+    
+    const handleCreateSortedPlaylist = async () => {
+        const sortedTrackIds = table.getRowModel().rows.map(row => row.original.id);
+        const newPlaylistName = playlistName ? `${playlistName}.sorted` : undefined; // プレイリスト名を生成
+        await createSortedPlaylist(sortedTrackIds, newPlaylistName); // プレイリスト名を渡す
+    };
     
     /**
      * 行がクリックされたときに選択されたトラックを設定するハンドラ
@@ -82,6 +95,10 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
     
     return (
         <div className="flex flex-col">
+            {/* 新しいプレイリスト作成ボタン */}
+            <Button onClick={handleCreateSortedPlaylist} className="mb-4">
+                ソート順で新しいプレイリストを作成
+            </Button>
             <div className="w-full overflow-x-auto">
                 <Table>
                     <TableHeader>

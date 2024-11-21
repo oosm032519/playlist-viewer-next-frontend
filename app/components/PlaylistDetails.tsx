@@ -205,6 +205,7 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                 averageAudioFeatures={averageAudioFeatures}
                 selectedTrack={selectedTrack}
                 onTrackSelect={setSelectedTrack}
+                playlistName={playlistName}
             />
                 </CardContent>
                 </Card>

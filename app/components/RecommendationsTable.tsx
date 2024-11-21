@@ -36,7 +36,7 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({track
     // テーブルのソート状態を管理
     const [sorting, setSorting] = useState<SortingState>([]);
     const {toast} = useToast();
-    const {createPlaylist, createdPlaylistId, isCreating} = useCreatePlaylistMutation(tracks, toast);
+    const {createPlaylist, createdPlaylistId, isCreating} = useCreatePlaylistMutation(tracks, toast); // useCreatePlaylistMutationを使用
     const {addedTracks, handleAddTrack, handleRemoveTrack} = useTrackActions(playlistId, toast);
     
     // DOMPurify の結果をメモ化
@@ -167,7 +167,8 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({track
             </div>
             {userId && (
                 <div className="mt-4">
-                    <Button onClick={createPlaylist}>おすすめ楽曲をもとにプレイリストを作成する</Button>
+                    <Button
+                        onClick={createPlaylist}>おすすめ楽曲をもとにプレイリストを作成する</Button> {/* createPlaylist を使用 */}
                     {createdPlaylistId && (
                         <Button className="ml-4"
                                 onClick={() => window.open(`https://open.spotify.com/playlist/${createdPlaylistId}`, '_blank')}>
