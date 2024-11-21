@@ -41,6 +41,7 @@ export const useCreatePlaylistMutation = (tracks: any[], toast: any) => {
                 title: "プレイリスト作成成功",
                 description: "新しいプレイリストが正常に作成されました。",
             });
+            window.open(`https://open.spotify.com/playlist/${data}`, '_blank');
         },
         onError: () => {
             toast({

@@ -33,16 +33,13 @@ const purifyConfig = {
  * @returns {JSX.Element} 推奨トラックのテーブルをレンダリングするReactコンポーネント
  */
 export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({tracks, ownerId, userId, playlistId}) => {
-    // テーブルのソート状態を管理
     const [sorting, setSorting] = useState<SortingState>([]);
     const {toast} = useToast();
-    const {createPlaylist, createdPlaylistId, isCreating} = useCreatePlaylistMutation(tracks, toast); // useCreatePlaylistMutationを使用
+    const {createPlaylist, isCreating} = useCreatePlaylistMutation(tracks, toast); // プレイリスト作成用のフックを利用
     const {addedTracks, handleAddTrack, handleRemoveTrack} = useTrackActions(playlistId, toast);
     
-    // DOMPurify の結果をメモ化
     const sanitize = useMemo(() => (content: string) => DOMPurify.sanitize(content, purifyConfig), []);
     
-    // テーブルのカラム定義をメモ化
     const columns = useMemo<ColumnDef<typeof tracks[0]>[]>(() => {
         const baseColumns: ColumnDef<typeof tracks[0]>[] = [
             {
@@ -100,7 +97,6 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({track
             },
         ];
         
-        // オーナーがユーザーと同じ場合、アクションカラムを追加
         if (ownerId === userId) {
             baseColumns.push({
                 header: 'Actions',
@@ -168,13 +164,7 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({track
             {userId && (
                 <div className="mt-4">
                     <Button
-                        onClick={createPlaylist}>おすすめ楽曲をもとにプレイリストを作成する</Button> {/* createPlaylist を使用 */}
-                    {createdPlaylistId && (
-                        <Button className="ml-4"
-                                onClick={() => window.open(`https://open.spotify.com/playlist/${createdPlaylistId}`, '_blank')}>
-                            作成したプレイリストを表示
-                        </Button>
-                    )}
+                        onClick={createPlaylist}>おすすめ楽曲をもとにプレイリストを作成する</Button>
                 </div>
             )}
         </div>
