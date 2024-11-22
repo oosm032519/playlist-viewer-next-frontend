@@ -4,7 +4,7 @@ import React from 'react';
 import {render, screen} from '@testing-library/react';
 import {axe, toHaveNoViolations} from 'jest-axe';
 import CombinedAudioFeaturesChart from '@/app/components/CombinedAudioFeaturesChart';
-import {AudioFeatures} from '@/app/types/audioFeaturesTypes';
+import {AudioFeatures} from '@/app/types/audioFeatures';
 import {expect} from '@jest/globals';
 import {Track} from '@/app/types/track'
 
@@ -25,16 +25,77 @@ const mockTrack: Track = {
     id: 'test_id',
     name: 'Test Track',
     previewUrl: 'https://example.com/preview',
-    artists: [{
-        name: 'Test Artist',
-        externalUrls: undefined
-    }],
+    artists: [
+        {
+            externalUrls: {
+                externalUrls: {
+                    spotify: 'https://example.com/artist',
+                }
+            },
+            href: 'https://example.com/artist_href',
+            id: 'artist_test_id',
+            name: 'Test Artist',
+            type: 'artist',
+            uri: 'spotify:artist:artist_test_id',
+        },
+    ],
     album: {
+        albumGroup: null,
+        albumType: 'album',
+        artists: [
+            {
+                externalUrls: {
+                    externalUrls: {
+                        spotify: 'https://example.com/artist',
+                    }
+                },
+                href: 'https://example.com/artist_href',
+                id: 'artist_test_id',
+                name: 'Test Artist',
+                type: 'artist',
+                uri: 'spotify:artist:artist_test_id',
+            },
+        ],
+        availableMarkets: ['US'],
+        externalUrls: {
+            externalUrls: {
+                spotify: 'https://example.com/album',
+            }
+        },
+        href: 'https://example.com/album_href',
+        id: 'album_test_id',
+        images: [
+            {
+                url: 'https://example.com/image.jpg',
+                height: 640,
+                width: 640,
+            },
+        ],
         name: 'Test Album',
-        images: [{url: 'https://example.com/image.jpg'}],
-        externalUrls: undefined
+        releaseDate: '2024-01-01',
+        releaseDatePrecision: 'day',
+        restrictions: null,
+        type: 'album',
+        uri: 'spotify:album:album_test_id',
     },
+    availableMarkets: ['US'],
+    discNumber: 1,
     durationMs: 180000,
+    externalIds: {isrc: 'test_isrc'},
+    externalUrls: {
+        externalUrls: {
+        spotify: 'https://example.com/track',
+            }
+    },
+    href: 'https://example.com/track_href',
+    isExplicit: false,
+    isPlayable: true,
+    linkedFrom: null,
+    popularity: 50,
+    restrictions: null,
+    trackNumber: 1,
+    type: 'track',
+    uri: 'spotify:track:test_id',
     audioFeatures: {
         acousticness: 0.3,
         danceability: 0.8,
@@ -47,13 +108,14 @@ const mockTrack: Track = {
         loudness: -5.5,
         mode: 'minor',
         tempo: 130,
-        timeSignature: 4
+        timeSignature: 4,
+        analysisUrl: 'https://example.com/analysis',
+        durationMs: 180000,
+        id: 'audio_feature_test_id',
+        trackHref: 'https://example.com/track_href',
+        type: 'audio_features',
+        uri: 'spotify:track:audio_feature_test_id',
     },
-    externalUrls: {
-        externalUrls: {
-            spotify: ""
-        }
-    }
 };
 
 // Rechartsのモックを改善

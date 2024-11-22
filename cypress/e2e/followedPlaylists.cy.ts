@@ -7,16 +7,88 @@ describe('Followed Playlists', () => {
         {
             id: '1',
             name: 'プレイリスト1',
-            description: '',
-            images: [{url: 'https://example.com/image1.jpg'}],
-            tracks: {total: 10},
+            images: [{url: 'https://example.com/image1.jpg', width: 300, height: 300}],
+            tracks: {items: []},
+            totalDuration: 0,
+            ownerName: '',
+            minAudioFeatures: {
+                acousticness: 0,
+                danceability: 0,
+                energy: 0,
+                instrumentalness: 0,
+                liveness: 0,
+                speechiness: 0,
+                valence: 0
+            },
+            maxAudioFeatures: {
+                acousticness: 0,
+                danceability: 0,
+                energy: 0,
+                instrumentalness: 0,
+                liveness: 0,
+                speechiness: 0,
+                valence: 0
+            },
+            averageAudioFeatures: {
+                acousticness: 0,
+                danceability: 0,
+                energy: 0,
+                instrumentalness: 0,
+                liveness: 0,
+                speechiness: 0,
+                valence: 0
+            },
+            seedArtists: [],
+            ownerId: '',
+            genreCounts: {},
+            externalUrls: {
+                externalUrls: {
+                    spotify: 'https://example.com/playlist1'
+                }
+            }
         },
         {
             id: '2',
             name: 'プレイリスト2',
-            description: '',
-            images: [{url: 'https://example.com/image2.jpg'}],
-            tracks: {total: 5},
+            images: [{url: 'https://example.com/image2.jpg', width: 300, height: 300}],
+            tracks: {items: []},
+            totalDuration: 0,
+            ownerName: '',
+            minAudioFeatures: {
+                acousticness: 0,
+                danceability: 0,
+                energy: 0,
+                instrumentalness: 0,
+                liveness: 0,
+                speechiness: 0,
+                valence: 0
+            },
+            maxAudioFeatures: {
+                acousticness: 0,
+                danceability: 0,
+                energy: 0,
+                instrumentalness: 0,
+                liveness: 0,
+                speechiness: 0,
+                valence: 0
+            },
+            averageAudioFeatures: {
+                acousticness: 0,
+                danceability: 0,
+                energy: 0,
+                instrumentalness: 0,
+                liveness: 0,
+                speechiness: 0,
+                valence: 0
+            },
+            seedArtists: [],
+            ownerId: '',
+            genreCounts: {},
+            externalUrls: {
+                externalUrls: {
+                    spotify: 'https://example.com/playlist2'
+                }
+            }
         },
     ];
     

@@ -18,8 +18,7 @@ describe('handleApiError', () => {
     
     it('should return a 500 response for unknown errors', async () => {
         const error = new Error('Unknown error');
-        const response = await handleApiError(error);
-        
+        await handleApiError(error)
         expect(NextResponse.json).toHaveBeenCalledWith(
             {
                 error: 'サーバーでエラーが発生しました。しばらくしてからもう一度お試しください。',
@@ -59,7 +58,7 @@ describe('handleApiError', () => {
 
 describe('sendRequest', () => {
     beforeEach(() => {
-        global.fetch = jest.fn();
+        global.fetch = jest.fn() as jest.Mock; // 型アサーションを追加
     });
     
     afterEach(() => {
@@ -67,7 +66,8 @@ describe('sendRequest', () => {
     });
     
     it('should send a request with the correct parameters', async () => {
-        global.fetch.mockResolvedValueOnce({
+        // fetchのレスポンスをモック
+        (global.fetch as jest.Mock).mockResolvedValueOnce({
             ok: true,
             json: jest.fn().mockResolvedValue({success: true}),
         });

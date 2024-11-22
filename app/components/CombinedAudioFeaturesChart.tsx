@@ -4,7 +4,7 @@ import React from 'react';
 import {Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis} from 'recharts';
 import {AudioFeaturesChartProps} from '@/app/types/audioFeaturesTypes';
 import {prepareAudioFeaturesData} from '@/app/lib/audioFeaturesUtils';
-import {AudioFeatures} from '@/app/types/audioFeaturesTypes';
+import {AudioFeatures} from '@/app/types/audioFeatures';
 import {
     Card,
     CardContent,

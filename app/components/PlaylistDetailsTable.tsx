@@ -25,23 +25,17 @@ import {playlistDetailsTableColumns} from "@/app/lib/PlaylistDetailsTableColumns
 import {AudioFeatures} from "@/app/types/audioFeatures";
 import {Button} from "@/app/components/ui/button";
 import {useCreatePlaylistMutation} from "@/app/hooks/useCreatePlaylistMutation";
-import LoadingSpinner from '@/app/components/LoadingSpinner';
+import LoadingSpinner from "@/app/components/LoadingSpinner";
 import {useToast} from "@/app/components/ui/use-toast";
-
 
 /**
  * プレイリストの詳細テーブルを表示するためのプロパティ
  */
 interface PlaylistDetailsTableProps {
-    /** トラックの配列 */
     tracks: Track[];
-    /** 平均的なオーディオフィーチャー */
     averageAudioFeatures: AudioFeatures;
-    /** 選択されたトラック */
-    selectedTrack: Track | null;
-    /** トラックを選択したときのコールバック関数 */
-    onTrackSelect: (track: Track | null) => void;
-    /** プレイリスト名 */
+    selectedTrackId: string | null; // 選択されたトラックのID
+    onTrackSelect: (trackId: string | null) => void; // トラックIDを渡す形に変更
     playlistName: string | null;
 }
 
@@ -53,12 +47,11 @@ interface PlaylistDetailsTableProps {
 export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
                                                                               tracks,
                                                                               averageAudioFeatures,
-                                                                              selectedTrack,
+                                                                              selectedTrackId,
                                                                               onTrackSelect,
-                                                                              playlistName, // プレイリスト名を受け取る
+                                                                              playlistName,
                                                                           }) => {
     const {toast} = useToast();
-    // テーブルのソート状態を管理するための状態
     const [sorting, setSorting] = useState<SortingState>([]);
     
     const {createPlaylist, isCreating} = useCreatePlaylistMutation(toast);
@@ -76,18 +69,13 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
     });
     
     const handleCreateSortedPlaylist = async () => {
-        const sortedTrackIds = table.getRowModel().rows.map(row => row.original.id);
-        const newPlaylistName = playlistName ? `${playlistName}.sorted` : undefined; // プレイリスト名を生成
+        const sortedTrackIds = table.getRowModel().rows.map((row) => row.original.id);
+        const newPlaylistName = playlistName ? `${playlistName}.sorted` : undefined;
         createPlaylist(sortedTrackIds, newPlaylistName);
     };
     
-    /**
-     * 行がクリックされたときに選択されたトラックを設定するハンドラ
-     * @param {Track} row - クリックされた行のトラックデータ
-     */
-    const handleRowClick = (row: Track) => onTrackSelect(row);
+    const handleRowClick = (row: Track) => onTrackSelect(row.id); // トラックIDを渡す
     
-    // トラックが存在しない場合の表示
     if (tracks.length === 0) {
         return (
             <div className="text-center text-gray-500 my-4">
@@ -129,7 +117,11 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
                             <TableRow
                                 key={row.id}
                                 onClick={() => handleRowClick(row.original)}
-                                style={{cursor: "pointer"}}
+                                style={{
+                                    cursor: "pointer",
+                                    backgroundColor:
+                                        row.original.id === selectedTrackId ? "#f0f0f0" : "transparent",
+                                }}
                             >
                                 {row.getVisibleCells().map((cell) => (
                                     <TableCell key={cell.id} data-testid={cell.column.id}>

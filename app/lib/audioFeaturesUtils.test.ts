@@ -19,6 +19,12 @@ describe('prepareAudioFeaturesData', () => {
         valence: 0.7,
         tempo: 120,
         timeSignature: 4,
+        analysisUrl: 'https://example.com/analysis', // 分析データのURL
+        durationMs: 180000, // トラックの再生時間（ミリ秒）
+        id: 'mock-id', // トラックのID
+        trackHref: 'https://example.com/track', // トラックの詳細情報へのリンク
+        type: 'audio_features', // オーディオ特徴データのタイプ
+        uri: 'spotify:track:mock-id', // Spotify URI
     };
     
     /**

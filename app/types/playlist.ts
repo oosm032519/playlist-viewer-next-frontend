@@ -32,6 +32,12 @@ export interface Playlist {
     ownerId: string;
     tracks: PlaylistTracks;
     images: Image[];
-    playlistName: string;
+    name: string;
     genreCounts: Record<string, number>;
+    id: string;
+    externalUrls: {
+        externalUrls: {
+            spotify: string
+        }
+    };
 }

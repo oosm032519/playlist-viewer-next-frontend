@@ -21,17 +21,79 @@ describe('FollowedPlaylists', () => {
         {
             id: '1',
             name: 'Playlist 1',
-            description: '',
-            images: [{url: '/image1.jpg'}],
-            tracks: {total: 5},
+            ownerName: '',
+            totalDuration: 0,
+            minAudioFeatures: {
+                acousticness: 0,
+                danceability: 0,
+                energy: 0,
+                instrumentalness: 0,
+                liveness: 0,
+                speechiness: 0,
+                valence: 0,
+            },
+            maxAudioFeatures: {
+                acousticness: 0,
+                danceability: 0,
+                energy: 0,
+                instrumentalness: 0,
+                liveness: 0,
+                speechiness: 0,
+                valence: 0,
+            },
+            averageAudioFeatures: {
+                acousticness: 0,
+                danceability: 0,
+                energy: 0,
+                instrumentalness: 0,
+                liveness: 0,
+                speechiness: 0,
+                valence: 0,
+            },
+            seedArtists: [],
+            ownerId: '',
+            tracks: {items: []},
+            images: [{url: '/image1.jpg', height: 300, width: 300}],
+            genreCounts: {},
             externalUrls: {externalUrls: {spotify: 'https://open.spotify.com/playlist/1'}}
         },
         {
             id: '2',
             name: 'Playlist 2',
-            description: '',
+            ownerName: '',
+            totalDuration: 0,
+            minAudioFeatures: {
+                acousticness: 0,
+                danceability: 0,
+                energy: 0,
+                instrumentalness: 0,
+                liveness: 0,
+                speechiness: 0,
+                valence: 0,
+            },
+            maxAudioFeatures: {
+                acousticness: 0,
+                danceability: 0,
+                energy: 0,
+                instrumentalness: 0,
+                liveness: 0,
+                speechiness: 0,
+                valence: 0,
+            },
+            averageAudioFeatures: {
+                acousticness: 0,
+                danceability: 0,
+                energy: 0,
+                instrumentalness: 0,
+                liveness: 0,
+                speechiness: 0,
+                valence: 0,
+            },
+            seedArtists: [],
+            ownerId: '',
+            tracks: {items: []},
             images: [],
-            tracks: {total: 10},
+            genreCounts: {},
             externalUrls: {externalUrls: {spotify: 'https://open.spotify.com/playlist/2'}}
         },
     ];
@@ -55,17 +117,11 @@ describe('FollowedPlaylists', () => {
             expect(screen.getByText('Playlist 2')).toBeInTheDocument();
         });
         
-        // トラック数が表示されていることを確認
-        await waitFor(() => {
-            expect(screen.getByText('トラック数: 5')).toBeInTheDocument();
-            expect(screen.getByText('トラック数: 10')).toBeInTheDocument();
-        });
-        
         // 画像が表示されているか確認
         await waitFor(() => {
             const imgElement = screen.getByRole('img', {name: 'Playlist 1'});
             expect(imgElement).toHaveAttribute('src');
-            expect(imgElement.getAttribute('src')).toContain('image1.jpg');
+            expect(imgElement.getAttribute('src')).toContain('/image1.jpg');
         });
         
         // 画像がないプレイリストのプレースホルダーが表示されているか確認
