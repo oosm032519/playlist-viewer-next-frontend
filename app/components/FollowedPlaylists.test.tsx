@@ -20,7 +20,7 @@ describe('FollowedPlaylists', () => {
     const mockPlaylists: Playlist[] = [
         {
             id: 'playlist1',
-            name: 'Mock Playlist 1',
+            name: 'Playlist 1',
             images: [{url: 'https://example.com/image1.jpg'}],
             tracks: {total: 10},
             externalUrls: {externalUrls: {spotify: 'https://open.spotify.com/playlist/playlist1'}},
@@ -28,7 +28,7 @@ describe('FollowedPlaylists', () => {
         },
         {
             id: 'playlist2',
-            name: 'Mock Playlist 2',
+            name: 'Playlist 2',
             images: [],
             tracks: {total: 5},
             externalUrls: {externalUrls: {spotify: 'https://open.spotify.com/playlist/playlist2'}},
@@ -36,7 +36,7 @@ describe('FollowedPlaylists', () => {
         },
         {
             id: 'playlist3',
-            name: 'Mock Playlist 3',
+            name: 'Playlist 3',
             images: [{url: 'https://example.com/image3.jpg'}],
             tracks: {total: 20},
             externalUrls: {externalUrls: {spotify: 'https://open.spotify.com/playlist/playlist3'}},
@@ -67,7 +67,8 @@ describe('FollowedPlaylists', () => {
         await waitFor(() => {
             const imgElement = screen.getByRole('img', {name: 'Playlist 1'});
             expect(imgElement).toHaveAttribute('src');
-            expect(imgElement.getAttribute('src')).toContain('/image1.jpg');
+            // Next.js Image Optimization APIによって生成されたURLに元の画像URLの一部が含まれていることを確認
+            expect(imgElement.getAttribute('src')).toContain('https%3A%2F%2Fexample.com%2Fimage1.jpg');
         });
         
         // 画像がないプレイリストのプレースホルダーが表示されているか確認
