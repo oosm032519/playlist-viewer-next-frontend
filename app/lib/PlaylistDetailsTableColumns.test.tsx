@@ -11,7 +11,7 @@ import {CellContext} from '@tanstack/react-table';
 expect.extend(toHaveNoViolations);
 
 const mockTrack: Track = {
-    externalUrls: {externalUrls: {spotify: ''}},
+    externalUrls: {externalUrls: {spotify: 'https://example.com/track'}},
     id: '1',
     name: 'Test Track',
     artists: [{name: 'Test Artist', externalUrls: {
