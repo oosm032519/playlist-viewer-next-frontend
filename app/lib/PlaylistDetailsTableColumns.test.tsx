@@ -109,7 +109,7 @@ describe('PlaylistDetailsTableColumns', () => {
             row: {original: mockTrack}
         } as CellContext<Track, any>)}</div>);
         const cell = screen.getByTestId('mode-cell');
-        expect(within(cell).getByText('Major')).toBeInTheDocument();
+        expect(within(cell).getByText('MAJOR')).toBeInTheDocument();
     });
     
     test('Duration column renders formatted time correctly', () => {
