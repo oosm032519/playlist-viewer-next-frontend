@@ -14,14 +14,26 @@ const mockTrack: Track = {
     album: {
         name: 'Test Album 1',
         images: [{url: 'https://example.com/image1.jpg'}],
-        externalUrls: {spotify: 'https://open.spotify.com/album/1'}
+        externalUrls: {
+            externalUrls: {spotify: 'https://open.spotify.com/album/1'}
+        }
     },
     artists: [{
         name: 'Test Artist 1',
-        externalUrls: {spotify: 'https://open.spotify.com/artist/1'}
+        externalUrls: {
+            externalUrls: {
+                spotify: 'https://open.spotify.com/artist/1'
+            }
+        }
     }],
     previewUrl: 'https://example.com/preview1.mp3',
     durationMs: 180000,
+    externalUrls: {
+        externalUrls: {
+            spotify: 'https://open.spotify.com/track/1'
+        }
+    },
+    audioFeatures: null
 };
 
 // TrackPlayerコンポーネントのテストスイート
@@ -34,7 +46,7 @@ describe('TrackPlayer', () => {
     
     // previewUrlが存在しない場合、再生ボタンが表示されないことをテスト
     it('does not render play button when previewUrl is not available', () => {
-        const trackWithoutPreview = {...mockTrack, previewUrl: undefined};
+        const trackWithoutPreview = {...mockTrack, previewUrl: null};
         render(<TrackPlayer track={trackWithoutPreview}/>);
         expect(screen.queryByText('試聴する')).not.toBeInTheDocument();
     });

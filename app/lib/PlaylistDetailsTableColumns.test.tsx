@@ -27,6 +27,7 @@ const mockTrack: Track = {
     durationMs: 180000,
     previewUrl: 'https://example.com/preview.mp3',
     audioFeatures: {
+        durationMs: 180000,
         danceability: 0.8,
         energy: 0.9,
         key: 5,
@@ -37,8 +38,9 @@ const mockTrack: Track = {
         liveness: 0.1,
         valence: 0.7,
         tempo: 120,
-        mode: 'Major',
+        mode: 'MAJOR',
         timeSignature: 4,
+        id: 'mock-id',
     }
 };
 
@@ -133,7 +135,7 @@ describe('PlaylistDetailsTableColumns', () => {
     test('Columns render "-" when audio features are undefined', () => {
         const mockTrackWithoutAudioFeatures: Track = {
             ...mockTrack,
-            audioFeatures: undefined
+            audioFeatures: null
         };
         
         const audioFeatureColumns = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15];

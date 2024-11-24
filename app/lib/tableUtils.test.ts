@@ -29,9 +29,9 @@ describe('audioFeatureSort', () => {
     
     it('文字列の場合、正しくソートされること', () => {
         // modeが'major'のRowオブジェクトを作成
-        const rowA = createMockRow({mode: 'major'});
+        const rowA = createMockRow({mode: 'MAJOR'});
         // modeが'minor'のRowオブジェクトを作成
-        const rowB = createMockRow({mode: 'minor'});
+        const rowB = createMockRow({mode: 'MINOR'});
         
         // rowAがrowBより小さいことを確認
         expect(audioFeatureSort(rowA, rowB, 'mode')).toBeLessThan(0);

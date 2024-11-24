@@ -14,7 +14,6 @@ expect.extend(toHaveNoViolations);
 const mockPlaylist: Playlist = {
     id: '1',
     name: 'Test Playlist',
-    description: 'This is a test playlist',
     images: [
         {
             url: 'https://example.com/image.jpg',
@@ -28,13 +27,15 @@ const mockPlaylist: Playlist = {
             spotify: 'https://open.spotify.com/playlist/123456789',
         }
     },
+    owner: {
+        displayName: 'Test User1',
+    }
 };
 
 // テスト用のモックデータ: 画像なしのプレイリスト
 const mockEmptyImagePlaylist: Playlist = {
     id: '2',
     name: 'Empty Image Playlist',
-    description: 'This playlist has no images',
     images: [],
     tracks: {
         total: 5,
@@ -44,6 +45,9 @@ const mockEmptyImagePlaylist: Playlist = {
             spotify: 'https://open.spotify.com/playlist/123456789',
         }
     },
+    owner: {
+        displayName: 'Test User2',
+    }
 };
 
 describe('PlaylistTableRow', () => {

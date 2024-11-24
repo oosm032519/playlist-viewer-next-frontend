@@ -11,7 +11,7 @@ describe('prepareAudioFeaturesData', () => {
         energy: 0.6,
         key: 5,
         loudness: -5.5,
-        mode: 'major',
+        mode: 'MAJOR',
         speechiness: 0.1,
         acousticness: 0.2,
         instrumentalness: 0.01,
@@ -19,12 +19,8 @@ describe('prepareAudioFeaturesData', () => {
         valence: 0.7,
         tempo: 120,
         timeSignature: 4,
-        analysisUrl: 'https://example.com/analysis', // 分析データのURL
-        durationMs: 180000, // トラックの再生時間（ミリ秒）
-        id: 'mock-id', // トラックのID
-        trackHref: 'https://example.com/track', // トラックの詳細情報へのリンク
-        type: 'audio_features', // オーディオ特徴データのタイプ
-        uri: 'spotify:track:mock-id', // Spotify URI
+        durationMs: 180000,
+        id: 'mock-id',
     };
     
     /**

@@ -21,17 +21,21 @@ const playlists: Playlist[] = [
         tracks: {total: 0},
         id: '1',
         name: 'Playlist 1',
-        description: 'Description 1',
-        images: [{url: '/images/image1.jpg'}], // パスを修正
-        externalUrls: {externalUrls: {spotify: 'spotify1'}}
+        images: [{url: '/images/image1.jpg'}],
+        externalUrls: {externalUrls: {spotify: 'spotify1'}},
+        owner: {
+            displayName: 'Test User1'
+        }
     },
     {
         tracks: {total: 0},
         id: '2',
         name: 'Playlist 2',
-        description: 'Description 2',
-        images: [{url: '/images/image2.jpg'}], // パスを修正
-        externalUrls: {externalUrls: {spotify: 'spotify2'}}
+        images: [{url: '/images/image2.jpg'}],
+        externalUrls: {externalUrls: {spotify: 'spotify2'}},
+        owner: {
+            displayName: 'Test User2'
+        }
     },
 ];
 

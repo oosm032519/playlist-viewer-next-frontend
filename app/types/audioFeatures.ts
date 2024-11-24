@@ -1,8 +1,5 @@
-// app/types/audioFeatures.ts
+export type Mode = "MAJOR" | "MINOR";
 
-/**
- * オーディオ特徴量。
- */
 export interface AudioFeatures {
     acousticness: number;
     danceability: number;
@@ -11,21 +8,14 @@ export interface AudioFeatures {
     liveness: number;
     speechiness: number;
     valence: number;
+    tempo: number;
 }
 
-/**
- * トラックのオーディオ特徴量（拡張情報を含む）。
- */
 export interface TrackAudioFeatures extends AudioFeatures {
-    analysisUrl: string;
     durationMs: number;
     id: string;
     key: number;
     loudness: number;
-    mode: string;
-    tempo: number;
+    mode: Mode;
     timeSignature: number;
-    trackHref: string;
-    type: string;
-    uri: string;
 }

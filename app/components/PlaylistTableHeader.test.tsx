@@ -16,7 +16,7 @@ describe('PlaylistTableHeader', () => {
     it('renders the table header with correct columns', () => {
         render(
             <table>
-                <PlaylistTableHeader/>
+                <PlaylistTableHeader totalPlaylists={10}/>
             </table>
         );
         
@@ -32,7 +32,7 @@ describe('PlaylistTableHeader', () => {
     it('has no accessibility violations', async () => {
         const {container} = render(
             <table>
-                <PlaylistTableHeader/>
+                <PlaylistTableHeader totalPlaylists={10}/>
             </table>
         );
         // axeによるアクセシビリティテストを実行
