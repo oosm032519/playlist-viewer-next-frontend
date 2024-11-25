@@ -1,5 +1,4 @@
-// PlaylistDetailsTable.tsx
-"use client";
+// app/components/PlaylistDetailsTable.tsx
 
 import React, {useState} from "react";
 import {
@@ -33,8 +32,8 @@ import {useToast} from "@/app/components/ui/use-toast";
 interface PlaylistDetailsTableProps {
     tracks: Track[];
     averageAudioFeatures: AudioFeatures;
-    selectedTrackId: string | null; // 選択されたトラックのID
-    onTrackSelect: (trackId: string | null) => void; // トラックIDを渡す形に変更
+    selectedTrackId: string | null;
+    onTrackSelect: (trackId: string | null) => void;
     playlistName: string | null;
 }
 
