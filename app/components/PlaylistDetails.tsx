@@ -224,7 +224,7 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                             disabled={isCreating}
                             className="ml-4"
                         >
-                            ソート順で新しいプレイリストを作成
+                            現在のソート順で新しいプレイリストを作成
                         </Button>
                     </div>
                     
