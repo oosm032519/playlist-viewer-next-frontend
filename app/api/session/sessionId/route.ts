@@ -5,7 +5,7 @@ import {handleApiError, sendRequest} from '@/app/lib/api-utils';
 import {BadRequestError} from '@/app/lib/errors';
 
 /**
- * セッションIDを取得するためのPOSTリクエストを処理します。
+ * セッションIDを取得するためのPOSTリクエストを処理する。
  *
  * @param request - クライアントからのリクエストオブジェクト
  * @returns セッションIDを含むレスポンスまたはエラーレスポンス
@@ -34,6 +34,12 @@ export async function POST(request: NextRequest) {
             status: 200,
             headers: {'Content-Type': 'application/json'}
         });
+        
+        // キャッシュを無効化するためのヘッダーを設定
+        newResponse.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        newResponse.headers.set('Pragma', 'no-cache');
+        newResponse.headers.set('Expires', '0');
+        newResponse.headers.set('Surrogate-Control', 'no-store');
         
         // HttpOnlyフラグ付きでクッキーを設定
         newResponse.cookies.set('sessionId', data.sessionId, {
