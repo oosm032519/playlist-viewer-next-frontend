@@ -15,6 +15,8 @@ import {useUser} from "@/app/context/UserContext";
 import CombinedAudioFeaturesChart from "@/app/components/CombinedAudioFeaturesChart";
 import {CSVLink} from "react-csv";
 import {Button} from "@/app/components/ui/button";
+import {useCreatePlaylistMutation} from "@/app/hooks/useCreatePlaylistMutation";
+import {useToast} from "@/app/components/ui/use-toast";
 
 /**
  * プレイリストの詳細情報を表示するためのコンポーネントのプロパティ
@@ -74,13 +76,21 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                                                              totalTracks,
                                                              ownerName,
                                                          }) => {
+    const {toast} = useToast();
+    const {createPlaylist, isCreating} = useCreatePlaylistMutation(toast);
+    
     const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
     
     const handleTrackSelect = (trackId: string | null) => {
         setSelectedTrackId(trackId);
     };
     
-    const selectedTrack = tracks.find((track) => track.id === selectedTrackId) || null;
+    // プレイリスト作成ハンドラ
+    const handleCreateSortedPlaylist = async () => {
+        const sortedTrackIds = tracks.map((track) => track.id);
+        const newPlaylistName = playlistName ? `${playlistName}.sorted` : undefined;
+        await createPlaylist(sortedTrackIds, newPlaylistName);
+    };
     
     const generateCsvData = () => {
         const headers = [
@@ -208,10 +218,14 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                                 CSVをエクスポート
                             </Button>
                         </CSVLink>
-                        <div className="flex-grow text-center">
-                            <h2 className="text-xl">楽曲数: {totalTracks}</h2>
-                            <h2 className="text-xl">総再生時間: {totalDuration}</h2>
-                        </div>
+                        
+                        <Button
+                            onClick={handleCreateSortedPlaylist}
+                            disabled={isCreating}
+                            className="ml-4"
+                        >
+                            ソート順で新しいプレイリストを作成
+                        </Button>
                     </div>
                     
                     <PlaylistDetailsTable
@@ -226,7 +240,7 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <CombinedAudioFeaturesChart
-                    track={selectedTrack || undefined}
+                    track={tracks.find((track) => track.id === selectedTrackId)}
                     averageAudioFeatures={averageAudioFeatures}
                     playlistName={playlistName}
                 />

@@ -60,6 +60,7 @@ const config = {
                     accent: '#2D2F2F',
                     border: '#2B2C2D',
                     placeholder: '#8D9191',
+                    muted: '#2D2F2F',
                 },
                 'light': {
                     background: '#E8E8E6',
@@ -69,6 +70,7 @@ const config = {
                     accent: '#E8E8E3',
                     border: '#EBEBE4',
                     placeholder: '#64645F',
+                    muted: '#64645F',
                 },
             },
             borderRadius: {

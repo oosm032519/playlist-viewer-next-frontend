@@ -1,5 +1,6 @@
 // app/components/PlaylistDetailsTable.tsx
 
+import {cn} from '@/app/lib/utils'
 import React, {useState} from "react";
 import {
     useReactTable,
@@ -21,10 +22,7 @@ import {
 import {ArrowUpDown} from "lucide-react";
 import {playlistDetailsTableColumns} from "@/app/lib/PlaylistDetailsTableColumns";
 import {AudioFeatures} from "@/app/types/audioFeatures";
-import {Button} from "@/app/components/ui/button";
-import {useCreatePlaylistMutation} from "@/app/hooks/useCreatePlaylistMutation";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
-import {useToast} from "@/app/components/ui/use-toast";
 
 /**
  * プレイリストの詳細テーブルを表示するためのプロパティ
@@ -49,10 +47,7 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
                                                                               onTrackSelect,
                                                                               playlistName,
                                                                           }) => {
-    const {toast} = useToast();
     const [sorting, setSorting] = useState<SortingState>([]);
-    
-    const {createPlaylist, isCreating} = useCreatePlaylistMutation(toast);
     
     // React Tableの設定
     const table = useReactTable({
@@ -66,13 +61,7 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
         getSortedRowModel: getSortedRowModel(),
     });
     
-    const handleCreateSortedPlaylist = async () => {
-        const sortedTrackIds = table.getRowModel().rows.map((row) => row.original.id);
-        const newPlaylistName = playlistName ? `${playlistName}.sorted` : undefined;
-        createPlaylist(sortedTrackIds, newPlaylistName);
-    };
-    
-    const handleRowClick = (row: Track) => onTrackSelect(row.id); // トラックIDを渡す
+    const handleRowClick = (row: Track) => onTrackSelect(row.id);
     
     if (tracks.length === 0) {
         return (
@@ -84,11 +73,7 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
     
     return (
         <div className="flex flex-col">
-            <LoadingSpinner loading={isCreating}/>
-            
-            <Button onClick={handleCreateSortedPlaylist} disabled={isCreating}>
-                ソート順で新しいプレイリストを作成
-            </Button>
+            <LoadingSpinner loading={false}/>
             
             <div className="w-full overflow-x-auto">
                 <Table>
@@ -115,11 +100,10 @@ export const PlaylistDetailsTable: React.FC<PlaylistDetailsTableProps> = ({
                             <TableRow
                                 key={row.id}
                                 onClick={() => handleRowClick(row.original)}
-                                style={{
-                                    cursor: "pointer",
-                                    backgroundColor:
-                                        row.original.id === selectedTrackId ? "#f0f0f0" : "transparent",
-                                }}
+                                className={cn(
+                                    row.original.id === selectedTrackId ? "bg-muted dark:bg-muted" : "",
+                                    "cursor-pointer"
+                                )}
                             >
                                 {row.getVisibleCells().map((cell) => (
                                     <TableCell key={cell.id} data-testid={cell.column.id}>
