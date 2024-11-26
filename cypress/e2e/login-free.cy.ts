@@ -116,26 +116,29 @@ describe('ログイン不要の機能テスト', () => {
     
     it('プレイリスト検索フォームの表示', () => {
         cy.visit('/');
-        cy.contains('プレイリスト名で検索').click(); // タブをクリック
-        cy.get('form input[name="query"]').should('be.visible');
-        cy.get('button:contains("Search")').should('exist');
+        cy.contains('プレイリスト名で検索').click();
+        cy.get('input[placeholder="Enter playlist name"]').should('be.visible');
+        cy.get('button:contains("Search")').should('be.visible');
     });
     
     it('プレイリストIDフォームの表示', () => {
         cy.visit('/');
-        cy.contains('URLで検索').should('be.visible'); // タブのラベルで検索
-        cy.get('input[placeholder="Enter playlist URL"]').should('exist');
-        cy.get('button:contains("Submit")').should('exist');
+        cy.contains('URLで検索').click();
+        cy.get('input[placeholder="Enter playlist URL"]').should('be.visible');
+        cy.get('button:contains("Submit")').should('be.visible');
+        cy.get('input[placeholder="Enter playlist URL"]').type('https://open.spotify.com/playlist/7FGzKtW9KMj79l0J8YjL9u');
+        cy.get('button:contains("Submit")').click();
     });
     
     it('プレイリスト検索', () => {
         cy.intercept('/api/playlists/search*', mockPlaylistData).as('searchPlaylists');
         cy.visit('/');
-        cy.contains('プレイリスト名で検索').click(); // タブをクリック
+        cy.contains('プレイリスト名で検索').click();
         cy.get('input[placeholder="Enter playlist name"]').type('test');
         cy.get('button:contains("Search")').click();
         cy.wait('@searchPlaylists');
-        cy.get('table').should('be.visible'); // tableタグで検索
+        cy.get('table').should('exist');
+        cy.get('table tbody tr').should('have.length', mockPlaylistData.playlists.length);
     });
     
     it('プレイリスト詳細の表示', () => {
@@ -143,8 +146,7 @@ describe('ログイン不要の機能テスト', () => {
         cy.intercept('/api/playlists/recommendations', {body: []}).as('recommendations');
         cy.visit('/');
         cy.intercept('/api/playlists/search*', mockPlaylistData).as('searchPlaylists');
-        cy.contains('プレイリスト名で検索').click(); // タブをクリック
-        cy.get('input[placeholder="Enter playlist name"]').should('be.visible');
+        cy.contains('プレイリスト名で検索').click();
         cy.get('input[placeholder="Enter playlist name"]').type('test');
         cy.get('button:contains("Search")').click();
         cy.wait('@searchPlaylists');
@@ -152,6 +154,9 @@ describe('ログイン不要の機能テスト', () => {
         cy.wait('@playlistDetails');
         cy.wait('@recommendations');
         cy.contains(mockPlaylistDetails.playlistName).should('be.visible');
+        cy.get('table').should('exist');
+        cy.contains('CSVをエクスポート').click();
+        cy.contains('現在のソート順で新しいプレイリストを作成').click();
     });
     
     it('フッターの表示とモーダル', () => {
@@ -159,9 +164,17 @@ describe('ログイン不要の機能テスト', () => {
         cy.get('footer').should('be.visible');
         cy.contains('利用規約').click();
         cy.get('[role="dialog"]').should('be.visible');
-        cy.get('[role="dialog"] button svg').click(); // svgタグで閉じるボタンを特定
+        cy.get('[role="dialog"] button:has(svg)').click();
         cy.contains('プライバシーポリシー').click();
         cy.get('[role="dialog"]').should('be.visible');
-        cy.get('[role="dialog"] button svg').click();
+        cy.get('[role="dialog"] button:has(svg)').click();
+    });
+    
+    it('プレイリストIDフォームの無効なURL', () => {
+        cy.visit('/');
+        cy.contains('URLで検索').click();
+        cy.get('input[placeholder="Enter playlist URL"]').type('invalid url');
+        cy.get('button:contains("Submit")').click();
+        cy.contains('無効なプレイリストURLです').should('be.visible');
     });
 });
