@@ -1,7 +1,6 @@
 // app/lib/api-utils.ts
 
 import {NextRequest, NextResponse} from 'next/server';
-
 import {ApiError} from '@/app/lib/errors';
 
 /**
@@ -45,44 +44,17 @@ export function getCookies(request: NextRequest): string {
 
 
 /**
- * レスポンスを生成する関数
- *
- * @param body - レスポンスボディ
- * @param status - HTTPステータスコード（デフォルトは200）
- * @param headers - 追加のヘッダー (オプション)
- * @returns Responseオブジェクト
- */
-export function createResponse(body: any, status: number = 200, headers?: HeadersInit): Response {
-    const response = new Response(JSON.stringify(body), {
-        status: status,
-        headers: {
-            'Content-Type': 'application/json',
-            ...headers // 他のヘッダーがあればマージ
-        }
-    });
-    
-    // キャッシュを無効化するためのヘッダーを設定
-    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    response.headers.set('Pragma', 'no-cache');
-    response.headers.set('Expires', '0');
-    response.headers.set('Surrogate-Control', 'no-store');
-    
-    return response;
-}
-
-
-/**
  * APIエラーを処理し、適切なHTTPレスポンスを返す
  *
  * @param error - 処理するエラーオブジェクト。通常はAPI呼び出しで発生するエラー
  * @param context - エラーが発生したコンテキスト情報（オプション）
- * @returns エラーメッセージとステータスコードを含むレスポンスオブジェクト
+ * @returns エラーメッセージとステータスコードを含むNextResponseオブジェクト
  */
-export async function handleApiError(error: unknown, context?: string): Promise<Response> {
+export async function handleApiError(error: unknown, context?: string): Promise<NextResponse> {
     console.error('API Error:', error, context);
     
     let status = 500;
-    let message = 'Internal Server Error';
+    let message = 'サーバーでエラーが発生しました。しばらくしてからもう一度お試しください。';
     let details = '予期しないエラーが発生しました';
     
     if (error instanceof ApiError) {
@@ -133,11 +105,13 @@ export async function handleApiError(error: unknown, context?: string): Promise<
         details = `${context} でエラーが発生しました: ${details}`;
     }
     
-    const headers = new Headers();
-    headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    headers.set('Pragma', 'no-cache');
-    headers.set('Expires', '0');
-    headers.set('Surrogate-Control', 'no-store');
-    
-    return createResponse({error: message, details: details}, status, headers);
+    return NextResponse.json({error: message, details}, {
+        status, headers: {
+            // キャッシュ無効化ヘッダー
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            Pragma: 'no-cache',
+            Expires: '0',
+            'Surrogate-Control': 'no-store',
+        }
+    });
 }

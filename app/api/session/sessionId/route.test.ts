@@ -34,41 +34,51 @@ describe('POST /api/session/sessionId', () => {
     });
     
     it('セッションIDを正常に取得し、クッキーを設定する', async () => {
+        // モックレスポンスのセッションIDを定義
         const mockSessionId = 'test-session-id';
+        
+        // バックエンドAPIのレスポンスをモック
         const mockResponse = {
             ok: true,
             json: jest.fn().mockResolvedValue({sessionId: mockSessionId}),
         };
         (apiUtils.sendRequest as jest.Mock).mockResolvedValue(mockResponse);
         
-        const mockNextResponse = {
+        // NextResponse.jsonをモック
+        const mockNewResponse = {
             cookies: {
                 set: jest.fn(),
             },
+            headers: new Headers(),
         };
-        (NextResponse.json as jest.Mock).mockReturnValue(mockNextResponse);
+        (NextResponse.json as jest.Mock).mockReturnValue(mockNewResponse);
         
+        // リクエストボディをモック
         const request = {
             json: jest.fn().mockResolvedValue({temporaryToken: 'test-token'}),
         };
         
+        // 実行
         const response = await POST(request as any);
         
+        // バックエンドAPI呼び出しの確認
         expect(apiUtils.sendRequest).toHaveBeenCalledWith(
             '/api/session/sessionId',
             'POST',
             {temporaryToken: 'test-token'}
         );
         
+        // NextResponse.jsonの呼び出し確認
         expect(NextResponse.json).toHaveBeenCalledWith(
             {sessionId: mockSessionId},
             {
                 status: 200,
-                headers: {'Content-Type': 'application/json'}
+                headers: {'Content-Type': 'application/json'},
             }
         );
         
-        expect(mockNextResponse.cookies.set).toHaveBeenCalledWith(
+        // クッキー設定の検証
+        expect(mockNewResponse.cookies.set).toHaveBeenCalledWith(
             'sessionId',
             mockSessionId,
             expect.objectContaining({
@@ -76,11 +86,12 @@ describe('POST /api/session/sessionId', () => {
                 secure: true,
                 sameSite: 'none',
                 path: '/',
-                maxAge: 60 * 60 * 24 * 7,
+                maxAge: 60 * 60 * 24 * 7, // 1週間
             })
         );
         
-        expect(response).toBe(mockNextResponse);
+        // レスポンスの検証
+        expect(response).toBe(mockNewResponse);
     });
     
     it('バックエンドAPIがエラーを返した場合、エラーハンドリングを行う', async () => {

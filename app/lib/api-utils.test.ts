@@ -3,34 +3,59 @@
 import {NextRequest, NextResponse} from 'next/server';
 import {handleApiError, sendRequest, getCookies} from './api-utils';
 import {expect} from '@jest/globals';
+import {ApiError} from '@/app/lib/errors';
 
-// モック関数を使用して外部依存関係を処理
+// NextResponse.json と fetch をモック
 jest.mock('next/server', () => ({
     NextResponse: {
         json: jest.fn(),
     },
 }));
+global.fetch = jest.fn() as jest.Mock;
 
 describe('handleApiError', () => {
     beforeEach(() => {
-        jest.clearAllMocks();
+        (NextResponse.json as jest.Mock).mockClear().mockReturnValue({
+            headers: {
+                set: jest.fn(),
+            },
+        });
     });
     
     it('should return a 500 response for unknown errors', async () => {
         const error = new Error('Unknown error');
-        await handleApiError(error)
+        const mockHeaders = new Map();
+        mockHeaders.set('cookie', 'test-cookie');
+        
+        const mockRequest = {
+            headers: mockHeaders,
+        } as unknown as NextRequest;
+        
+        await handleApiError(error, 'Test Context');
+        
         expect(NextResponse.json).toHaveBeenCalledWith(
             {
                 error: 'サーバーでエラーが発生しました。しばらくしてからもう一度お試しください。',
                 details: expect.stringContaining('Unknown error'),
             },
-            {status: 500}
+            {
+                status: 500,
+                headers: {
+                    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                    Pragma: 'no-cache',
+                    Expires: '0',
+                    'Surrogate-Control': 'no-store',
+                },
+            }
         );
+        
+        expect(NextResponse.json).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({status: 500}));
     });
     
     it('should add context to the error details if provided', async () => {
         const error = new Error('Contextual error');
         const context = 'User creation';
+        
         await handleApiError(error, context);
         
         expect(NextResponse.json).toHaveBeenCalledWith(
@@ -38,12 +63,23 @@ describe('handleApiError', () => {
                 error: 'サーバーでエラーが発生しました。しばらくしてからもう一度お試しください。',
                 details: expect.stringContaining('User creation'),
             },
-            {status: 500}
+            {
+                status: 500,
+                headers: {
+                    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                    Pragma: 'no-cache',
+                    Expires: '0',
+                    'Surrogate-Control': 'no-store',
+                },
+            }
         );
+        
+        expect(NextResponse.json).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({status: 500}));
     });
     
     it('should handle string errors correctly', async () => {
         const error = 'Simple string error';
+        
         await handleApiError(error);
         
         expect(NextResponse.json).toHaveBeenCalledWith(
@@ -51,22 +87,63 @@ describe('handleApiError', () => {
                 error: 'サーバーでエラーが発生しました。しばらくしてからもう一度お試しください。',
                 details: expect.stringContaining('予期しないエラーが発生しました'),
             },
-            {status: 500}
+            {
+                status: 500,
+                headers: {
+                    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                    Pragma: 'no-cache',
+                    Expires: '0',
+                    'Surrogate-Control': 'no-store',
+                },
+            }
+        );
+        
+        expect(NextResponse.json).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({status: 500}));
+    });
+    
+    it('should handle ApiError correctly', async () => {
+        const error = new ApiError(400, 'Bad Request', 'Invalid input');
+        await handleApiError(error);
+        
+        expect(NextResponse.json).toHaveBeenCalledWith(
+            {
+                error: '入力内容に誤りがあります。もう一度確認してください。',
+                details: expect.stringContaining('Invalid input'),
+            },
+            {
+                status: 400,
+                headers: {
+                    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                    Pragma: 'no-cache',
+                    Expires: '0',
+                    'Surrogate-Control': 'no-store',
+                },
+            }
+        );
+        expect(NextResponse.json).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({status: 400}));
+    });
+    
+    it('should handle Response errors correctly', async () => {
+        const error = new Response('{"error": "Test Error", "details": "Test Details"}', {status: 404});
+        await handleApiError(error);
+        
+        expect(NextResponse.json).toHaveBeenCalledWith(
+            {
+                error: "リソースが見つかりません",
+                details: "お探しのリソースが見つかりません。\n詳細: Test Details",
+            },
+            expect.objectContaining({status: 404})
         );
     });
 });
 
+
 describe('sendRequest', () => {
     beforeEach(() => {
-        global.fetch = jest.fn() as jest.Mock; // 型アサーションを追加
-    });
-    
-    afterEach(() => {
-        jest.resetAllMocks();
+        (global.fetch as jest.Mock).mockClear();
     });
     
     it('should send a request with the correct parameters', async () => {
-        // fetchのレスポンスをモック
         (global.fetch as jest.Mock).mockResolvedValueOnce({
             ok: true,
             json: jest.fn().mockResolvedValue({success: true}),
@@ -87,7 +164,6 @@ describe('sendRequest', () => {
             })
         );
         
-        // レスポンスが正しく返されることを確認
         expect(response.ok).toBe(true);
     });
 });
