@@ -99,7 +99,7 @@ export const UserContextProvider: React.FC<React.PropsWithChildren<{}>> = ({chil
             }
         } catch (error) {
             handleApiError(error);
-            throw error; // エラーを再スローして呼び出し元でキャッチできるようにする
+            throw error;
         }
     };
     
@@ -117,10 +117,7 @@ export const UserContextProvider: React.FC<React.PropsWithChildren<{}>> = ({chil
             if (response.ok) {
                 setIsLoggedIn(false);
                 setUserId(null);
-                // 必要に応じて、ここでページをリロードすることもできます。
-                // window.location.reload();
             } else {
-                // 適切なエラー処理を追加
                 const errorData = await response.json();
                 console.error("ログアウトエラー:", errorData);
                 setError("ログアウト中にエラーが発生しました。");

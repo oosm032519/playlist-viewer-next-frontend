@@ -74,7 +74,7 @@ function HomeContent(): JSX.Element {
             // URLフラグメントを削除
             window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
         }
-    }, [checkSession]); // checkSession を依存関係に追加
+    }, [checkSession]);
     
     /**
      * プレイリスト検索結果を処理
