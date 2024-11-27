@@ -7,7 +7,7 @@ import React, {useEffect, useState, useContext} from "react";
 import PlaylistSearchForm from "@/app/components/PlaylistSearchForm";
 import PlaylistIdForm from "@/app/components/PlaylistIdForm";
 import LoginButton from "@/app/components/LoginButton";
-import {useUser, UserContextProvider} from "@/app/context/UserContext";
+import {useUser} from "@/app/context/UserContext"; // UserContextProvider は不要になりました
 import {PlaylistContextProvider, usePlaylist} from "@/app/context/PlaylistContext";
 import ErrorAlert from "@/app/components/ErrorAlert";
 import PlaylistDisplay from "@/app/components/PlaylistDisplay";
@@ -25,7 +25,7 @@ import {Tabs, TabsList, TabsTrigger, TabsContent} from "@/app/components/ui/tabs
  */
 function HomeContent(): JSX.Element {
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
-    const {isLoggedIn, userId, error, setIsLoggedIn, setUserId} = useUser();
+    const {isLoggedIn, userId, error, checkSession} = useUser(); // UserContextのメソッドを使用
     const {theme, setTheme} = useTheme();
     const {setSelectedPlaylistId} = usePlaylist();
     const {fetchFavorites} = useContext(FavoriteContext);
@@ -67,41 +67,14 @@ function HomeContent(): JSX.Element {
         const temporaryToken = params.get('token');
         
         if (temporaryToken) {
-            fetch('/api/session/sessionId', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({temporaryToken}),
-                credentials: 'include',
-            })
-                .then(response => response.json())
-                .then(async (data) => {
-                    if (data.sessionId) {
-                        // セッションIDをCookieに保存
-                        document.cookie = `sessionId=${data.sessionId}; path=/; SameSite=None; Secure`;
-                        
-                        // URLフラグメントを削除
-                        window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
-                        
-                        try {
-                            // セッションチェックリクエストを送信
-                            const response = await fetch('/api/session/check', {
-                                credentials: 'include',
-                            });
-                            const sessionData = await response.json();
-                            if (sessionData.status === 'success') {
-                                setIsLoggedIn(true); // セッションチェック成功後に状態を更新
-                                setUserId(sessionData.userId);
-                            }
-                        } catch (error) {
-                            console.error('セッションチェックエラー:', error);
-                        }
-                    }
-                })
-                .catch(error => console.error('Error:', error));
+            checkSession(temporaryToken).catch((error) => {
+                console.error('セッション確立エラー:', error);
+            });
+            
+            // URLフラグメントを削除
+            window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
         }
-    }, []);
+    }, [checkSession]); // checkSession を依存関係に追加
     
     /**
      * プレイリスト検索結果を処理
@@ -202,13 +175,11 @@ function HomeContent(): JSX.Element {
  */
 export default function Home(): JSX.Element {
     return (
-        <UserContextProvider>
             <PlaylistContextProvider>
                 <FavoriteProvider>
                     <HomeContent/>
                     <Toaster/>
                 </FavoriteProvider>
             </PlaylistContextProvider>
-        </UserContextProvider>
     );
 }

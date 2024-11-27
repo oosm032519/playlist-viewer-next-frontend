@@ -5,13 +5,80 @@ import {NextRequest, NextResponse} from 'next/server';
 import {ApiError} from '@/app/lib/errors';
 
 /**
+ * APIリクエストを送信する共通関数
+ *
+ * @param url - リクエスト先のURL
+ * @param method - HTTPメソッド
+ * @param body - リクエストボディ（オプション）
+ * @param cookies - Cookieヘッダー（オプション）
+ * @returns APIレスポンス
+ * @throws handleApiError - APIリクエストが失敗した場合
+ */
+export async function sendRequest(url: string, method: string, body?: any, cookies?: string): Promise<Response> {
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
+    const response = await fetch(`${backendUrl}${url}`, {
+        method,
+        headers: {
+            'Content-Type': 'application/json',
+            'Cookie': cookies || '',
+        },
+        body: body ? JSON.stringify(body) : undefined,
+        credentials: 'include',
+    });
+    
+    if (!response.ok) {
+        throw response; // レスポンスオブジェクトをそのままスロー
+    }
+    
+    return response;
+}
+
+/**
+ * リクエストからCookieを取得する関数
+ *
+ * @param request - Next.jsのNextRequestオブジェクト
+ * @returns Cookie文字列
+ */
+export function getCookies(request: NextRequest): string {
+    return request.headers.get('cookie') || '';
+}
+
+
+/**
+ * レスポンスを生成する関数
+ *
+ * @param body - レスポンスボディ
+ * @param status - HTTPステータスコード（デフォルトは200）
+ * @param headers - 追加のヘッダー (オプション)
+ * @returns Responseオブジェクト
+ */
+export function createResponse(body: any, status: number = 200, headers?: HeadersInit): Response {
+    const response = new Response(JSON.stringify(body), {
+        status: status,
+        headers: {
+            'Content-Type': 'application/json',
+            ...headers // 他のヘッダーがあればマージ
+        }
+    });
+    
+    // キャッシュを無効化するためのヘッダーを設定
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    response.headers.set('Surrogate-Control', 'no-store');
+    
+    return response;
+}
+
+
+/**
  * APIエラーを処理し、適切なHTTPレスポンスを返す
  *
  * @param error - 処理するエラーオブジェクト。通常はAPI呼び出しで発生するエラー
  * @param context - エラーが発生したコンテキスト情報（オプション）
  * @returns エラーメッセージとステータスコードを含むレスポンスオブジェクト
  */
-export async function handleApiError(error: unknown, context?: string): Promise<NextResponse> {
+export async function handleApiError(error: unknown, context?: string): Promise<Response> {
     console.error('API Error:', error, context);
     
     let status = 500;
@@ -22,6 +89,15 @@ export async function handleApiError(error: unknown, context?: string): Promise<
         status = error.status;
         message = error.message;
         details = error.details || '';
+    } else if (error instanceof Response) {
+        status = error.status;
+        try {
+            const errorBody = await error.json();
+            message = errorBody.error || error.statusText;
+            details = errorBody.details || '';
+        } catch (e) {
+            message = error.statusText;
+        }
     } else if (error instanceof Error) {
         message = error.message;
         details = error.stack || '';
@@ -57,45 +133,11 @@ export async function handleApiError(error: unknown, context?: string): Promise<
         details = `${context} でエラーが発生しました: ${details}`;
     }
     
-    return NextResponse.json({error: message, details: details}, {status});
-}
-
-
-/**
- * APIリクエストを送信する共通関数
- *
- * @param url - リクエスト先のURL
- * @param method - HTTPメソッド
- * @param body - リクエストボディ（オプション）
- * @param cookies - Cookieヘッダー（オプション）
- * @returns APIレスポンス
- * @throws handleApiError - APIリクエストが失敗した場合
- */
-export async function sendRequest(url: string, method: string, body?: any, cookies?: string): Promise<Response> {
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
-    const response = await fetch(`${backendUrl}${url}`, {
-        method,
-        headers: {
-            'Content-Type': 'application/json',
-            'Cookie': cookies || '',
-        },
-        body: body ? JSON.stringify(body) : undefined,
-        credentials: 'include',
-    });
+    const headers = new Headers();
+    headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    headers.set('Pragma', 'no-cache');
+    headers.set('Expires', '0');
+    headers.set('Surrogate-Control', 'no-store');
     
-    if (!response.ok) {
-        throw response;
-    }
-    
-    return response;
-}
-
-/**
- * リクエストからCookieを取得する関数
- *
- * @param request - Next.jsのNextRequestオブジェクト
- * @returns Cookie文字列
- */
-export function getCookies(request: NextRequest): string {
-    return request.headers.get('cookie') || '';
+    return createResponse({error: message, details: details}, status, headers);
 }

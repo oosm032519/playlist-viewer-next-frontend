@@ -8,12 +8,16 @@ import {getCookies, handleApiError, sendRequest} from '@/app/lib/api-utils';
  *
  * @param body - レスポンスボディ
  * @param status - HTTPステータスコード（デフォルトは200）
- * @returns NextResponseオブジェクト
+ * @param headers - 追加のヘッダー (オプション)
+ * @returns Responseオブジェクト
  */
-function createResponse(body: any, status: number = 200): Response {
+function createResponse(body: any, status: number = 200, headers?: HeadersInit): Response {
     const response = new Response(JSON.stringify(body), {
         status: status,
-        headers: {'Content-Type': 'application/json'}
+        headers: {
+            'Content-Type': 'application/json',
+            ...headers // 他のヘッダーがあればマージ
+        }
     });
     
     // キャッシュを無効化するためのヘッダーを設定
@@ -29,7 +33,7 @@ function createResponse(body: any, status: number = 200): Response {
  * セッションをチェックするGETリクエストハンドラー
  *
  * @param request - Next.jsのNextRequestオブジェクト
- * @returns セッションの状態を含むNextResponseオブジェクト
+ * @returns セッションの状態を含むResponseオブジェクト
  */
 export async function GET(request: NextRequest): Promise<Response> {
     
