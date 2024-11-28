@@ -64,12 +64,14 @@ const FollowedPlaylists: React.FC<FollowedPlaylistsProps> = ({onPlaylistClick}) 
                 <p>フォロー中のプレイリストはありません。</p>
             ) : (
                 <ul className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-4">
-                    {playlists && playlists.map((playlist) => {
-                        const sanitizedName = DOMPurify.sanitize(playlist.name);
-                        const sanitizedImageUrl = playlist.images && playlist.images.length > 0
-                            ? DOMPurify.sanitize(playlist.images[0].url)
-                            : '';
-                        const sanitizedTrackCount = DOMPurify.sanitize(playlist.tracks.total.toString());
+                    {playlists && playlists
+                        .filter((playlist): playlist is Playlist => playlist !== null) // nullを除外
+                        .map((playlist) => {
+                            const sanitizedName = DOMPurify.sanitize(playlist.name);
+                            const sanitizedImageUrl = playlist.images && playlist.images.length > 0
+                                ? DOMPurify.sanitize(playlist.images[0].url)
+                                : '';
+                            const sanitizedTrackCount = DOMPurify.sanitize(playlist.tracks.total.toString());
                         
                         return (
                             <li key={playlist.id} className="bg-gray-100 p-4 rounded-lg shadow">
@@ -94,10 +96,13 @@ const FollowedPlaylists: React.FC<FollowedPlaylistsProps> = ({onPlaylistClick}) 
                                     <p className="text-sm text-gray-600">
                                         トラック数: {sanitizedTrackCount}
                                     </p>
+                                    <p className="text-sm text-gray-600">
+                                        作成者: {playlist.owner.displayName}
+                                    </p>
                                 </div>
                             </li>
                         );
-                    })}
+                        })}
                 </ul>
             )}
         </div>
