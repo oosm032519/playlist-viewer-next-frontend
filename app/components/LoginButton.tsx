@@ -17,6 +17,7 @@ import React from 'react';
 const LoginButton: React.FC = () => {
     // ユーザーのログイン状態とユーザーIDを管理するカスタムフックを使用
     const {isLoggedIn, setUserId, setIsLoggedIn} = useUser();
+    const isMockMode = process.env.NEXT_PUBLIC_MOCK_MODE === 'true';
     
     /**
      * ログイン処理を開始する関数
@@ -25,7 +26,21 @@ const LoginButton: React.FC = () => {
      * SpotifyのOAuth2認証ページにリダイレクトします。
      */
     const handleLogin = () => {
-        window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL}/oauth2/authorization/spotify`; // 認証ページにリダイレクト
+        if (isMockMode) {
+            // モックログインエンドポイントを呼び出す
+            fetch('/api/session/mock-login', {method: 'POST'})
+                .then(response => response.json())
+                .then(data => {
+                    setIsLoggedIn(true);
+                    setUserId(data.userId);
+                })
+                .catch(error => {
+                    console.error("モックログインエラー:", error);
+                    // エラー処理
+                });
+        } else {
+            window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL}/oauth2/authorization/spotify`; // 実処理: 認証ページにリダイレクト
+        }
     };
     
     /**
@@ -56,7 +71,7 @@ const LoginButton: React.FC = () => {
         <Button onClick={() => {
             isLoggedIn ? handleLogout() : handleLogin();
         }}>
-            {isLoggedIn ? 'ログアウト' : 'Spotifyでログイン'}
+            {isLoggedIn ? 'ログアウト' : isMockMode ? 'モックログイン' : 'Spotifyでログイン'}
         </Button>
     );
 };
