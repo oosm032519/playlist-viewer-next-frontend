@@ -180,6 +180,8 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
     const sanitizedPlaylistName = DOMPurify.sanitize(playlistName || "");
     const sanitizedOwnerName = DOMPurify.sanitize(ownerName || "");
     
+    const isMockMode = process.env.NEXT_PUBLIC_MOCK_MODE === 'true';
+    
     return (
         <>
             <Card>
@@ -219,13 +221,15 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                             </Button>
                         </CSVLink>
                         
-                        <Button
-                            onClick={handleCreateSortedPlaylist}
-                            disabled={isCreating}
-                            className="ml-4"
-                        >
-                            現在のソート順で新しいプレイリストを作成
-                        </Button>
+                        {!isMockMode && (
+                            <Button
+                                onClick={handleCreateSortedPlaylist}
+                                disabled={isCreating}
+                                className="ml-4"
+                            >
+                                現在のソート順で新しいプレイリストを作成
+                            </Button>
+                        )}
                     </div>
                     
                     <PlaylistDetailsTable

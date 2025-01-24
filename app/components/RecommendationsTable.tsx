@@ -136,6 +136,8 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({track
         createPlaylist(trackIds);
     };
     
+    const isMockMode = process.env.NEXT_PUBLIC_MOCK_MODE === 'true';
+    
     
     return (
         <div className="flex flex-col">
@@ -167,7 +169,7 @@ export const RecommendationsTable: React.FC<RecommendationsTableProps> = ({track
                     </TableBody>
                 </Table>
             </div>
-            {userId && (
+            {userId && !isMockMode && (
                 <div className="mt-4">
                     <Button onClick={createPlaylistHandler} disabled={isCreating}>
                         おすすめ楽曲をもとにプレイリストを作成する
