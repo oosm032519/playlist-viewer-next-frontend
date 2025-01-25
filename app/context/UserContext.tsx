@@ -47,6 +47,10 @@ export const UserContextProvider: React.FC<React.PropsWithChildren<{}>> = ({chil
     useEffect(() => {
         // セッションを初期化する非同期関数
         const initializeSession = async () => {
+            if (process.env.NEXT_PUBLIC_MOCK_MODE === 'true') {
+                console.log("モックモード: 自動セッションチェックをスキップします");
+                return; // モックモードでは自動セッションチェックをスキップ
+            }
             try {
                 const response = await fetch("/api/session/check", {
                     method: 'GET',
@@ -74,6 +78,10 @@ export const UserContextProvider: React.FC<React.PropsWithChildren<{}>> = ({chil
         
         initializeSession();
     }, []);
+    
+    useEffect(() => {
+        console.log(`isLoggedIn状態が変更されました: ${isLoggedIn}`);
+    }, [isLoggedIn]);
     
     // セッション確立処理
     const checkSession = async (temporaryToken: string) => {
