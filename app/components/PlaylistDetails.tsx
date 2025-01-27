@@ -184,7 +184,7 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
     
     return (
         <>
-            <Card>
+            <Card className="border-border border-2">
                 <CardHeader>
                     {playlistName && (
                         <CardTitle className="text-center my-4 flex items-center justify-center">
@@ -252,7 +252,7 @@ const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
             </div>
             
             {recommendations && recommendations.length > 0 && (
-                <Card className="mt-4">
+                <Card className="mt-4 border-border border-2">
                     <CardHeader className="text-2xl font-bold">おすすめ楽曲</CardHeader>
                     <CardContent>
                         <RecommendationsTable

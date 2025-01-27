@@ -155,7 +155,7 @@ function HomeContent(): JSX.Element {
                 />
             </div>
             {isLoggedIn &&
-                <Card className="mt-4">
+                <Card className="mt-4 border-border border-2">
                     <CardHeader>
                         <CardTitle className="text-2xl font-bold">お気に入り</CardTitle>
                     </CardHeader>

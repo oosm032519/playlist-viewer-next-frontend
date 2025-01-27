@@ -164,7 +164,7 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({
             
             {/* プレイリストが存在し、選択されたプレイリストがない場合に表示 */}
             {currentPlaylists.length > 0 && !selectedPlaylistId && (
-                <Card className="mt-4">
+                <Card className="mt-4 border-border border-2">
                     <CardHeader>
                         <CardTitle className="text-2xl font-bold">検索結果</CardTitle>
                         {/* ページネーション（上部） */}
@@ -294,7 +294,7 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({
             
             {/* ログイン中のユーザーにフォロー中のプレイリストを表示 */}
             {isLoggedIn && (
-                <Card className="mt-4">
+                <Card className="mt-4 border-border border-2">
                     <CardHeader>
                         <CardTitle className="text-2xl font-bold">フォロー中のプレイリスト</CardTitle>
                     </CardHeader>

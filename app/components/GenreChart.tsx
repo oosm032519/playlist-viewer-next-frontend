@@ -125,7 +125,7 @@ const GenreChart: React.FC<GenreChartProps> = ({
     };
     
     return (
-        <Card className="flex flex-col">
+        <Card className="flex flex-col border-border border-2">
             <CardHeader className="items-center pb-0">
                 <CardTitle>{playlistName || 'ジャンル分布'}</CardTitle>
                 <CardDescription>プレイリストのジャンル分布</CardDescription>

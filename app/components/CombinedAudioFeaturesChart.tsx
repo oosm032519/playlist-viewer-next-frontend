@@ -79,7 +79,7 @@ const CombinedAudioFeaturesChart: React.FC<CombinedAudioFeaturesChartProps> = ({
     } satisfies ChartConfig;
     
     return (
-        <Card>
+        <Card className="border-border border-2">
             <CardHeader className="items-center pb-0">
                 <CardTitle>{playlistName || 'Audio Features レーダーチャート'}</CardTitle>
                 <CardDescription>
