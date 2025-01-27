@@ -15,6 +15,10 @@ import {ApiError} from '@/app/lib/errors';
  */
 export async function sendRequest(url: string, method: string, body?: any, cookies?: string): Promise<Response> {
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
+    
+    // detailsエンドポイントとsearchエンドポイントにはクッキーを送信しない
+    const shouldOmitCredentials = url.includes('/api/playlists/') && (url.endsWith('/details') || url.includes('/search?'));
+    
     const response = await fetch(`${backendUrl}${url}`, {
         method,
         headers: {
@@ -22,7 +26,7 @@ export async function sendRequest(url: string, method: string, body?: any, cooki
             'Cookie': cookies || '',
         },
         body: body ? JSON.stringify(body) : undefined,
-        credentials: 'include',
+        credentials: shouldOmitCredentials ? 'omit' : 'include',
     });
     
     if (!response.ok) {
