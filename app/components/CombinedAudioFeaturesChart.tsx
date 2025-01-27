@@ -1,6 +1,6 @@
 // app/components/CombinedAudioFeaturesChart.tsx
 
-import React from 'react';
+import React, {useRef, useEffect, useState} from 'react';
 import {Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis} from 'recharts';
 import {AudioFeaturesChartProps} from '@/app/types/audioFeaturesTypes';
 import {prepareAudioFeaturesData} from '@/app/lib/audioFeaturesUtils';
@@ -78,8 +78,29 @@ const CombinedAudioFeaturesChart: React.FC<CombinedAudioFeaturesChartProps> = ({
         },
     } satisfies ChartConfig;
     
+    const chartContainerRef = useRef<HTMLDivElement>(null);
+    const [chartCenterY, setChartCenterY] = useState("50%");
+    
+    useEffect(() => {
+        const updateChartCenter = () => {
+            if (chartContainerRef.current) {
+                const containerHeight = chartContainerRef.current.clientHeight;
+                const chartHeight = containerHeight * 0.8; // Assuming outerRadius is 80%
+                const newCenterY = (containerHeight / 2) / containerHeight * 100;
+                setChartCenterY(`${newCenterY}%`);
+            }
+        };
+        
+        updateChartCenter();
+        window.addEventListener('resize', updateChartCenter);
+        
+        return () => {
+            window.removeEventListener('resize', updateChartCenter);
+        };
+    }, []);
+    
     return (
-        <Card className="border-border border-2">
+        <Card className="border-border border-2 pb-0">
             <CardHeader className="items-center pb-0">
                 <CardTitle>{playlistName || 'Audio Features レーダーチャート'}</CardTitle>
                 <CardDescription>
@@ -87,8 +108,8 @@ const CombinedAudioFeaturesChart: React.FC<CombinedAudioFeaturesChartProps> = ({
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[400px]">
-                    <RadarChart data={combinedData} cx="50%" cy="50%" outerRadius="80%">
+                <ChartContainer config={chartConfig} className="mx-auto max-h-[400px]" ref={chartContainerRef}>
+                    <RadarChart data={combinedData} cx="50%" cy={chartCenterY} outerRadius="80%">
                         <PolarGrid/>
                         <PolarAngleAxis dataKey="feature"/>
                         <PolarRadiusAxis angle={30} domain={[0, 1]}/>
@@ -112,11 +133,11 @@ const CombinedAudioFeaturesChart: React.FC<CombinedAudioFeaturesChartProps> = ({
                         />
                         
                         <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line"/>}/>
-                        <ChartLegend className="mt-8" content={<ChartLegendContent/>}/>
+                        <ChartLegend content={<ChartLegendContent/>}/>
                     </RadarChart>
                 </ChartContainer>
             </CardContent>
-            <CardFooter className="flex-col gap-2 pt-4 text-sm">
+            <CardFooter className="justify-center text-sm">
                 <span>トラックを選択すると、個別の Audio Features が表示されます。</span>
             </CardFooter>
         </Card>

@@ -1,8 +1,6 @@
-// app/components/GenreChart.tsx
-
 "use client"
 
-import React from 'react';
+import React, {useRef, useEffect, useState} from 'react';
 import {Pie, PieChart, Cell} from "recharts";
 import {
     Card,
@@ -124,18 +122,47 @@ const GenreChart: React.FC<GenreChartProps> = ({
         return null;
     };
     
+    const chartContainerRef = useRef<HTMLDivElement>(null);
+    const [chartCenterY, setChartCenterY] = useState("50%");
+    const [innerRadius, setInnerRadius] = useState(80);
+    const [outerRadius, setOuterRadius] = useState(120);
+    
+    useEffect(() => {
+        const updateChartDimensions = () => {
+            if (chartContainerRef.current) {
+                const containerWidth = chartContainerRef.current.clientWidth;
+                const containerHeight = chartContainerRef.current.clientHeight;
+                const newInnerRadius = containerWidth * 0.125; // Example calculation
+                const newOuterRadius = containerWidth * 0.2; // Example calculation
+                const newCenterY = (containerHeight / 2) / containerHeight * 100;
+                
+                setInnerRadius(newInnerRadius);
+                setOuterRadius(newOuterRadius);
+                setChartCenterY(`${newCenterY}%`);
+            }
+        };
+        
+        updateChartDimensions();
+        window.addEventListener('resize', updateChartDimensions);
+        
+        return () => {
+            window.removeEventListener('resize', updateChartDimensions);
+        };
+    }, []);
+    
     return (
-        <Card className="flex flex-col border-border border-2">
+        <Card className="border-border border-2 pb-0">
             <CardHeader className="items-center pb-0">
                 <CardTitle>{playlistName || 'ジャンル分布'}</CardTitle>
                 <CardDescription>プレイリストのジャンル分布</CardDescription>
             </CardHeader>
-            <CardContent className="flex-1 pb-0">
+            <CardContent className="pb-0">
                 <ChartContainer
                     config={chartConfig}
-                    className="mx-auto aspect-square max-h-[250px]"
+                    className="mx-auto max-h-[400px] pb-0"
+                    ref={chartContainerRef}
                 >
-                    <PieChart>
+                    <PieChart cx="50%" cy={chartCenterY}>
                         {/* カーソルを非表示にし、カスタムツールチップを設定 */}
                         <ChartTooltip
                             cursor={false}
@@ -145,8 +172,8 @@ const GenreChart: React.FC<GenreChartProps> = ({
                             data={data} // 円グラフのデータ
                             dataKey="value" // 値に基づいてサイズが決まる
                             nameKey="name" // 各セクションに名前を付ける
-                            innerRadius={60}
-                            outerRadius={80}
+                            innerRadius={innerRadius}
+                            outerRadius={outerRadius}
                         >
                             {/* 各データに対応するセルの描画 */}
                             {data.map((entry, index) => (
@@ -156,7 +183,7 @@ const GenreChart: React.FC<GenreChartProps> = ({
                     </PieChart>
                 </ChartContainer>
             </CardContent>
-            <CardFooter className="flex flex-wrap justify-center gap-4 pt-4">
+            <CardFooter className="flex flex-col justify-center gap-4 pt-4">
                 {/* 凡例の表示 */}
                 {data.map((entry, index) => (
                     <div key={`legend-${index}`} className="flex items-center">
