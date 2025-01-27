@@ -49,7 +49,7 @@ const GenreDistributionChart: React.FC<{
 }> = ({genreCounts, playlistName}) => {
     if (Object.keys(genreCounts).length > 0) {
         return (
-            <div className="mt-8">
+            <div className="">
                 <GenreChart genreCounts={genreCounts} playlistName={playlistName}/>
             </div>
         );
