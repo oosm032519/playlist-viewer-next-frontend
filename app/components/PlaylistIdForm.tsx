@@ -2,7 +2,7 @@
 
 "use client";
 
-import {useState} from "react";
+import {useState, useEffect} from "react";
 import {useMutation} from "@tanstack/react-query";
 import {Button} from "@/app/components/ui/button";
 import {Input} from "@/app/components/ui/input";
@@ -31,6 +31,11 @@ const extractPlaylistIdFromUrl = (url: string): string | null => {
  * @returns {JSX.Element} - プレイリストIDフォームのJSX要素
  */
 const PlaylistIdForm = ({onPlaylistSelect}: PlaylistIdFormProps): JSX.Element => {
+    // モックモードかどうかを判定
+    const isMockMode = process.env.NEXT_PUBLIC_MOCK_MODE === "true";
+    // モックモード時のデフォルトプレイリストURL
+    const mockPlaylistUrl = "https://open.spotify.com/playlist/mockPlaylistId001";
+    
     // プレイリストIDの状態管理
     const [playlistId, setPlaylistId] = useState("");
     // エラーメッセージの状態管理
@@ -43,6 +48,13 @@ const PlaylistIdForm = ({onPlaylistSelect}: PlaylistIdFormProps): JSX.Element =>
             setErrorMessage("プレイリストの取得中にエラーが発生しました");
         },
     });
+    
+    useEffect(() => {
+        // モックモードの場合、デフォルトのプレイリストURLをセット
+        if (isMockMode) {
+            setPlaylistId(mockPlaylistUrl);
+        }
+    }, [isMockMode]);
     
     /**
      * フォーム送信時のハンドラー
@@ -80,9 +92,10 @@ const PlaylistIdForm = ({onPlaylistSelect}: PlaylistIdFormProps): JSX.Element =>
                     placeholder="Enter playlist URL"
                     value={playlistId}
                     onChange={(e) => setPlaylistId(e.target.value)}
-                    disabled={mutation.isPending}/>
+                    disabled={mutation.isPending}
+                />
                 <Button type="submit" disabled={mutation.isPending}>
-                    {mutation.isPending ? 'Submitting...' : 'Submit'}
+                    {mutation.isPending ? "Submitting..." : "Submit"}
                 </Button>
             </form>
             
