@@ -86,7 +86,7 @@ describe('POST /api/session/sessionId', () => {
                 secure: true,
                 sameSite: 'none',
                 path: '/',
-                maxAge: 60 * 60 * 24 * 7, // 1週間
+                maxAge: 60 * 60, // 1時間
             })
         );
         
