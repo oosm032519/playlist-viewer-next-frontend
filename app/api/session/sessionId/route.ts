@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
             secure: true,
             sameSite: 'none',
             path: '/',
-            maxAge: 60 * 60 * 24 * 7, // 1週間
+            maxAge: 60 * 60, // 1時間
         });
         
         return newResponse;
